@@ -26,6 +26,7 @@ runs:
           mingw-w64-x86_64-cmake
           mingw-w64-x86_64-ninja
           mingw-w64-x86_64-pkgconf
+          mingw-w64-x86_64-sqlite3
           mingw-w64-x86_64-libtiff
 
     - name: Configure PROJ discovery on Windows
@@ -38,4 +39,7 @@ runs:
         {
           echo 'CMAKE_PREFIX_PATH=C:\msys64\mingw64'
           echo 'PKG_CONFIG_PATH=C:\msys64\mingw64\lib\pkgconfig'
+          echo 'SQLite3_EXECUTABLE=C:\msys64\mingw64\bin\sqlite3.exe'
+          echo 'TIFF_INCLUDE_DIR=C:\msys64\mingw64\include'
+          echo 'TIFF_LIBRARY=C:\msys64\mingw64\lib\libtiff.dll.a'
         } >> "$GITHUB_ENV"
