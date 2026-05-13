@@ -38,37 +38,8 @@ runs:
         wrapper_cmd="${wrapper_path}\\cmake.cmd"
         sqlite_cmd="$(cygpath -m "$wrapper_dir/sqlite3.cmd")"
         mkdir -p "$wrapper_dir"
-        {
-          printf '@echo off\r\n'
-          printf 'setlocal\r\n'
-          printf 'set "PATH=C:\\msys64\\mingw64\\bin;C:\\mingw64\\bin;C:\\msys64\\usr\\bin;%%PATH%%"\r\n'
-          printf 'set "REAL_SQLITE=C:\\msys64\\mingw64\\bin\\sqlite3.exe"\r\n'
-          printf 'if not exist "%%REAL_SQLITE%%" set "REAL_SQLITE=C:\\mingw64\\bin\\sqlite3.exe"\r\n'
-          printf 'if not exist "%%REAL_SQLITE%%" set "REAL_SQLITE=sqlite3.exe"\r\n'
-          printf 'call "%%REAL_SQLITE%%" %%*\r\n'
-          printf 'exit /b %%ERRORLEVEL%%\r\n'
-        } > "$wrapper_dir/sqlite3.cmd"
-        {
-          printf '@echo off\r\n'
-          printf 'setlocal\r\n'
-          printf 'set "PATH=C:\\msys64\\mingw64\\bin;C:\\mingw64\\bin;C:\\msys64\\usr\\bin;%%PATH%%"\r\n'
-          printf 'set "REAL_CMAKE=C:\\msys64\\mingw64\\bin\\cmake.exe"\r\n'
-          printf 'if not exist "%%REAL_CMAKE%%" set "REAL_CMAKE=C:\\mingw64\\bin\\cmake.exe"\r\n'
-          printf 'if not exist "%%REAL_CMAKE%%" set "REAL_CMAKE=C:\\Program Files\\CMake\\bin\\cmake.exe"\r\n'
-          printf 'if "%%~1"=="--build" goto passthrough\r\n'
-          printf 'if "%%~1"=="--install" goto passthrough\r\n'
-          printf 'if "%%~1"=="--version" goto passthrough\r\n'
-          printf 'if "%%~1"=="-E" goto passthrough\r\n'
-          printf 'call "%%REAL_CMAKE%%" ^\r\n'
-          printf '  -DEXE_SQLITE3=__SQLITE_CMD__ ^\r\n'
-          printf '  -DTIFF_INCLUDE_DIR=C:/msys64/mingw64/include ^\r\n'
-          printf '  -DTIFF_LIBRARY=C:/msys64/mingw64/lib/libtiff.dll.a ^\r\n'
-          printf '  %%*\r\n'
-          printf 'exit /b %%ERRORLEVEL%%\r\n'
-          printf ':passthrough\r\n'
-          printf 'call "%%REAL_CMAKE%%" %%*\r\n'
-          printf 'exit /b %%ERRORLEVEL%%\r\n'
-        } > "$wrapper_dir/cmake.cmd"
+        cp "$GITHUB_ACTION_PATH/windows/cmake.cmd" "$wrapper_dir/cmake.cmd"
+        cp "$GITHUB_ACTION_PATH/windows/sqlite3.cmd" "$wrapper_dir/sqlite3.cmd"
         sed -i "s#__SQLITE_CMD__#$sqlite_cmd#g" "$wrapper_dir/cmake.cmd"
         {
           echo "$wrapper_path"
