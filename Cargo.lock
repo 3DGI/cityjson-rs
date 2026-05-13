@@ -732,6 +732,7 @@ dependencies = [
  "criterion 0.7.0",
  "dhat",
  "libc",
+ "libsqlite3-sys",
  "num-traits",
  "proj-sys",
  "serde",

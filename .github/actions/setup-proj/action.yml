@@ -1,0 +1,25 @@
+name: Setup PROJ
+description: Install the native prerequisites needed for bundled PROJ builds.
+
+runs:
+  using: composite
+  steps:
+    - name: Install PROJ prerequisites on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y libtiff-dev pkg-config
+
+    - name: Install PROJ prerequisites on macOS
+      if: runner.os == 'macOS'
+      shell: bash
+      run: brew install tiff
+
+    - name: Install PROJ prerequisites on Windows
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-pkgconf
+          mingw-w64-x86_64-tiff
