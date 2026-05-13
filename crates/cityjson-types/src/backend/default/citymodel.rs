@@ -459,6 +459,10 @@ where
         &self.vertices
     }
 
+    pub fn vertices_mut(&mut self) -> &mut Vertices<VR, RealWorldCoordinate> {
+        &mut self.vertices
+    }
+
     pub(crate) fn reserve_vertex_capacity(&mut self, additional: usize) -> Result<()> {
         self.vertices.reserve(additional)
     }
@@ -531,6 +535,10 @@ where
         self.transform.get_or_insert_with(Transform::default)
     }
 
+    pub fn clear_transform(&mut self) {
+        self.transform = None;
+    }
+
     // Extensions methods
     pub fn extensions(&self) -> Option<&Extensions> {
         self.extensions.as_ref()
@@ -595,6 +603,10 @@ where
 
     pub fn template_vertices(&self) -> &Vertices<VR, RealWorldCoordinate> {
         &self.template_vertices
+    }
+
+    pub fn template_vertices_mut(&mut self) -> &mut Vertices<VR, RealWorldCoordinate> {
+        &mut self.template_vertices
     }
 
     pub(crate) fn reserve_template_vertex_capacity(&mut self, additional: usize) -> Result<()> {

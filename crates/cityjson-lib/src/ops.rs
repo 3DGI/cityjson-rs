@@ -6,13 +6,21 @@
 
 use std::collections::hash_map::Entry;
 use std::collections::{BTreeSet, HashMap, HashSet};
+#[cfg(feature = "proj")]
+use std::fmt;
+#[cfg(feature = "proj")]
+use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::cityjson_types::resources::storage::OwnedStringStorage;
 use crate::cityjson_types::v2_0::attributes::Attributes;
+#[cfg(feature = "proj")]
+use crate::cityjson_types::v2_0::coordinate::RealWorldCoordinate;
 use crate::cityjson_types::v2_0::geometry::{
     Geometry, GeometryType, StoredGeometryInstance, StoredGeometryParts,
 };
 use crate::cityjson_types::v2_0::metadata::BBox;
+#[cfg(feature = "proj")]
+use crate::cityjson_types::v2_0::metadata::CRS;
 use crate::cityjson_types::v2_0::{
     CityObject, CityObjectIdentifier, MaterialMap, Metadata, SemanticMap, TextureMap, Transform,
     VertexIndex,
@@ -32,6 +40,11 @@ type OwnedMetadata = Metadata<OwnedStringStorage>;
 type OwnedExtensions = Extensions<OwnedStringStorage>;
 type OwnedCityObject = CityObject<OwnedStringStorage>;
 type OwnedGeometry = Geometry<u32, OwnedStringStorage>;
+#[cfg(feature = "proj")]
+type CachedProj = Arc<Mutex<crate::proj::Proj>>;
+
+#[cfg(feature = "proj")]
+static TRANSFORMER_CACHE: OnceLock<Mutex<HashMap<(String, String), CachedProj>>> = OnceLock::new();
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum CityObjectSelection {
@@ -219,6 +232,122 @@ impl ModelSelection {
 
 fn import_error(message: impl Into<String>) -> Error {
     Error::Import(message.into())
+}
+
+#[cfg(feature = "proj")]
+fn projection_error(message: impl Into<String>) -> Error {
+    Error::Projection(message.into())
+}
+
+#[cfg(feature = "proj")]
+fn canonical_crs(value: &str) -> String {
+    let trimmed = value.trim();
+    if let Some(code) = trimmed.strip_prefix("EPSG:")
+        && let Ok(parsed) = code.parse::<u32>()
+    {
+        return format!("EPSG:{parsed}");
+    }
+
+    if let Some(code) = trimmed.rsplit(['/', ':']).find(|part| !part.is_empty())
+        && let Ok(parsed) = code.parse::<u32>()
+    {
+        return format!("EPSG:{parsed}");
+    }
+
+    trimmed.to_owned()
+}
+
+/// Cached coordinate transformer backed by PROJ.
+#[cfg(feature = "proj")]
+#[derive(Clone)]
+pub struct Transformer {
+    inner: CachedProj,
+}
+
+#[cfg(feature = "proj")]
+impl fmt::Debug for Transformer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Transformer").finish_non_exhaustive()
+    }
+}
+
+#[cfg(feature = "proj")]
+impl Transformer {
+    /// Transform one `[x, y, z]` point.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when PROJ rejects the point or the cached transformer lock is poisoned.
+    pub fn transform(&self, point: [f64; 3]) -> Result<[f64; 3]> {
+        let transformer = self
+            .inner
+            .lock()
+            .map_err(|_| projection_error("cached PROJ transformer lock is poisoned"))?;
+        let output = transformer
+            .convert((point[0], point[1], point[2]))
+            .map_err(|error| projection_error(error.to_string()))?;
+        Ok([output.0, output.1, output.2])
+    }
+}
+
+/// Return a cached transformer for the CRS pair.
+///
+/// # Errors
+///
+/// Returns an error when PROJ cannot create the CRS operation.
+#[cfg(feature = "proj")]
+pub fn transformer(source_crs: &str, target_crs: &str) -> Result<Transformer> {
+    let key = (canonical_crs(source_crs), canonical_crs(target_crs));
+    let cache = TRANSFORMER_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+    let mut cache = cache
+        .lock()
+        .map_err(|_| projection_error("PROJ transformer cache lock is poisoned"))?;
+
+    if let Some(transformer) = cache.get(&key) {
+        return Ok(Transformer {
+            inner: Arc::clone(transformer),
+        });
+    }
+
+    let created = crate::proj::Proj::new_known_crs(&key.0, &key.1, None)
+        .map_err(|error| projection_error(error.to_string()))?;
+    let created = Arc::new(Mutex::new(created));
+    cache.insert(key, Arc::clone(&created));
+
+    Ok(Transformer { inner: created })
+}
+
+/// Reproject the main vertex pool into `target_crs`.
+///
+/// The input model is consumed. Only `vertices` are reprojected; template vertices and
+/// geometry-instance transforms are preserved. `cityjson-lib` stores parsed vertices as
+/// real-world coordinates, so any root transform is removed after projection because vertices
+/// are returned in target real-world coordinates.
+///
+/// # Errors
+///
+/// Returns an error when `metadata.referenceSystem` is absent or PROJ cannot transform a vertex.
+#[cfg(feature = "proj")]
+pub fn reproject(mut model: CityModel, target_crs: &str) -> Result<CityModel> {
+    let source_crs = model
+        .metadata()
+        .and_then(|metadata| metadata.reference_system())
+        .ok_or_else(|| projection_error("CityJSON metadata.referenceSystem is missing"))?
+        .to_string();
+    let target_crs = canonical_crs(target_crs);
+    let transformer = transformer(&source_crs, &target_crs)?;
+
+    for vertex in model.vertices_mut().as_mut_slice() {
+        let projected = transformer.transform(vertex.to_array())?;
+        *vertex = RealWorldCoordinate::new(projected[0], projected[1], projected[2]);
+    }
+
+    model.clear_transform();
+    model
+        .metadata_mut()
+        .set_reference_system(CRS::new(target_crs));
+
+    Ok(model)
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -1418,5 +1547,83 @@ mod tests {
 
         assert!(world_xs.iter().any(|x| (*x - 100.0).abs() < 1e-9));
         assert!(world_xs.iter().any(|x| (*x - 200.0).abs() < 1e-9));
+    }
+
+    #[cfg(feature = "proj")]
+    #[test]
+    fn transformer_projects_known_point() {
+        let transformer = transformer("EPSG:7415", "EPSG:4978").unwrap();
+        let result = transformer
+            .transform([85285.279, 446606.813, 10.0])
+            .unwrap();
+
+        assert!((result[0] - 3_923_215.044).abs() < 10.0);
+        assert!((result[1] - 299_940.760).abs() < 10.0);
+        assert!((result[2] - 5_003_047.651).abs() < 10.0);
+    }
+
+    #[cfg(feature = "proj")]
+    #[test]
+    fn reproject_applies_transform_and_updates_metadata() {
+        let bytes = br#"{
+            "type":"CityJSON",
+            "version":"2.0",
+            "metadata":{"referenceSystem":"EPSG:4979"},
+            "transform":{"scale":[2.0,3.0,4.0],"translate":[10.0,20.0,30.0]},
+            "CityObjects":{},
+            "vertices":[[1,2,3]]
+        }"#;
+        let model = json::from_slice(bytes).unwrap();
+        let reprojected = reproject(model, "EPSG:4979").unwrap();
+        let vertex = reprojected.vertices().as_slice()[0];
+
+        assert_eq!(vertex.to_array(), [12.0, 26.0, 42.0]);
+        assert!(reprojected.transform().is_none());
+        assert_eq!(
+            reprojected
+                .metadata()
+                .unwrap()
+                .reference_system()
+                .unwrap()
+                .to_string(),
+            "EPSG:4979"
+        );
+    }
+
+    #[cfg(feature = "proj")]
+    #[test]
+    fn reproject_requires_source_crs() {
+        let bytes = br#"{
+            "type":"CityJSON",
+            "version":"2.0",
+            "CityObjects":{},
+            "vertices":[[1,2,3]]
+        }"#;
+        let model = json::from_slice(bytes).unwrap();
+
+        assert!(reproject(model, "EPSG:4979").is_err());
+    }
+
+    #[cfg(feature = "proj")]
+    #[test]
+    fn reproject_leaves_template_vertices_unchanged() {
+        let bytes = br#"{
+            "type":"CityJSON",
+            "version":"2.0",
+            "metadata":{"referenceSystem":"EPSG:4979"},
+            "CityObjects":{},
+            "vertices":[[1,2,3]],
+            "geometry-templates":{
+                "templates":[],
+                "vertices-templates":[[100,200,300]]
+            }
+        }"#;
+        let model = json::from_slice(bytes).unwrap();
+        let reprojected = reproject(model, "EPSG:4979").unwrap();
+
+        assert_eq!(
+            reprojected.template_vertices().as_slice()[0].to_array(),
+            [100.0, 200.0, 300.0]
+        );
     }
 }

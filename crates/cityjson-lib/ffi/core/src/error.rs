@@ -87,6 +87,11 @@ impl From<&cityjson_lib::Error> for AbiError {
                 cj_error_kind_t::CJ_ERROR_KIND_MODEL,
                 error.to_string(),
             ),
+            cityjson_lib::Error::Projection(_) => Self::new(
+                cj_status_t::CJ_STATUS_MODEL,
+                cj_error_kind_t::CJ_ERROR_KIND_MODEL,
+                error.to_string(),
+            ),
             cityjson_lib::Error::UnsupportedFeature(_) => Self::new(
                 cj_status_t::CJ_STATUS_UNSUPPORTED,
                 cj_error_kind_t::CJ_ERROR_KIND_UNSUPPORTED,
@@ -117,6 +122,7 @@ impl From<cityjson_lib::ErrorKind> for cj_error_kind_t {
             cityjson_lib::ErrorKind::Shape => Self::CJ_ERROR_KIND_SHAPE,
             cityjson_lib::ErrorKind::Unsupported => Self::CJ_ERROR_KIND_UNSUPPORTED,
             cityjson_lib::ErrorKind::Model => Self::CJ_ERROR_KIND_MODEL,
+            cityjson_lib::ErrorKind::Projection => Self::CJ_ERROR_KIND_MODEL,
         }
     }
 }
@@ -130,6 +136,7 @@ impl From<cityjson_lib::ErrorKind> for cj_status_t {
             cityjson_lib::ErrorKind::Shape => Self::CJ_STATUS_SHAPE,
             cityjson_lib::ErrorKind::Unsupported => Self::CJ_STATUS_UNSUPPORTED,
             cityjson_lib::ErrorKind::Model => Self::CJ_STATUS_MODEL,
+            cityjson_lib::ErrorKind::Projection => Self::CJ_STATUS_MODEL,
         }
     }
 }

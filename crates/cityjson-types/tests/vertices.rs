@@ -118,6 +118,18 @@ mod basic {
     }
 
     #[test]
+    fn as_mut_slice_allows_in_place_coordinate_updates() {
+        let mut vertices = GeometryVertices32::new();
+        vertices
+            .push(RealWorldCoordinate::new(1.0, 2.0, 3.0))
+            .unwrap();
+
+        vertices.as_mut_slice()[0] = RealWorldCoordinate::new(4.0, 5.0, 6.0);
+
+        assert_f64_slice_eq(&vertices.as_slice()[0].to_array(), &[4.0, 5.0, 6.0]);
+    }
+
+    #[test]
     fn clear_removes_all_coordinates() {
         let mut vertices = GeometryVertices32::new();
         vertices
@@ -229,6 +241,18 @@ mod basic {
         assert_eq!(range.end, VertexIndex32::new(3));
         assert_f64_eq(model.get_vertex(VertexIndex32::new(1)).unwrap().x(), 1.0);
         assert_f64_eq(model.get_vertex(VertexIndex32::new(2)).unwrap().x(), 2.0);
+    }
+
+    #[test]
+    fn citymodel_exposes_mutable_vertex_pool() {
+        let mut model = OwnedCityModel::new(CityModelType::CityJSON);
+        model
+            .add_vertex(RealWorldCoordinate::new(1.0, 2.0, 3.0))
+            .unwrap();
+
+        model.vertices_mut().as_mut_slice()[0] = RealWorldCoordinate::new(7.0, 8.0, 9.0);
+
+        assert_f64_slice_eq(&model.vertices().as_slice()[0].to_array(), &[7.0, 8.0, 9.0]);
     }
 }
 

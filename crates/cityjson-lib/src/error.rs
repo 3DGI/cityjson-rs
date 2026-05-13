@@ -9,6 +9,7 @@ pub enum ErrorKind {
     Shape,
     Unsupported,
     Model,
+    Projection,
 }
 
 pub enum Error {
@@ -22,6 +23,7 @@ pub enum Error {
     UnsupportedVersion { found: String, supported: String },
     Streaming(String),
     Import(String),
+    Projection(String),
     UnsupportedFeature(String),
 }
 
@@ -40,6 +42,7 @@ impl Error {
             | Self::UnsupportedFeature(_) => ErrorKind::Unsupported,
             Self::Streaming(_) => ErrorKind::Shape,
             Self::Import(_) => ErrorKind::Model,
+            Self::Projection(_) => ErrorKind::Projection,
         }
     }
 }
@@ -68,6 +71,7 @@ impl Display for Error {
             }
             Self::Streaming(message) => write!(f, "streaming error: {message}"),
             Self::Import(message) => write!(f, "import error: {message}"),
+            Self::Projection(message) => write!(f, "projection error: {message}"),
             Self::UnsupportedFeature(message) => write!(f, "unsupported feature: {message}"),
         }
     }

@@ -9,6 +9,12 @@ crate in the workspace to the same version.
 ## [Unreleased]
 
 ### Added
+- Added optional `cityjson-lib` PROJ support behind the `proj` feature, including
+  cached `cityjson_lib::ops::Transformer` construction and `ops::reproject` for
+  main vertex-pool reprojection.
+- Added public mutable access to CityJSON real-world vertex pools so callers can
+  perform in-place low-level coordinate operations without serialization
+  round-trips.
 - Added a `cityjson-index` aggregate feature-bounds summary API for callers that
   need whole-index bounds and feature counts without scanning feature pages.
 - Added `cityjson-index` batch reconstruction from persisted feature references.
@@ -16,6 +22,9 @@ crate in the workspace to the same version.
   and reconstruction helpers.
 
 ### Changed
+- `cityjson-lib::ops::reproject` consumes a model, updates
+  `metadata.referenceSystem`, clears any root transform, and leaves geometry
+  template vertices and geometry-instance transforms unchanged.
 - Renamed the core Rust crate from `cityjson` to `cityjson-types`, moved it to
   `crates/cityjson-types`, and updated workspace consumers to import
   `cityjson_types::...` directly. No compatibility alias remains in
