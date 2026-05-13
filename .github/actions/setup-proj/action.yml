@@ -35,6 +35,7 @@ runs:
       run: |
         wrapper_dir="$(cygpath -u "$RUNNER_TEMP")/proj-cmake-wrapper"
         wrapper_path="$(cygpath -w "$wrapper_dir")"
+        wrapper_cmd="${wrapper_path}\\cmake.cmd"
         mkdir -p "$wrapper_dir"
         cat > "$wrapper_dir/cmake.cmd" <<'EOF'
         @echo off
@@ -66,5 +67,8 @@ runs:
           echo 'CMAKE_PREFIX_PATH=C:/msys64/mingw64'
           echo 'CMAKE_INCLUDE_PATH=C:/msys64/mingw64/include'
           echo 'CMAKE_LIBRARY_PATH=C:/msys64/mingw64/lib'
+          echo "CMAKE=$wrapper_cmd"
+          echo "TARGET_CMAKE=$wrapper_cmd"
+          echo "CMAKE_x86_64_pc_windows_gnu=$wrapper_cmd"
           echo 'PKG_CONFIG_PATH=C:/msys64/mingw64/lib/pkgconfig'
         } >> "$GITHUB_ENV"
