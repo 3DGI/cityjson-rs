@@ -33,13 +33,38 @@ runs:
       if: runner.os == 'Windows'
       shell: bash
       run: |
+        wrapper_dir="$(cygpath -u "$RUNNER_TEMP")/proj-cmake-wrapper"
+        wrapper_path="$(cygpath -w "$wrapper_dir")"
+        mkdir -p "$wrapper_dir"
+        cat > "$wrapper_dir/cmake.cmd" <<'EOF'
+        @echo off
+        setlocal
+        set "REAL_CMAKE=C:\msys64\mingw64\bin\cmake.exe"
+        if not exist "%REAL_CMAKE%" set "REAL_CMAKE=C:\Program Files\CMake\bin\cmake.exe"
+
+        if "%~1"=="--build" goto passthrough
+        if "%~1"=="--install" goto passthrough
+        if "%~1"=="--version" goto passthrough
+        if "%~1"=="-E" goto passthrough
+
+        "%REAL_CMAKE%" ^
+          -DEXE_SQLITE3=C:/msys64/mingw64/bin/sqlite3.exe ^
+          -DTIFF_INCLUDE_DIR=C:/msys64/mingw64/include ^
+          -DTIFF_LIBRARY=C:/msys64/mingw64/lib/libtiff.dll.a ^
+          %*
+        exit /b %ERRORLEVEL%
+
+        :passthrough
+        "%REAL_CMAKE%" %*
+        exit /b %ERRORLEVEL%
+        EOF
         {
+          echo "$wrapper_path"
           echo 'C:\msys64\mingw64\bin'
         } >> "$GITHUB_PATH"
         {
-          echo 'CMAKE_PREFIX_PATH=C:\msys64\mingw64'
-          echo 'PKG_CONFIG_PATH=C:\msys64\mingw64\lib\pkgconfig'
-          echo 'SQLite3_EXECUTABLE=C:\msys64\mingw64\bin\sqlite3.exe'
-          echo 'TIFF_INCLUDE_DIR=C:\msys64\mingw64\include'
-          echo 'TIFF_LIBRARY=C:\msys64\mingw64\lib\libtiff.dll.a'
+          echo 'CMAKE_PREFIX_PATH=C:/msys64/mingw64'
+          echo 'CMAKE_INCLUDE_PATH=C:/msys64/mingw64/include'
+          echo 'CMAKE_LIBRARY_PATH=C:/msys64/mingw64/lib'
+          echo 'PKG_CONFIG_PATH=C:/msys64/mingw64/lib/pkgconfig'
         } >> "$GITHUB_ENV"
