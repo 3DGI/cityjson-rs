@@ -28,6 +28,7 @@ runs:
           mingw-w64-x86_64-pkgconf
           mingw-w64-x86_64-sqlite3
           mingw-w64-x86_64-libtiff
+          sqlite3
 
     - name: Configure PROJ discovery on Windows
       if: runner.os == 'Windows'
