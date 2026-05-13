@@ -1,0 +1,96 @@
+name: Setup PROJ
+description: Install the native prerequisites needed for bundled PROJ builds.
+
+runs:
+  using: composite
+  steps:
+    - name: Install PROJ prerequisites on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y libtiff-dev pkg-config
+
+    - name: Install PROJ prerequisites on macOS
+      if: runner.os == 'macOS'
+      shell: bash
+      run: brew install libtiff
+
+    - name: Install PROJ prerequisites on Windows
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        path-type: minimal
+        install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-pkgconf
+          mingw-w64-x86_64-sqlite3
+          mingw-w64-x86_64-libtiff
+
+    - name: Configure PROJ discovery on Windows
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        set -euo pipefail
+
+        for path in \
+          /mingw64/bin/cmake.exe \
+          /mingw64/bin/ninja.exe \
+          /mingw64/bin/sqlite3.exe \
+          /mingw64/bin/gcc.exe \
+          /mingw64/bin/g++.exe \
+          /mingw64/bin/ar.exe \
+          /mingw64/bin/ranlib.exe \
+          /mingw64/include/tiff.h \
+          /mingw64/lib/libtiff.dll.a
+        do
+          if ! test -e "$path"; then
+            echo "Missing required PROJ build prerequisite: $path" >&2
+            exit 1
+          fi
+        done
+
+        /mingw64/bin/sqlite3.exe --version
+
+        wrapper_dir="$(cygpath -u "$RUNNER_TEMP")/proj-cmake-wrapper"
+        wrapper_path="$(cygpath -w "$wrapper_dir")"
+        wrapper_cmd="${wrapper_path}\\cmake.cmd"
+        mkdir -p "$wrapper_dir"
+        cp "$GITHUB_ACTION_PATH/windows/cmake.cmd" "$wrapper_dir/cmake.cmd"
+
+        mingw_prefix="$(cygpath -m /mingw64)"
+        mingw_bin="$(cygpath -m /mingw64/bin)"
+        usr_bin="$(cygpath -m /usr/bin)"
+        sed -i \
+          -e "s#__MINGW_BIN__#$mingw_bin#g" \
+          -e "s#__USR_BIN__#$usr_bin#g" \
+          -e "s#__CMAKE_EXE__#$(cygpath -m /mingw64/bin/cmake.exe)#g" \
+          -e "s#__NINJA_EXE__#$(cygpath -m /mingw64/bin/ninja.exe)#g" \
+          -e "s#__SQLITE_EXE__#$(cygpath -m /mingw64/bin/sqlite3.exe)#g" \
+          -e "s#__TIFF_INCLUDE_DIR__#$(cygpath -m /mingw64/include)#g" \
+          -e "s#__TIFF_LIBRARY__#$(cygpath -m /mingw64/lib/libtiff.dll.a)#g" \
+          "$wrapper_dir/cmake.cmd"
+
+        {
+          echo "$wrapper_path"
+          cygpath -w /mingw64/bin
+        } >> "$GITHUB_PATH"
+        {
+          echo "CMAKE_PREFIX_PATH=$mingw_prefix"
+          echo "CMAKE_INCLUDE_PATH=$mingw_prefix/include"
+          echo "CMAKE_LIBRARY_PATH=$mingw_prefix/lib"
+          echo 'CMAKE_GENERATOR=Ninja'
+          echo 'TARGET_CMAKE_GENERATOR=Ninja'
+          echo 'CMAKE_GENERATOR_x86_64_pc_windows_gnu=Ninja'
+          echo "CMAKE=$wrapper_cmd"
+          echo "TARGET_CMAKE=$wrapper_cmd"
+          echo "CMAKE_x86_64_pc_windows_gnu=$wrapper_cmd"
+          echo "CC_x86_64_pc_windows_gnu=$mingw_bin/gcc.exe"
+          echo "CXX_x86_64_pc_windows_gnu=$mingw_bin/g++.exe"
+          echo "AR_x86_64_pc_windows_gnu=$mingw_bin/ar.exe"
+          echo "RANLIB_x86_64_pc_windows_gnu=$mingw_bin/ranlib.exe"
+          echo "CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=$mingw_bin/gcc.exe"
+          echo "PKG_CONFIG_PATH=$mingw_prefix/lib/pkgconfig"
+        } >> "$GITHUB_ENV"

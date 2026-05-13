@@ -634,6 +634,10 @@ impl<VR: VertexRef, SS: StringStorage> CityModel<VR, SS> {
         self.inner.vertices()
     }
 
+    pub fn vertices_mut(&mut self) -> &mut Vertices<VR, RealWorldCoordinate> {
+        self.inner.vertices_mut()
+    }
+
     /// Add a vertex and return its index.
     ///
     /// # Errors
@@ -702,6 +706,10 @@ impl<VR: VertexRef, SS: StringStorage> CityModel<VR, SS> {
 
     pub fn transform_mut(&mut self) -> &mut Transform {
         self.inner.transform_mut()
+    }
+
+    pub fn clear_transform(&mut self) {
+        self.inner.clear_transform();
     }
 
     pub fn extensions(&self) -> Option<&Extensions<SS>> {
@@ -776,6 +784,10 @@ impl<VR: VertexRef, SS: StringStorage> CityModel<VR, SS> {
 
     pub fn template_vertices(&self) -> &Vertices<VR, RealWorldCoordinate> {
         self.inner.template_vertices()
+    }
+
+    pub fn template_vertices_mut(&mut self) -> &mut Vertices<VR, RealWorldCoordinate> {
+        self.inner.template_vertices_mut()
     }
 
     pub fn get_geometry_template(&self, id: GeometryTemplateHandle) -> Option<&Geometry<VR, SS>> {

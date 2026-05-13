@@ -73,6 +73,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+      - uses: ./.github/actions/setup-proj
       - uses: Swatinem/rust-cache@v2
       - uses: extractions/setup-just@v4
       - run: just lint
@@ -109,11 +110,24 @@ jobs:
       - name: Render corpus correctness index
         working-directory: cityjson-corpus
         run: python scripts/render_correctness_index.py
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: ./.github/actions/setup-proj
+      - name: Install Rust toolchain
+        if: matrix.os != 'windows'
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust GNU toolchain on Windows
+        if: matrix.os == 'windows'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-gnu
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.crate }}
-      - run: cargo test -p ${{ matrix.crate }} --all-features
+      - name: Test crate
+        if: matrix.os != 'windows'
+        run: cargo test -p ${{ matrix.crate }} --all-features
+      - name: Test crate on Windows GNU
+        if: matrix.os == 'windows'
+        run: cargo test -p ${{ matrix.crate }} --all-features --target x86_64-pc-windows-gnu
 
   build-msrv:
     name: Build (MSRV ${{matrix.rust}})
@@ -130,6 +144,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{matrix.rust}}
+      - uses: ./.github/actions/setup-proj
       - uses: Swatinem/rust-cache@v2
         with:
           key: msrv-${{ matrix.rust }}
@@ -147,6 +162,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
+      - uses: ./.github/actions/setup-proj
       - uses: Swatinem/rust-cache@v2
         with:
           key: doc-nightly

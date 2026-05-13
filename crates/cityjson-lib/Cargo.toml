@@ -18,6 +18,7 @@ include = [
     "/docs",
     "/resources",
     "/Cargo.toml",
+    "/build.rs",
     "/README.md",
     "/LICENSE",
     "/LICENSE-APACHE",
@@ -32,6 +33,14 @@ default = ["json"]
 json = ["dep:cityjson-json"]
 arrow = ["json", "dep:cityjson-arrow"]
 parquet = ["json", "dep:cityjson-arrow", "dep:cityjson-parquet"]
+proj = [
+    "json",
+    "dep:proj-sys",
+    "dep:libsqlite3-sys",
+    "dep:libc",
+    "dep:num-traits",
+    "dep:thiserror",
+]
 
 [lib]
 name = "cityjson_lib"
@@ -45,7 +54,12 @@ cityjson-types = { workspace = true }
 cityjson-arrow = { workspace = true, optional = true }
 cityjson-json = { workspace = true, optional = true }
 cityjson-parquet = { workspace = true, optional = true }
+libc = { version = "0.2", optional = true }
+libsqlite3-sys = { version = "0.28.0", features = ["bundled"], optional = true }
+num-traits = { version = "0.2", optional = true }
+proj-sys = { version = "0.27.0", features = ["bundled_proj", "network"], optional = true }
 serde_json = "1.0"
+thiserror = { version = "2.0", optional = true }
 
 [dev-dependencies]
 criterion = "0.7"

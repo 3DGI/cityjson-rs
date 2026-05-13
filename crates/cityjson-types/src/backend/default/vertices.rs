@@ -154,6 +154,13 @@ impl<VR: VertexRef, V: Coordinate> Vertices<VR, V> {
         &self.coordinates
     }
 
+    /// Returns a mutable slice of all coordinates.
+    #[inline]
+    #[must_use]
+    pub fn as_mut_slice(&mut self) -> &mut [V] {
+        &mut self.coordinates
+    }
+
     /// Clears the collection, removing all vertices.
     #[inline]
     pub fn clear(&mut self) {

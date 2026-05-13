@@ -10,6 +10,8 @@ pub mod json;
 pub mod ops;
 #[cfg(feature = "parquet")]
 pub mod parquet;
+#[cfg(feature = "proj")]
+mod proj;
 pub mod query {
     pub use cityjson_types::query::{ModelSummary, summary};
 }
