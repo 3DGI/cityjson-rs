@@ -12,7 +12,7 @@ runs:
     - name: Install PROJ prerequisites on macOS
       if: runner.os == 'macOS'
       shell: bash
-      run: brew install tiff
+      run: brew install libtiff
 
     - name: Install PROJ prerequisites on Windows
       if: runner.os == 'Windows'
@@ -22,4 +22,4 @@ runs:
         update: true
         install: >-
           mingw-w64-x86_64-pkgconf
-          mingw-w64-x86_64-tiff
+          mingw-w64-x86_64-libtiff
