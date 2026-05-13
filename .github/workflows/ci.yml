@@ -73,6 +73,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+      - uses: ./.github/actions/setup-proj
       - uses: Swatinem/rust-cache@v2
       - uses: extractions/setup-just@v4
       - run: just lint
@@ -131,6 +132,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{matrix.rust}}
+      - uses: ./.github/actions/setup-proj
       - uses: Swatinem/rust-cache@v2
         with:
           key: msrv-${{ matrix.rust }}
@@ -148,6 +150,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
+      - uses: ./.github/actions/setup-proj
       - uses: Swatinem/rust-cache@v2
         with:
           key: doc-nightly
