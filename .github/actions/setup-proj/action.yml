@@ -20,7 +20,22 @@ runs:
       with:
         msystem: MINGW64
         update: true
+        path-type: inherit
         install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
           mingw-w64-x86_64-pkgconf
           mingw-w64-x86_64-libtiff
-          mingw-w64-x86_64-sqlite3
+
+    - name: Configure PROJ discovery on Windows
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        {
+          echo 'C:\msys64\mingw64\bin'
+        } >> "$GITHUB_PATH"
+        {
+          echo 'CMAKE_PREFIX_PATH=C:\msys64\mingw64'
+          echo 'PKG_CONFIG_PATH=C:\msys64\mingw64\lib\pkgconfig'
+        } >> "$GITHUB_ENV"
