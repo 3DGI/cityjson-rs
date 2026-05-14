@@ -15,11 +15,6 @@
    "type": "bind"
   },
   {
-   "source": "${localEnv:HOME}/.gitconfig",
-   "target": "/home/vscode/.gitconfig",
-   "type": "bind"
-  },
-  {
    "source": "${localEnv:HOME}/.config/gh/hosts.yml",
    "target": "/home/vscode/.config/gh/hosts.yml",
    "type": "bind"

@@ -20,6 +20,7 @@ RUN apt-get update \
         proj-bin \
         ripgrep \
         sqlite3 \
+        valgrind \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -32,4 +33,7 @@ RUN rustup component add rustfmt clippy \
 
 RUN UV_INSTALL_DIR=/usr/local/bin sh -c "$(curl -LsSf https://astral.sh/uv/install.sh)"
 
-RUN cargo install cbindgen cargo-tarpaulin --locked --root /usr/local
+RUN cargo install cbindgen --version 0.29.2 --locked --root /usr/local \
+    && cbindgen --version
+
+RUN cargo install cargo-tarpaulin --locked --root /usr/local
