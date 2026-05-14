@@ -18,3 +18,5 @@ RUN apt-get update \
         sqlite3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+RUN rustup component add rustfmt clippy
