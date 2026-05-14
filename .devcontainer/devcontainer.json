@@ -13,15 +13,33 @@
    "source": "${localEnv:HOME}/.codex",
    "target": "/home/vscode/.codex",
    "type": "bind"
+  },
+  {
+   "source": "${localEnv:HOME}/.gitconfig",
+   "target": "/home/vscode/.gitconfig",
+   "type": "bind"
+  },
+  {
+   "source": "${localEnv:HOME}/.config/gh/hosts.yml",
+   "target": "/home/vscode/.config/gh/hosts.yml",
+   "type": "bind"
+  },
+  {
+   "source": "${localWorkspaceFolder}/../cityjson-corpus",
+   "target": "${containerWorkspaceFolder}/../cityjson-corpus",
+   "type": "bind"
   }
  ],
  "features": {
   "ghcr.io/jsburckhardt/devcontainer-features/codex:1": {}
  },
- "postCreateCommand": "rustup component add rustfmt clippy && (command -v cargo-tarpaulin >/dev/null || cargo install cargo-tarpaulin --locked) && rustc --version",
+ "postCreateCommand": "rustc --version && uv --version && cbindgen --version && rg --version && jq --version && gh --version",
  "customizations": {
   "jetbrains": {
    "backend": "RustRover"
   }
+ },
+ "containerEnv": {
+  "CITYJSON_SHARED_CORPUS_ROOT": "${containerWorkspaceFolder}/../cityjson-corpus"
  }
 }
