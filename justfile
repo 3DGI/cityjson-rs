@@ -59,8 +59,37 @@ build-python:
 
 # Delegate to the FFI helpers in the workspace crates.
 ffi *args:
-    cd crates/cityjson-lib && ./tools/ffi.sh {{args}}
-    cd crates/cityjson-index && ./tools/ffi.sh {{args}}
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{args}}" in
+      "build header"|"build cpp"*|"build wasm"*|"bench"|"bench "*)
+        cd crates/cityjson-lib
+        ./tools/ffi.sh {{args}}
+        ;;
+      "build core")
+        cd crates/cityjson-index
+        ./tools/ffi.sh {{args}}
+        ;;
+      "check"|"fmt"|"doc"|"clean"|"test"|"ci"|"build python"|"build python "*)
+        cd crates/cityjson-lib
+        ./tools/ffi.sh {{args}}
+        cd ../../crates/cityjson-index
+        ./tools/ffi.sh {{args}}
+        ;;
+      "test python")
+        cd crates/cityjson-lib
+        ./tools/ffi.sh build python
+        cd ../../crates/cityjson-index
+        ./tools/ffi.sh test python
+        ;;
+      *)
+        echo "Unsupported root FFI arguments: {{args}}" >&2
+        echo "Use crate-local helpers for crate-specific commands:" >&2
+        echo "  cd crates/cityjson-lib && ./tools/ffi.sh --help" >&2
+        echo "  cd crates/cityjson-index && ./tools/ffi.sh --help" >&2
+        exit 1
+        ;;
+    esac
 
 # Full local CI (fmt + lint + check + test + doc)
 ci: fmt-check lint check test doc
