@@ -22,6 +22,12 @@ crate in the workspace to the same version.
   and reconstruction helpers.
 
 ### Changed
+- Expanded the devcontainer toolchain and root `just ffi` dispatcher so FFI,
+  benchmark, and coverage recipes have the required local tools and route
+  crate-specific commands correctly.
+- Aligned `cityjson-lib` and `cityjson-index` SQLite bindings with the
+  `proj-sys` dependency range so full-workspace all-feature builds resolve a
+  single `libsqlite3-sys`.
 - `cityjson-lib::ops::reproject` consumes a model, updates
   `metadata.referenceSystem`, clears any root transform, and leaves geometry
   template vertices and geometry-instance transforms unchanged.
