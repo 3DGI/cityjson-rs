@@ -240,6 +240,10 @@ unsafe fn raw_string(raw_ptr: *const c_char) -> Result<String, str::Utf8Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(all(feature = "proj-network", not(feature = "proj-bundled")))]
+    use proj_sys::{proj_context_set_enable_network, proj_context_set_user_writable_directory};
+    #[cfg(all(feature = "proj-network", not(feature = "proj-bundled")))]
+    use tempfile::tempdir;
 
     #[test]
     fn converts_known_point_to_finite_ecef() {
@@ -257,5 +261,25 @@ mod tests {
     #[test]
     fn invalid_crs_returns_creation_error() {
         assert!(Proj::new_known_crs("EPSG:0", "EPSG:4978", None).is_err());
+    }
+
+    #[cfg(all(feature = "proj-network", not(feature = "proj-bundled")))]
+    #[test]
+    #[ignore = "requires native PROJ networking and internet access"]
+    fn fetches_required_grid_chunks_into_proj_cache() {
+        let cache_dir = tempdir().unwrap();
+        let ctx = unsafe { proj_context_create() };
+        assert!(!ctx.is_null());
+
+        let cache_dir_c = CString::new(cache_dir.path().to_string_lossy().as_bytes()).unwrap();
+        unsafe {
+            proj_context_set_user_writable_directory(ctx, cache_dir_c.as_ptr(), 1);
+            assert_eq!(proj_context_set_enable_network(ctx, 1), 1);
+        }
+
+        let transformer = transform_epsg(ctx, "EPSG:7415", "EPSG:4978", None).unwrap();
+        transformer.convert((85285.279, 446606.813, 10.0)).unwrap();
+
+        assert!(cache_dir.path().join("cache.db").is_file());
     }
 }
