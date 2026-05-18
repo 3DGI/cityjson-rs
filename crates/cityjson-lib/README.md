@@ -12,6 +12,25 @@ The current published surface is intentionally small:
 
 Arrow, Parquet, and wasm are not part of the current release-facing surface.
 
+## PROJ modes
+
+`proj` enables the low-level PROJ-backed operations. `proj-network` requests a
+system PROJ build with native network support available, while `proj-bundled`
+selects the bundled source build path. These are intentionally separate:
+bundled `proj-sys` builds do not provide working native curl-backed downloads.
+
+Native PROJ networking also requires explicit runtime enablement. When enabled,
+PROJ fetches only the remote grid chunks it needs and stores them in the
+user-writable cache database instead of writing full `.tif` files into
+`PROJ_DATA`.
+
+The ignored network smoke test can be run explicitly on a machine with a system
+PROJ build that has curl support:
+
+```shell
+cargo test -p cityjson-lib --features proj-network fetches_required_grid_chunks_into_proj_cache -- --ignored
+```
+
 ## Quick Start
 
 ```rust
