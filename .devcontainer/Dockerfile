@@ -10,7 +10,6 @@ RUN apt-get update \
         cmake \
         curl \
         g++ \
-        gh \
         jq \
         just \
         libproj-dev \
@@ -18,7 +17,6 @@ RUN apt-get update \
         libtiff-dev \
         pkg-config \
         proj-bin \
-        ripgrep \
         sqlite3 \
         valgrind \
     && apt-get clean \

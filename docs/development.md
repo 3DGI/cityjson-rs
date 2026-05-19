@@ -28,6 +28,40 @@ cargo install just
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
+## Dev containers
+
+The committed root devcontainer is the only supported repo-local entry point.
+It owns the dependencies required to build and test this workspace: Rust
+toolchains, nightly + Miri support, the wasm target, `uv`, `cbindgen`, `just`,
+native build libraries, profiling dependencies, the shared cargo cache, and the
+`cityjson-corpus` mount exposed through `CITYJSON_SHARED_CORPUS_ROOT`.
+
+Keep personal tooling separate from project-specific dependencies. The public
+`ghcr.io/balazsdukai/devcontainer-tools/tools:1` Dev Container Feature is the
+intended layer for language-neutral workflow tools such as Codex, Claude, `gh`,
+`ripgrep`, `fzf`, and shell helpers. That Feature should not own compilers,
+runtimes, package managers, or native libraries needed by a specific project.
+Auth and local state also stay outside the image: mount items such as `~/.codex`,
+GitHub CLI config, SSH keys, or GPG material only at runtime when a user needs
+them.
+
+Use one of three modes:
+
+1. Shared project mode: open this repository with `.devcontainer/devcontainer.json`
+   as committed. This is the contributor baseline and must work without personal
+   mounts or credentials.
+2. Personal mode for projects you control: use the committed `tools` Feature
+   and add private mounts through a local/private config path that is not
+   committed to the shared project.
+3. Personal mode for projects you do not want to modify: keep a thin private
+   wrapper devcontainer outside the project that points at this checkout and adds
+   only the tools Feature plus your runtime mounts.
+
+The tools Feature contract should stay stable and language-neutral so the same
+layer can sit on top of Rust, Python, and C++ project images. Validate it against
+at least one project from each language family, verify the expected tools are
+installed, and verify auth/config appears only when runtime mounts are supplied.
+
 ## Layout
 
 ```
