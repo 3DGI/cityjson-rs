@@ -473,7 +473,7 @@ fn write_feature_stream_with_base_accepts_incompatible_feature_metadata() {
         &json!({
             "type": "CityJSON",
             "version": "2.0",
-            "transform":{"scale":[0.001,0.001,0.001],"translate":[113994.269,471970.12,-5.829]},
+            "transform":{"scale":[0.001,0.001,0.001],"translate":[113_994.269,471_970.12,-5.829]},
             "metadata": {
                 "identifier": "0",
                 "referenceSystem": "EPSG:7415"
@@ -487,7 +487,7 @@ fn write_feature_stream_with_base_accepts_incompatible_feature_metadata() {
         &json!({
             "type": "CityJSON",
             "version": "2.0",
-            "transform":{"scale":[0.001,0.001,0.001],"translate":[113830.949,473978.031,-5.825]},
+            "transform":{"scale":[0.001,0.001,0.001],"translate":[113_830.949,473_978.031,-5.825]},
             "metadata": {
                 "identifier": "13",
                 "referenceSystem": "EPSG:7415"
