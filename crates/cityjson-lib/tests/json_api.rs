@@ -212,7 +212,7 @@ fn explicit_json_module_uses_base_root_for_mixed_source_cityjsonseq() -> cityjso
             "CityObjects":{},
             "vertices":[]
         }"#;
-    let source_a_base = br#"{
+    let feature_a_origin_base = br#"{
             "type":"CityJSON",
             "version":"2.0",
             "transform":{"scale":[0.001,0.001,0.001],"translate":[113994.269,471970.12,-5.829]},
@@ -220,7 +220,7 @@ fn explicit_json_module_uses_base_root_for_mixed_source_cityjsonseq() -> cityjso
             "CityObjects":{},
             "vertices":[]
         }"#;
-    let source_b_base = br#"{
+    let feature_b_shifted_base = br#"{
             "type":"CityJSON",
             "version":"2.0",
             "transform":{"scale":[0.001,0.001,0.001],"translate":[113830.949,473978.031,-5.825]},
@@ -236,7 +236,7 @@ fn explicit_json_module_uses_base_root_for_mixed_source_cityjsonseq() -> cityjso
             "CityObjects":{"feature-a":{"type":"Building","geometry":[{"type":"MultiPoint","boundaries":[0]}]}},
             "vertices":[[0,0,0]]
         }"#,
-        source_a_base,
+        feature_a_origin_base,
     )?;
     let feature_b = json::staged::from_feature_slice_with_base(
         br#"{
@@ -245,7 +245,7 @@ fn explicit_json_module_uses_base_root_for_mixed_source_cityjsonseq() -> cityjso
             "CityObjects":{"feature-b":{"type":"Building","geometry":[{"type":"MultiPoint","boundaries":[0]}]}},
             "vertices":[[0,0,0]]
         }"#,
-        source_b_base,
+        feature_b_shifted_base,
     )?;
 
     let mut output = Vec::new();
