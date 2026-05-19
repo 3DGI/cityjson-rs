@@ -9,6 +9,7 @@ crate in the workspace to the same version.
 ## [Unreleased]
 
 ### Added
+- Added validated CityJSON geometry editing APIs for cloning stored geometry parts, replacing geometries while preserving handles, and building topology-aware material and semantic maps.
 - Added optional `cityjson-lib` PROJ support behind the `proj` feature, including
   cached `cityjson_lib::ops::Transformer` construction and `ops::reproject` for
   main vertex-pool reprojection.
