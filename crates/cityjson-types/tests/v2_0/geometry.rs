@@ -21,6 +21,7 @@
 //! - `src/resources/mapping/textures.rs` – texture topology tests
 
 pub mod acceptance;
+pub mod editing;
 pub mod fixtures;
 pub mod instances;
 pub mod roundtrip;
