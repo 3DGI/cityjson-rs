@@ -5,6 +5,7 @@ use serde_json::{Value, json};
 use cityjson_json::{
     CityJsonSeqWriteOptions, FeatureStreamTransform, ReadOptions, append, read_feature,
     read_feature_stream, read_feature_with_base, read_model, write_feature_stream,
+    write_feature_stream_with_base,
 };
 use cityjson_types::v2_0::{
     AffineTransform3D, BBox, CityModelType, CityObject, CityObjectIdentifier, CityObjectType,
@@ -451,6 +452,101 @@ fn write_feature_stream_rejects_incompatible_root_state() {
     )
     .unwrap_err();
     assert!(error.to_string().contains("incompatible root state"));
+}
+
+#[test]
+fn write_feature_stream_with_base_accepts_incompatible_feature_metadata() {
+    let output_base = read_model_str(
+        &json!({
+            "type": "CityJSON",
+            "version": "2.0",
+            "transform":{"scale":[1.0,1.0,1.0],"translate":[0.0,0.0,0.0]},
+            "metadata": {
+                "title": "tile-debug-stream"
+            },
+            "CityObjects": {},
+            "vertices": []
+        })
+        .to_string(),
+    );
+    let base_a = read_model_str(
+        &json!({
+            "type": "CityJSON",
+            "version": "2.0",
+            "transform":{"scale":[0.001,0.001,0.001],"translate":[113994.269,471970.12,-5.829]},
+            "metadata": {
+                "identifier": "0",
+                "referenceSystem": "EPSG:7415"
+            },
+            "CityObjects": {},
+            "vertices": []
+        })
+        .to_string(),
+    );
+    let base_b = read_model_str(
+        &json!({
+            "type": "CityJSON",
+            "version": "2.0",
+            "transform":{"scale":[0.001,0.001,0.001],"translate":[113830.949,473978.031,-5.825]},
+            "metadata": {
+                "identifier": "13",
+                "referenceSystem": "EPSG:7415"
+            },
+            "CityObjects": {},
+            "vertices": []
+        })
+        .to_string(),
+    );
+    let feature_a = read_feature_with_base_str(
+        &json!({
+            "type": "CityJSONFeature",
+            "id": "building-1",
+            "CityObjects": {
+                "building-1": {
+                    "type": "Building"
+                }
+            },
+            "vertices": []
+        })
+        .to_string(),
+        &base_a,
+    )
+    .unwrap();
+    let feature_b = read_feature_with_base_str(
+        &json!({
+            "type": "CityJSONFeature",
+            "id": "building-2",
+            "CityObjects": {
+                "building-2": {
+                    "type": "Building"
+                }
+            },
+            "vertices": []
+        })
+        .to_string(),
+        &base_b,
+    )
+    .unwrap();
+
+    let mut output = Vec::new();
+    let report = write_feature_stream_with_base(
+        &mut output,
+        &output_base,
+        [feature_a, feature_b],
+        &CityJsonSeqWriteOptions {
+            transform: FeatureStreamTransform::Explicit(Transform::new()),
+            ..CityJsonSeqWriteOptions::default()
+        },
+    )
+    .unwrap();
+    let items = stream_items(&output);
+
+    assert_eq!(report.feature_count, 2);
+    assert_eq!(items.len(), 3);
+    assert_eq!(items[0]["metadata"]["title"], "tile-debug-stream");
+    assert!(items[0]["metadata"].get("identifier").is_none());
+    assert_eq!(items[1]["id"], "building-1");
+    assert_eq!(items[2]["id"], "building-2");
 }
 
 #[test]

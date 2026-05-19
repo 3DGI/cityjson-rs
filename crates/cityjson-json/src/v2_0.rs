@@ -284,6 +284,70 @@ where
     })
 }
 
+/// Write a strict `CityJSONSeq` stream from feature models using an explicit
+/// document root as the stream header.
+///
+/// The feature items themselves do not carry root-level state such as metadata,
+/// extensions, appearance, or geometry templates. Use this when the caller has
+/// already chosen the aggregate root state for the output stream.
+///
+/// # Errors
+///
+/// Returns an error if `base_root` is not a `CityJSON` document root, if any
+/// feature model is not a `CityJSONFeature`, if duplicate feature-local
+/// `CityObject` ids are present, or if stream serialization fails.
+pub fn write_feature_stream_with_base<W, I>(
+    mut writer: W,
+    base_root: &OwnedCityModel,
+    models: I,
+    options: &CityJsonSeqWriteOptions,
+) -> Result<CityJsonSeqWriteReport>
+where
+    W: Write,
+    I: IntoIterator<Item = OwnedCityModel>,
+{
+    if base_root.type_citymodel() != CityModelType::CityJSON {
+        return Err(Error::UnsupportedType(
+            base_root.type_citymodel().to_string(),
+        ));
+    }
+
+    let features: Vec<_> = models.into_iter().collect();
+    validate_feature_model_items(&features, options.validate_default_themes)?;
+    let feature_refs: Vec<_> = features.iter().collect();
+    let geographical_extent = collect_features_extent(&feature_refs);
+    let transform = match &options.transform {
+        FeatureStreamTransform::Explicit(transform) => transform.clone(),
+        FeatureStreamTransform::Auto { scale } => auto_transform(&feature_refs, *scale),
+    };
+    let header_root = build_feature_stream_header_from_model(
+        base_root,
+        &transform,
+        if options.update_metadata_geographical_extent {
+            geographical_extent.as_ref()
+        } else {
+            None
+        },
+    )?;
+    write_feature_stream_items(
+        &mut writer,
+        &feature_refs,
+        &header_root,
+        &transform,
+        options,
+    )?;
+
+    Ok(CityJsonSeqWriteReport {
+        transform,
+        geographical_extent,
+        feature_count: feature_refs.len(),
+        cityobject_count: feature_refs
+            .iter()
+            .map(|feature| feature.cityobjects().len())
+            .sum(),
+    })
+}
+
 fn read_owned_model(bytes: &[u8], options: &ReadOptions) -> Result<OwnedCityModel> {
     let input = std::str::from_utf8(bytes)?;
     let model = crate::de::from_str_owned(input)?;
@@ -478,16 +542,27 @@ fn validate_feature_models(
     };
 
     let base_signature = shared_root_signature(first)?;
+    validate_feature_model_items(features, validate_default_themes)?;
+    for feature in features {
+        if shared_root_signature(feature)? != base_signature {
+            return Err(Error::InvalidValue(
+                "feature stream carries incompatible root state".to_owned(),
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn validate_feature_model_items(
+    features: &[OwnedCityModel],
+    validate_default_themes: bool,
+) -> Result<()> {
     let mut seen_ids = HashSet::new();
     for feature in features {
         ensure_stream_feature_root(feature)?;
         if validate_default_themes {
             feature.validate_default_themes()?;
-        }
-        if shared_root_signature(feature)? != base_signature {
-            return Err(Error::InvalidValue(
-                "feature stream carries incompatible root state".to_owned(),
-            ));
         }
 
         for (_, cityobject) in feature.cityobjects().iter() {
@@ -519,24 +594,7 @@ fn build_feature_stream_header(
     geographical_extent: Option<&BBox>,
 ) -> Result<Map<String, Value>> {
     let mut root = if let Some(feature) = first_feature {
-        serialize_model_root(
-            feature,
-            crate::ser::CityModelSerializeOptions {
-                type_name: CityModelType::CityJSON,
-                include_id: false,
-                include_version: true,
-                transform: Some(transform),
-                include_transform: true,
-                include_metadata: true,
-                metadata_geographical_extent: geographical_extent,
-                include_extensions: true,
-                include_vertices: false,
-                include_appearance: true,
-                include_geometry_templates: true,
-                include_cityobjects: false,
-                include_extra: true,
-            },
-        )?
+        serialize_feature_stream_header_model(feature, transform, geographical_extent)?
     } else {
         let mut root = Map::new();
         root.insert(
@@ -554,6 +612,44 @@ fn build_feature_stream_header(
     root.insert("CityObjects".to_owned(), Value::Object(Map::new()));
     root.insert("vertices".to_owned(), Value::Array(Vec::new()));
     Ok(root)
+}
+
+fn build_feature_stream_header_from_model(
+    base_root: &OwnedCityModel,
+    transform: &Transform,
+    geographical_extent: Option<&BBox>,
+) -> Result<Map<String, Value>> {
+    let mut root =
+        serialize_feature_stream_header_model(base_root, transform, geographical_extent)?;
+    root.remove("id");
+    root.insert("CityObjects".to_owned(), Value::Object(Map::new()));
+    root.insert("vertices".to_owned(), Value::Array(Vec::new()));
+    Ok(root)
+}
+
+fn serialize_feature_stream_header_model(
+    model: &OwnedCityModel,
+    transform: &Transform,
+    geographical_extent: Option<&BBox>,
+) -> Result<Map<String, Value>> {
+    serialize_model_root(
+        model,
+        crate::ser::CityModelSerializeOptions {
+            type_name: CityModelType::CityJSON,
+            include_id: false,
+            include_version: true,
+            transform: Some(transform),
+            include_transform: true,
+            include_metadata: true,
+            metadata_geographical_extent: geographical_extent,
+            include_extensions: true,
+            include_vertices: false,
+            include_appearance: true,
+            include_geometry_templates: true,
+            include_cityobjects: false,
+            include_extra: true,
+        },
+    )
 }
 
 fn write_feature_stream_items<W>(

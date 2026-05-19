@@ -203,6 +203,74 @@ fn explicit_json_module_can_write_strict_cityjsonseq_with_auto_transform()
 }
 
 #[test]
+fn explicit_json_module_uses_base_root_for_mixed_source_cityjsonseq() -> cityjson_lib::Result<()> {
+    let output_base_bytes = br#"{
+            "type":"CityJSON",
+            "version":"2.0",
+            "transform":{"scale":[1.0,1.0,1.0],"translate":[0.0,0.0,0.0]},
+            "metadata":{"title":"tile-debug-stream"},
+            "CityObjects":{},
+            "vertices":[]
+        }"#;
+    let source_a_base = br#"{
+            "type":"CityJSON",
+            "version":"2.0",
+            "transform":{"scale":[0.001,0.001,0.001],"translate":[113994.269,471970.12,-5.829]},
+            "metadata":{"identifier":"0","referenceSystem":"EPSG:7415"},
+            "CityObjects":{},
+            "vertices":[]
+        }"#;
+    let source_b_base = br#"{
+            "type":"CityJSON",
+            "version":"2.0",
+            "transform":{"scale":[0.001,0.001,0.001],"translate":[113830.949,473978.031,-5.825]},
+            "metadata":{"identifier":"13","referenceSystem":"EPSG:7415"},
+            "CityObjects":{},
+            "vertices":[]
+        }"#;
+    let output_base = json::from_slice(output_base_bytes)?;
+    let feature_a = json::staged::from_feature_slice_with_base(
+        br#"{
+            "type":"CityJSONFeature",
+            "id":"feature-a",
+            "CityObjects":{"feature-a":{"type":"Building","geometry":[{"type":"MultiPoint","boundaries":[0]}]}},
+            "vertices":[[0,0,0]]
+        }"#,
+        source_a_base,
+    )?;
+    let feature_b = json::staged::from_feature_slice_with_base(
+        br#"{
+            "type":"CityJSONFeature",
+            "id":"feature-b",
+            "CityObjects":{"feature-b":{"type":"Building","geometry":[{"type":"MultiPoint","boundaries":[0]}]}},
+            "vertices":[[0,0,0]]
+        }"#,
+        source_b_base,
+    )?;
+
+    let mut output = Vec::new();
+    let report = json::write_cityjsonseq_auto_transform_refs(
+        &mut output,
+        &output_base,
+        [&feature_a, &feature_b],
+        [0.001, 0.001, 0.001],
+    )?;
+    let items = serde_json::Deserializer::from_slice(&output)
+        .into_iter::<serde_json::Value>()
+        .collect::<serde_json::Result<Vec<_>>>()
+        .expect("strict CityJSONSeq output should parse");
+
+    assert_eq!(report.feature_count, 2);
+    assert_eq!(items.len(), 3);
+    assert_eq!(items[0]["metadata"]["title"], "tile-debug-stream");
+    assert!(items[0]["metadata"].get("identifier").is_none());
+    assert_eq!(items[1]["id"], "feature-a");
+    assert_eq!(items[2]["id"], "feature-b");
+
+    Ok(())
+}
+
+#[test]
 fn explicit_json_module_can_materialize_standalone_features_with_a_base_document()
 -> cityjson_lib::Result<()> {
     let document = br#"{
