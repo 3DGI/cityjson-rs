@@ -33,8 +33,7 @@ use crate::cityjson_types::{
     },
     v2_0::Extensions,
 };
-use crate::{CityModel, Error, Result, json};
-use serde_json::Value;
+use crate::{CityModel, Error, Result};
 
 type OwnedMetadata = Metadata<OwnedStringStorage>;
 type OwnedExtensions = Extensions<OwnedStringStorage>;
@@ -389,21 +388,8 @@ fn reconcile_transform_state(
 
 fn strip_transform(model: &CityModel) -> Result<CityModel> {
     let mut untransformed = model.clone();
-    untransformed.transform_mut().set_scale([1.0, 1.0, 1.0]);
-    untransformed.transform_mut().set_translate([0.0, 0.0, 0.0]);
-
-    let mut root = serde_json::from_slice::<Value>(&json::to_vec(&untransformed)?)
-        .map_err(|error| import_error(error.to_string()))?;
-    let Value::Object(root) = &mut root else {
-        return Err(import_error("serialized CityJSON root is not an object"));
-    };
-    root.remove("transform");
-    let bytes = serde_json::to_vec(&root).map_err(|error| import_error(error.to_string()))?;
-    match model.type_citymodel() {
-        CityModelType::CityJSON => json::from_slice(&bytes),
-        CityModelType::CityJSONFeature => json::from_feature_slice(&bytes),
-        other => Err(Error::UnsupportedType(other.to_string())),
-    }
+    untransformed.clear_transform();
+    Ok(untransformed)
 }
 
 fn apply_transform_state(target: &mut CityModel, state: &TransformMergeState) -> Result<()> {
@@ -1510,13 +1496,14 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::json;
 
     fn transformed_feature(id: &str, translate_x: f64) -> CityModel {
         let bytes = format!(
             r#"{{
                 "type":"CityJSONFeature",
                 "id":"{id}",
-                "transform":{{"scale":[1.0,1.0,1.0],"translate":[{translate_x},0.0,0.0]}},
+                "transform":{{"scale":[0.001,0.001,0.001],"translate":[{translate_x},0.25,-0.125]}},
                 "CityObjects":{{
                     "{id}":{{
                         "type":"Building",
@@ -1531,22 +1518,34 @@ mod tests {
 
     #[test]
     fn merge_preserves_world_coordinates_when_transforms_differ() {
+        let first_translate = 100.269;
+        let second_translate = 200.949;
         let merged = merge([
-            transformed_feature("first", 100.0),
-            transformed_feature("second", 200.0),
+            transformed_feature("first", first_translate),
+            transformed_feature("second", second_translate),
         ])
         .expect("features should merge");
 
         assert!(merged.transform().is_none());
-        let world_xs = merged
+        let world_coords = merged
             .vertices()
             .as_slice()
             .iter()
-            .map(|vertex| vertex.x())
+            .map(|vertex| vertex.to_array())
             .collect::<Vec<_>>();
 
-        assert!(world_xs.iter().any(|x| (*x - 100.0).abs() < 1e-9));
-        assert!(world_xs.iter().any(|x| (*x - 200.0).abs() < 1e-9));
+        assert!(world_coords.iter().any(|coord| {
+            coord
+                .iter()
+                .zip([first_translate, 0.25, -0.125])
+                .all(|(actual, expected)| (*actual - expected).abs() < 1e-9)
+        }));
+        assert!(world_coords.iter().any(|coord| {
+            coord
+                .iter()
+                .zip([second_translate, 0.25, -0.125])
+                .all(|(actual, expected)| (*actual - expected).abs() < 1e-9)
+        }));
     }
 
     #[cfg(feature = "proj")]

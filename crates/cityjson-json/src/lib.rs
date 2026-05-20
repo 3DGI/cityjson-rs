@@ -22,5 +22,5 @@ pub use facade::{
 pub use v2_0::{
     CityJsonSeqReader, CityJsonSeqWriteOptions, CityJsonSeqWriteReport, FeatureStreamTransform,
     ReadOptions, WriteOptions, read_feature, read_feature_stream, read_feature_with_base,
-    read_model, to_vec, write_feature_stream, write_model,
+    read_model, to_vec, write_feature_stream, write_feature_stream_with_base, write_model,
 };

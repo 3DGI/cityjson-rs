@@ -11,7 +11,8 @@ pub use cityjson_json::v2_0::{
     ReadOptions as JsonReadOptions, WriteOptions as JsonWriteOptions, read_feature,
     read_feature_stream as read_feature_stream_raw,
     read_feature_with_base as read_feature_with_base_raw, read_model, to_vec as to_vec_raw,
-    write_feature_stream as write_feature_stream_raw, write_model,
+    write_feature_stream as write_feature_stream_raw,
+    write_feature_stream_with_base as write_feature_stream_with_base_raw, write_model,
 };
 
 pub mod staged {
@@ -218,7 +219,7 @@ where
 
 pub fn write_cityjsonseq_refs<'a, I, W>(
     writer: W,
-    _base_root: &CityModel,
+    base_root: &CityModel,
     features: I,
     transform: &cityjson_types::v2_0::Transform,
 ) -> Result<CityJsonSeqWriteReport>
@@ -230,8 +231,13 @@ where
         transform: cityjson_json::FeatureStreamTransform::Explicit(transform.clone()),
         ..cityjson_json::CityJsonSeqWriteOptions::default()
     };
-    cityjson_json::write_feature_stream(writer, features.into_iter().cloned(), &options)
-        .map_err(Error::from)
+    cityjson_json::write_feature_stream_with_base(
+        writer,
+        base_root,
+        features.into_iter().cloned(),
+        &options,
+    )
+    .map_err(Error::from)
 }
 
 pub fn write_cityjsonseq_auto_transform<I, W>(
@@ -250,7 +256,7 @@ where
 
 pub fn write_cityjsonseq_auto_transform_refs<'a, I, W>(
     writer: W,
-    _base_root: &CityModel,
+    base_root: &CityModel,
     features: I,
     scale: [f64; 3],
 ) -> Result<CityJsonSeqWriteReport>
@@ -262,8 +268,13 @@ where
         transform: cityjson_json::FeatureStreamTransform::Auto { scale },
         ..cityjson_json::CityJsonSeqWriteOptions::default()
     };
-    cityjson_json::write_feature_stream(writer, features.into_iter().cloned(), &options)
-        .map_err(Error::from)
+    cityjson_json::write_feature_stream_with_base(
+        writer,
+        base_root,
+        features.into_iter().cloned(),
+        &options,
+    )
+    .map_err(Error::from)
 }
 
 pub fn to_vec(model: &CityModel) -> Result<Vec<u8>> {

@@ -240,7 +240,61 @@ pub fn to_vec(model: &OwnedCityModel, options: &WriteOptions) -> Result<Vec<u8>>
 /// if duplicate feature-local `CityObject` ids are present, or if stream
 /// serialization fails.
 pub fn write_feature_stream<W, I>(
+    writer: W,
+    models: I,
+    options: &CityJsonSeqWriteOptions,
+) -> Result<CityJsonSeqWriteReport>
+where
+    W: Write,
+    I: IntoIterator<Item = OwnedCityModel>,
+{
+    write_feature_stream_from_header_source(
+        writer,
+        FeatureStreamHeaderSource::DeriveFromFeatures,
+        models,
+        options,
+    )
+}
+
+/// Write a strict `CityJSONSeq` stream from feature models using an explicit
+/// document root as the stream header.
+///
+/// The feature items themselves do not carry root-level state such as metadata,
+/// extensions, appearance, or geometry templates. Use this when the caller has
+/// already chosen the aggregate root state for the output stream.
+///
+/// # Errors
+///
+/// Returns an error if `base_root` is not a `CityJSON` document root, if any
+/// feature model is not a `CityJSONFeature`, if duplicate feature-local
+/// `CityObject` ids are present, or if stream serialization fails.
+pub fn write_feature_stream_with_base<W, I>(
+    writer: W,
+    base_root: &OwnedCityModel,
+    models: I,
+    options: &CityJsonSeqWriteOptions,
+) -> Result<CityJsonSeqWriteReport>
+where
+    W: Write,
+    I: IntoIterator<Item = OwnedCityModel>,
+{
+    write_feature_stream_from_header_source(
+        writer,
+        FeatureStreamHeaderSource::ExplicitBase(base_root),
+        models,
+        options,
+    )
+}
+
+#[derive(Clone, Copy)]
+enum FeatureStreamHeaderSource<'a> {
+    DeriveFromFeatures,
+    ExplicitBase(&'a OwnedCityModel),
+}
+
+fn write_feature_stream_from_header_source<W, I>(
     mut writer: W,
+    header_source: FeatureStreamHeaderSource<'_>,
     models: I,
     options: &CityJsonSeqWriteOptions,
 ) -> Result<CityJsonSeqWriteReport>
@@ -249,22 +303,32 @@ where
     I: IntoIterator<Item = OwnedCityModel>,
 {
     let features: Vec<_> = models.into_iter().collect();
-    validate_feature_models(&features, options.validate_default_themes)?;
+    match header_source {
+        FeatureStreamHeaderSource::DeriveFromFeatures => {
+            validate_feature_models(&features, options.validate_default_themes)?;
+        }
+        FeatureStreamHeaderSource::ExplicitBase(base_root) => {
+            ensure_stream_base_root(base_root)?;
+            validate_feature_model_items(&features, options.validate_default_themes)?;
+        }
+    }
     let feature_refs: Vec<_> = features.iter().collect();
     let geographical_extent = collect_features_extent(&feature_refs);
     let transform = match &options.transform {
         FeatureStreamTransform::Explicit(transform) => transform.clone(),
         FeatureStreamTransform::Auto { scale } => auto_transform(&feature_refs, *scale),
     };
-    let header_root = build_feature_stream_header(
-        feature_refs.first().copied(),
-        &transform,
-        if options.update_metadata_geographical_extent {
-            geographical_extent.as_ref()
-        } else {
-            None
-        },
-    )?;
+    let metadata_geographical_extent = if options.update_metadata_geographical_extent {
+        geographical_extent.as_ref()
+    } else {
+        None
+    };
+    let header_model = match header_source {
+        FeatureStreamHeaderSource::DeriveFromFeatures => feature_refs.first().copied(),
+        FeatureStreamHeaderSource::ExplicitBase(base_root) => Some(base_root),
+    };
+    let header_root =
+        build_feature_stream_header(header_model, &transform, metadata_geographical_extent)?;
     write_feature_stream_items(
         &mut writer,
         &feature_refs,
@@ -478,16 +542,27 @@ fn validate_feature_models(
     };
 
     let base_signature = shared_root_signature(first)?;
+    validate_feature_model_items(features, validate_default_themes)?;
+    for feature in features {
+        if shared_root_signature(feature)? != base_signature {
+            return Err(Error::InvalidValue(
+                "feature stream carries incompatible root state".to_owned(),
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn validate_feature_model_items(
+    features: &[OwnedCityModel],
+    validate_default_themes: bool,
+) -> Result<()> {
     let mut seen_ids = HashSet::new();
     for feature in features {
         ensure_stream_feature_root(feature)?;
         if validate_default_themes {
             feature.validate_default_themes()?;
-        }
-        if shared_root_signature(feature)? != base_signature {
-            return Err(Error::InvalidValue(
-                "feature stream carries incompatible root state".to_owned(),
-            ));
         }
 
         for (_, cityobject) in feature.cityobjects().iter() {
@@ -514,29 +589,12 @@ fn auto_transform(features: &[&OwnedCityModel], scale: [f64; 3]) -> Transform {
 }
 
 fn build_feature_stream_header(
-    first_feature: Option<&OwnedCityModel>,
+    header_model: Option<&OwnedCityModel>,
     transform: &Transform,
     geographical_extent: Option<&BBox>,
 ) -> Result<Map<String, Value>> {
-    let mut root = if let Some(feature) = first_feature {
-        serialize_model_root(
-            feature,
-            crate::ser::CityModelSerializeOptions {
-                type_name: CityModelType::CityJSON,
-                include_id: false,
-                include_version: true,
-                transform: Some(transform),
-                include_transform: true,
-                include_metadata: true,
-                metadata_geographical_extent: geographical_extent,
-                include_extensions: true,
-                include_vertices: false,
-                include_appearance: true,
-                include_geometry_templates: true,
-                include_cityobjects: false,
-                include_extra: true,
-            },
-        )?
+    let mut root = if let Some(model) = header_model {
+        serialize_feature_stream_header_model(model, transform, geographical_extent)?
     } else {
         let mut root = Map::new();
         root.insert(
@@ -554,6 +612,31 @@ fn build_feature_stream_header(
     root.insert("CityObjects".to_owned(), Value::Object(Map::new()));
     root.insert("vertices".to_owned(), Value::Array(Vec::new()));
     Ok(root)
+}
+
+fn serialize_feature_stream_header_model(
+    model: &OwnedCityModel,
+    transform: &Transform,
+    geographical_extent: Option<&BBox>,
+) -> Result<Map<String, Value>> {
+    serialize_model_root(
+        model,
+        crate::ser::CityModelSerializeOptions {
+            type_name: CityModelType::CityJSON,
+            include_id: false,
+            include_version: true,
+            transform: Some(transform),
+            include_transform: true,
+            include_metadata: true,
+            metadata_geographical_extent: geographical_extent,
+            include_extensions: true,
+            include_vertices: false,
+            include_appearance: true,
+            include_geometry_templates: true,
+            include_cityobjects: false,
+            include_extra: true,
+        },
+    )
 }
 
 fn write_feature_stream_items<W>(
@@ -623,6 +706,15 @@ where
     if feature.id().is_none() {
         return Err(Error::InvalidValue(
             "CityJSONFeature root id is required".to_owned(),
+        ));
+    }
+    Ok(())
+}
+
+fn ensure_stream_base_root(base_root: &OwnedCityModel) -> Result<()> {
+    if base_root.type_citymodel() != CityModelType::CityJSON {
+        return Err(Error::UnsupportedType(
+            base_root.type_citymodel().to_string(),
         ));
     }
     Ok(())
