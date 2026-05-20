@@ -59,6 +59,8 @@
 //!     Ok(())
 //! }
 //! ```
+use crate::Error;
+use crate::Result;
 use crate::backend::default::geometry::{
     GeometryCore, GeometryInstanceData, ThemedMaterials, ThemedTextures,
 };
@@ -74,6 +76,7 @@ use crate::resources::storage::StringStorage;
 use crate::v2_0::Vertices;
 use crate::v2_0::boundary::Boundary;
 use crate::v2_0::boundary::{BoundaryCoordinates, BoundaryUniqueCoordinates};
+use crate::v2_0::citymodel::CityModel;
 use crate::v2_0::vertex::{VertexIndex, VertexRef};
 use std::marker::PhantomData;
 use std::ops::{Deref, Index};
@@ -423,6 +426,34 @@ impl<VR: VertexRef, SS: StringStorage> Geometry<VR, SS> {
         )
     }
 
+    /// Clone this geometry into the public stored-parts representation.
+    #[must_use]
+    pub fn clone_stored_parts(&self) -> StoredGeometryParts<VR, SS> {
+        StoredGeometryParts {
+            type_geometry: *self.type_geometry(),
+            lod: self.lod().copied(),
+            boundaries: self.boundaries().cloned(),
+            semantics: self.inner.semantics().cloned().map(SemanticMap::from_raw),
+            materials: self.inner.materials().map(|items| {
+                items
+                    .iter()
+                    .map(|(theme, map)| (theme.clone(), MaterialMap::from_raw(map.clone())))
+                    .collect()
+            }),
+            textures: self.inner.textures().map(|items| {
+                items
+                    .iter()
+                    .map(|(theme, map)| (theme.clone(), TextureMap::from_raw(map.clone())))
+                    .collect()
+            }),
+            instance: self.instance().map(|instance| StoredGeometryInstance {
+                template: instance.template(),
+                reference_point: instance.reference_point(),
+                transformation: instance.transformation(),
+            }),
+        }
+    }
+
     pub(crate) fn from_raw_parts(
         type_geometry: GeometryType,
         lod: Option<LoD>,
@@ -511,6 +542,174 @@ impl<VR: VertexRef, SS: StringStorage> Geometry<VR, SS> {
             .instance()
             .map(|inner| GeometryInstanceView { inner })
     }
+}
+
+/// Build a material map with one assignment per flattened surface primitive.
+///
+/// # Errors
+///
+/// Returns an error when `geometry` is not surface-based, is a `GeometryInstance`, lacks
+/// boundaries, or when `assign` returns a material handle that does not exist in `model`.
+pub fn build_surface_material_map<VR, SS, F>(
+    model: &CityModel<VR, SS>,
+    geometry: &Geometry<VR, SS>,
+    mut assign: F,
+) -> Result<MaterialMap<VR>>
+where
+    VR: VertexRef,
+    SS: StringStorage,
+    F: FnMut(usize) -> Option<MaterialHandle>,
+{
+    let count = surface_primitive_count(geometry)?;
+    let mut map = MaterialMap::new();
+    for index in 0..count {
+        let handle = assign(index);
+        if let Some(handle) = handle
+            && model.get_material(handle).is_none()
+        {
+            return Err(missing_resource("material", index, handle));
+        }
+        map.add_surface(handle);
+    }
+    Ok(map)
+}
+
+/// Build a semantic map with one assignment per flattened point primitive.
+///
+/// # Errors
+///
+/// Returns an error when `geometry` is not a `MultiPoint`, is a `GeometryInstance`, lacks
+/// boundaries, or when `assign` returns a semantic handle that does not exist in `model`.
+pub fn build_point_semantic_map<VR, SS, F>(
+    model: &CityModel<VR, SS>,
+    geometry: &Geometry<VR, SS>,
+    mut assign: F,
+) -> Result<SemanticMap<VR>>
+where
+    VR: VertexRef,
+    SS: StringStorage,
+    F: FnMut(usize) -> Option<SemanticHandle>,
+{
+    require_geometry_type(geometry, GeometryType::MultiPoint)?;
+    let count = geometry_boundary(geometry)?.vertices().len();
+    let mut map = SemanticMap::new();
+    for index in 0..count {
+        let handle = assign(index);
+        if let Some(handle) = handle
+            && model.get_semantic(handle).is_none()
+        {
+            return Err(missing_resource("semantic", index, handle));
+        }
+        map.add_point(handle);
+    }
+    Ok(map)
+}
+
+/// Build a semantic map with one assignment per flattened linestring primitive.
+///
+/// # Errors
+///
+/// Returns an error when `geometry` is not a `MultiLineString`, is a `GeometryInstance`, lacks
+/// boundaries, or when `assign` returns a semantic handle that does not exist in `model`.
+pub fn build_linestring_semantic_map<VR, SS, F>(
+    model: &CityModel<VR, SS>,
+    geometry: &Geometry<VR, SS>,
+    mut assign: F,
+) -> Result<SemanticMap<VR>>
+where
+    VR: VertexRef,
+    SS: StringStorage,
+    F: FnMut(usize) -> Option<SemanticHandle>,
+{
+    require_geometry_type(geometry, GeometryType::MultiLineString)?;
+    let count = geometry_boundary(geometry)?.rings().len();
+    let mut map = SemanticMap::new();
+    for index in 0..count {
+        let handle = assign(index);
+        if let Some(handle) = handle
+            && model.get_semantic(handle).is_none()
+        {
+            return Err(missing_resource("semantic", index, handle));
+        }
+        map.add_linestring(handle);
+    }
+    Ok(map)
+}
+
+/// Build a semantic map with one assignment per flattened surface primitive.
+///
+/// # Errors
+///
+/// Returns an error when `geometry` is not surface-based, is a `GeometryInstance`, lacks
+/// boundaries, or when `assign` returns a semantic handle that does not exist in `model`.
+pub fn build_surface_semantic_map<VR, SS, F>(
+    model: &CityModel<VR, SS>,
+    geometry: &Geometry<VR, SS>,
+    mut assign: F,
+) -> Result<SemanticMap<VR>>
+where
+    VR: VertexRef,
+    SS: StringStorage,
+    F: FnMut(usize) -> Option<SemanticHandle>,
+{
+    let count = surface_primitive_count(geometry)?;
+    let mut map = SemanticMap::new();
+    for index in 0..count {
+        let handle = assign(index);
+        if let Some(handle) = handle
+            && model.get_semantic(handle).is_none()
+        {
+            return Err(missing_resource("semantic", index, handle));
+        }
+        map.add_surface(handle);
+    }
+    Ok(map)
+}
+
+fn surface_primitive_count<VR: VertexRef, SS: StringStorage>(
+    geometry: &Geometry<VR, SS>,
+) -> Result<usize> {
+    match geometry.type_geometry() {
+        GeometryType::MultiSurface
+        | GeometryType::CompositeSurface
+        | GeometryType::Solid
+        | GeometryType::MultiSolid
+        | GeometryType::CompositeSolid => Ok(geometry_boundary(geometry)?.surfaces().len()),
+        found => Err(Error::InvalidGeometryType {
+            expected: "surface-based geometry".to_string(),
+            found: found.to_string(),
+        }),
+    }
+}
+
+fn require_geometry_type<VR: VertexRef, SS: StringStorage>(
+    geometry: &Geometry<VR, SS>,
+    expected: GeometryType,
+) -> Result<()> {
+    if *geometry.type_geometry() == expected {
+        return Ok(());
+    }
+    Err(Error::InvalidGeometryType {
+        expected: expected.to_string(),
+        found: geometry.type_geometry().to_string(),
+    })
+}
+
+fn geometry_boundary<VR: VertexRef, SS: StringStorage>(
+    geometry: &Geometry<VR, SS>,
+) -> Result<&Boundary<VR>> {
+    geometry.boundaries().ok_or_else(|| {
+        Error::IncompleteGeometry(format!(
+            "{} geometry must have a boundary",
+            geometry.type_geometry()
+        ))
+    })
+}
+
+fn missing_resource<H: std::fmt::Display>(resource: &str, index: usize, handle: H) -> Error {
+    Error::InvalidGeometry(format!(
+        "{resource} assignment {index} references missing resource {handle}"
+    ))
 }
 
 impl<'a, VR: VertexRef, SS: StringStorage> GeometryView<'a, VR, SS> {

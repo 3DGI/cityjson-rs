@@ -423,6 +423,13 @@ where
         self.geometries.add(geometry)
     }
 
+    /// Replace an existing geometry while preserving its resource reference.
+    pub fn replace_geometry(&mut self, id: RR, geometry: Geometry) -> Option<Geometry> {
+        self.geometries
+            .get_mut(id)
+            .map(|stored| std::mem::replace(stored, geometry))
+    }
+
     /// Get the number of geometries in the model
     pub fn geometry_count(&self) -> usize {
         self.geometries.len()

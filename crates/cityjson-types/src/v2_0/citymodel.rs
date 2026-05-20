@@ -618,6 +618,28 @@ impl<VR: VertexRef, SS: StringStorage> CityModel<VR, SS> {
             .map(GeometryHandle::from_raw)
     }
 
+    /// Replace an existing geometry while preserving its handle.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::error::Error::InvalidReference`] when `handle` does not refer to an
+    /// existing geometry, or [`crate::error::Error::InvalidGeometry`] when `geometry` violates
+    /// the stored geometry invariants.
+    pub fn replace_geometry(
+        &mut self,
+        handle: GeometryHandle,
+        geometry: Geometry<VR, SS>,
+    ) -> Result<Geometry<VR, SS>> {
+        validate_stored_geometry(geometry.raw(), self)?;
+
+        self.inner
+            .replace_geometry(handle.to_raw(), geometry)
+            .ok_or_else(|| {
+                let (index, _) = handle.raw_parts();
+                invalid_reference("geometry", index as usize, self.geometry_count())
+            })
+    }
+
     pub fn geometry_count(&self) -> usize {
         self.inner.geometry_count()
     }

@@ -6,6 +6,8 @@
  "features": {
   "ghcr.io/balazsdukai/devcontainer-tools/tools:1": {}
  },
+ "remoteUser": "vscode",
+ "containerUser": "vscode",
  "mounts": [
   {
    "source": "devcontainer-cargo-cache-${devcontainerId}",
@@ -16,7 +18,11 @@
    "source": "${localWorkspaceFolder}/../cityjson-corpus",
    "target": "${containerWorkspaceFolder}/../cityjson-corpus",
    "type": "bind"
-  }
+  },
+  "source=${localEnv:HOME}/.codex,target=/home/vscode/.codex,type=bind,relabel=shared",
+  "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,relabel=shared",
+  "source=${localEnv:HOME}/.claude.json,target=/home/vscode/.claude.json,type=bind,relabel=shared",
+  "source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent,type=bind,relabel=shared"
  ],
  "postCreateCommand": "rustc --version && uv --version && cbindgen --version && jq --version",
  "customizations": {
@@ -25,6 +31,11 @@
   }
  },
  "containerEnv": {
+  "TOOLS_CONTAINER_HOME": "/home/vscode",
+  "SSH_AUTH_SOCK": "/ssh-agent",
   "CITYJSON_SHARED_CORPUS_ROOT": "${containerWorkspaceFolder}/../cityjson-corpus"
+ },
+ "remoteEnv": {
+  "GH_TOKEN": "${localEnv:GH_TOKEN}"
  }
 }

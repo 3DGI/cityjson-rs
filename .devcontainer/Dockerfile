@@ -22,7 +22,11 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN rustup component add rustfmt clippy \
+RUN rustup toolchain install stable \
+        --component rustfmt \
+        --component clippy \
+    && rustup target add --toolchain stable wasm32-unknown-unknown \
+    && rustup component add rustfmt clippy \
     && rustup target add wasm32-unknown-unknown \
     && rustup toolchain install nightly \
         --component rustfmt \
