@@ -240,7 +240,7 @@ pub fn to_vec(model: &OwnedCityModel, options: &WriteOptions) -> Result<Vec<u8>>
 /// if duplicate feature-local `CityObject` ids are present, or if stream
 /// serialization fails.
 pub fn write_feature_stream<W, I>(
-    mut writer: W,
+    writer: W,
     models: I,
     options: &CityJsonSeqWriteOptions,
 ) -> Result<CityJsonSeqWriteReport>
@@ -248,40 +248,12 @@ where
     W: Write,
     I: IntoIterator<Item = OwnedCityModel>,
 {
-    let features: Vec<_> = models.into_iter().collect();
-    validate_feature_models(&features, options.validate_default_themes)?;
-    let feature_refs: Vec<_> = features.iter().collect();
-    let geographical_extent = collect_features_extent(&feature_refs);
-    let transform = match &options.transform {
-        FeatureStreamTransform::Explicit(transform) => transform.clone(),
-        FeatureStreamTransform::Auto { scale } => auto_transform(&feature_refs, *scale),
-    };
-    let header_root = build_feature_stream_header(
-        feature_refs.first().copied(),
-        &transform,
-        if options.update_metadata_geographical_extent {
-            geographical_extent.as_ref()
-        } else {
-            None
-        },
-    )?;
-    write_feature_stream_items(
-        &mut writer,
-        &feature_refs,
-        &header_root,
-        &transform,
+    write_feature_stream_from_header_source(
+        writer,
+        FeatureStreamHeaderSource::DeriveFromFeatures,
+        models,
         options,
-    )?;
-
-    Ok(CityJsonSeqWriteReport {
-        transform,
-        geographical_extent,
-        feature_count: feature_refs.len(),
-        cityobject_count: feature_refs
-            .iter()
-            .map(|feature| feature.cityobjects().len())
-            .sum(),
-    })
+    )
 }
 
 /// Write a strict `CityJSONSeq` stream from feature models using an explicit
@@ -297,7 +269,7 @@ where
 /// feature model is not a `CityJSONFeature`, if duplicate feature-local
 /// `CityObject` ids are present, or if stream serialization fails.
 pub fn write_feature_stream_with_base<W, I>(
-    mut writer: W,
+    writer: W,
     base_root: &OwnedCityModel,
     models: I,
     options: &CityJsonSeqWriteOptions,
@@ -306,29 +278,57 @@ where
     W: Write,
     I: IntoIterator<Item = OwnedCityModel>,
 {
-    if base_root.type_citymodel() != CityModelType::CityJSON {
-        return Err(Error::UnsupportedType(
-            base_root.type_citymodel().to_string(),
-        ));
-    }
+    write_feature_stream_from_header_source(
+        writer,
+        FeatureStreamHeaderSource::ExplicitBase(base_root),
+        models,
+        options,
+    )
+}
 
+#[derive(Clone, Copy)]
+enum FeatureStreamHeaderSource<'a> {
+    DeriveFromFeatures,
+    ExplicitBase(&'a OwnedCityModel),
+}
+
+fn write_feature_stream_from_header_source<W, I>(
+    mut writer: W,
+    header_source: FeatureStreamHeaderSource<'_>,
+    models: I,
+    options: &CityJsonSeqWriteOptions,
+) -> Result<CityJsonSeqWriteReport>
+where
+    W: Write,
+    I: IntoIterator<Item = OwnedCityModel>,
+{
     let features: Vec<_> = models.into_iter().collect();
-    validate_feature_model_items(&features, options.validate_default_themes)?;
+    match header_source {
+        FeatureStreamHeaderSource::DeriveFromFeatures => {
+            validate_feature_models(&features, options.validate_default_themes)?;
+        }
+        FeatureStreamHeaderSource::ExplicitBase(base_root) => {
+            ensure_stream_base_root(base_root)?;
+            validate_feature_model_items(&features, options.validate_default_themes)?;
+        }
+    }
     let feature_refs: Vec<_> = features.iter().collect();
     let geographical_extent = collect_features_extent(&feature_refs);
     let transform = match &options.transform {
         FeatureStreamTransform::Explicit(transform) => transform.clone(),
         FeatureStreamTransform::Auto { scale } => auto_transform(&feature_refs, *scale),
     };
-    let header_root = build_feature_stream_header_from_model(
-        base_root,
-        &transform,
-        if options.update_metadata_geographical_extent {
-            geographical_extent.as_ref()
-        } else {
-            None
-        },
-    )?;
+    let metadata_geographical_extent = if options.update_metadata_geographical_extent {
+        geographical_extent.as_ref()
+    } else {
+        None
+    };
+    let header_model = match header_source {
+        FeatureStreamHeaderSource::DeriveFromFeatures => feature_refs.first().copied(),
+        FeatureStreamHeaderSource::ExplicitBase(base_root) => Some(base_root),
+    };
+    let header_root =
+        build_feature_stream_header(header_model, &transform, metadata_geographical_extent)?;
     write_feature_stream_items(
         &mut writer,
         &feature_refs,
@@ -589,12 +589,12 @@ fn auto_transform(features: &[&OwnedCityModel], scale: [f64; 3]) -> Transform {
 }
 
 fn build_feature_stream_header(
-    first_feature: Option<&OwnedCityModel>,
+    header_model: Option<&OwnedCityModel>,
     transform: &Transform,
     geographical_extent: Option<&BBox>,
 ) -> Result<Map<String, Value>> {
-    let mut root = if let Some(feature) = first_feature {
-        serialize_feature_stream_header_model(feature, transform, geographical_extent)?
+    let mut root = if let Some(model) = header_model {
+        serialize_feature_stream_header_model(model, transform, geographical_extent)?
     } else {
         let mut root = Map::new();
         root.insert(
@@ -608,19 +608,6 @@ fn build_feature_stream_header(
         root.insert("transform".to_owned(), serialize_transform(transform)?);
         root
     };
-    root.remove("id");
-    root.insert("CityObjects".to_owned(), Value::Object(Map::new()));
-    root.insert("vertices".to_owned(), Value::Array(Vec::new()));
-    Ok(root)
-}
-
-fn build_feature_stream_header_from_model(
-    base_root: &OwnedCityModel,
-    transform: &Transform,
-    geographical_extent: Option<&BBox>,
-) -> Result<Map<String, Value>> {
-    let mut root =
-        serialize_feature_stream_header_model(base_root, transform, geographical_extent)?;
     root.remove("id");
     root.insert("CityObjects".to_owned(), Value::Object(Map::new()));
     root.insert("vertices".to_owned(), Value::Array(Vec::new()));
@@ -719,6 +706,15 @@ where
     if feature.id().is_none() {
         return Err(Error::InvalidValue(
             "CityJSONFeature root id is required".to_owned(),
+        ));
+    }
+    Ok(())
+}
+
+fn ensure_stream_base_root(base_root: &OwnedCityModel) -> Result<()> {
+    if base_root.type_citymodel() != CityModelType::CityJSON {
+        return Err(Error::UnsupportedType(
+            base_root.type_citymodel().to_string(),
         ));
     }
     Ok(())
