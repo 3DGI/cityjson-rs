@@ -39,6 +39,23 @@ Shared test fixtures live in the separate
 [`cityjson-corpus`](https://github.com/3DGI/cityjson-corpus) repo. Point
 at a local checkout via `CITYJSON_SHARED_CORPUS_ROOT`.
 
+## Crate Catalog
+
+| Crate | Description | Crates.io | PyPI | Notes |
+|-------|-------------|-----------|------|-------|
+| `cityjson-types` | Core CityJSON 2.0 types and accessors | ✅ | | Foundation for all other crates |
+| `cityjson-json` | Serde adapter for CityJSON 2.0 | ✅ | | JSON serialization/deserialization |
+| `cityjson-arrow` | Arrow IPC and Parquet transport | ✅ | | Bridge to Arrow ecosystem |
+| `cityjson-parquet` | Parquet read/write via cityjson-arrow | ✅ | | Built on cityjson-arrow |
+| `cityjson-lib` | Higher-level read/write facade | ✅ | ✅ | Main API crate, includes FFI for WASM |
+| `cityjson-fake` | Synthetic CityJSON data generator | ✅ | | `cjfake` CLI for test data generation |
+| `cityjson-index` | SQLite-backed indexing layer | ✅ | ✅ | `cjindex` CLI, sidecar index databases |
+
+Dependency graph: `cityjson-types` → `{json, arrow}` → `parquet` → `lib` → `{fake, index}`
+
+For crate-specific agent guidance, see the crate-level `AGENTS.md` files
+(e.g., [`crates/cityjson-index/AGENTS.md`](crates/cityjson-index/AGENTS.md)).
+
 ## Toolchain
 
 - Rust: `stable`, pinned via `rust-toolchain.toml`. MSRV `1.93`, edition
@@ -163,8 +180,56 @@ design. `release.yml` does not re-run the full suite; it verifies
   `cityjson-corpus`, or the crate-specific env var if one is
   documented (e.g. `CITYJSON_JSON_BENCHMARK_INDEX`).
 
+## Debugging & Troubleshooting
+
+### Common Issues
+
+- **"Missing corpus" errors**: Set `CITYJSON_SHARED_CORPUS_ROOT` to point at a
+  local clone of [`cityjson-corpus`](https://github.com/3DGI/cityjson-corpus)
+- ** Nightly-only commands fail**: Ensure nightly toolchain is installed:
+  `rustup toolchain install nightly`
+- **Python FFI build failures**: Ensure Python 3.11-3.13 is available and
+  `uv` is installed; see crate-specific FFI docs
+- **SQLite errors in cityjson-index**: Check the sidecar database with
+  `sqlite3 <dataset>/.cityjson-index.sqlite "SELECT * FROM sources;"`
+
+### Profiling
+
+Use `--profile` flags where available (e.g., `cjindex` CLI commands) to
+emit JSON profiling data for performance analysis.
+
+## FFI Development
+
+Two crates ship Python bindings: `cityjson-lib` and `cityjson-index`.
+
+- **Build system**: `maturin` for Rust-Python interop
+- **Test harness**: `tox` with `uv` for isolated Python environments
+- **Wheel building**: `uv build --wheel` in each crate's `ffi/python/`
+- **C FFI**: Generated via `cbindgen` in crate `ffi/core/` directories
+- **Version sync**: Python versions are synced from `Cargo.toml` at
+  release time by `cargo-release` — do NOT hand-edit
+
 ## Licensing
 
 Dual MIT / Apache-2.0 per the `license` field in each crate's
 `Cargo.toml` (authoritative). Contributions are accepted under the same
 terms as the crate being contributed to, no additional conditions.
+
+## Glossary
+
+| Term | Meaning |
+|------|---------|
+| **CityJSON** | JSON-based encoding for 3D city models (v2.0) |
+| **CityJSONSeq** | Line-delimited CityJSON (NDJSON format) |
+| **Sidecar** | Companion file/database alongside main data (e.g., `.cityjson-index.sqlite`) |
+| **FFI** | Foreign Function Interface — bindings for non-Rust languages |
+| **MSRV** | Minimum Supported Rust Version (currently 1.93) |
+| **lockstep releases** | All crates version bump together, same release |
+| **cargo-release** | Tool used for automated version bumps and publishing |
+
+## See Also
+
+- [`README.md`](README.md) — Project overview and quick start
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — PR guidelines and AI use policy
+- [`docs/development.md`](docs/development.md) — Full development contract
+- [`crates/cityjson-index/AGENTS.md`](crates/cityjson-index/AGENTS.md) — Crate-specific agent guidance for cityjson-index
