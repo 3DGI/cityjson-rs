@@ -4,34 +4,36 @@ use std::fs;
 use std::path::Path;
 
 use cityjson_index::{CityIndex, StorageLayout};
-use common::{bbox_for_model, find_first, model_contains_id, ndjson_root, temp_index_path};
+use common::{bbox_for_model, cityjsonseq_root, find_first, model_contains_id, temp_index_path};
 
 #[test]
-fn ndjson_cityindex_supports_end_to_end_queries() {
-    let source_root = ndjson_root();
+fn cityjson_seq_cityindex_supports_end_to_end_queries() {
+    let source_root = cityjsonseq_root();
     let sample = find_first(&source_root, "city.jsonl", true);
-    let sample_fixture = derive_small_ndjson_fixture(&sample);
-    let feature_id = "ndjson-test-feature".to_owned();
+    let sample_fixture = derive_small_cityjson_seq_fixture(&sample);
+    let feature_id = "cityjson-seq-test-feature".to_owned();
 
-    let index_path = temp_index_path("ndjson");
+    let index_path = temp_index_path("CityJSONSeq");
     let mut index = CityIndex::open(
         StorageLayout::Ndjson {
             paths: vec![sample_fixture.clone()],
         },
         &index_path,
     )
-    .expect("ndjson index should open");
+    .expect("CityJSONSeq index should open");
 
-    index.reindex().expect("ndjson reindex should succeed");
+    index.reindex().expect("CityJSONSeq reindex should succeed");
 
     let model = index
         .get(&feature_id)
-        .expect("ndjson get should succeed")
+        .expect("CityJSONSeq get should succeed")
         .expect("feature id should be indexed");
     assert!(model_contains_id(&model, &feature_id));
 
     let bbox = bbox_for_model(&model).expect("bbox should be computable from indexed model");
-    let query_hits = index.query(&bbox).expect("ndjson query should succeed");
+    let query_hits = index
+        .query(&bbox)
+        .expect("CityJSONSeq query should succeed");
     assert!(
         query_hits
             .iter()
@@ -41,9 +43,9 @@ fn ndjson_cityindex_supports_end_to_end_queries() {
 
     let iter_hits = index
         .query_iter(&bbox)
-        .expect("ndjson query_iter should succeed")
+        .expect("CityJSONSeq query_iter should succeed")
         .collect::<cityjson_lib::Result<Vec<_>>>()
-        .expect("ndjson query_iter items should succeed");
+        .expect("CityJSONSeq query_iter items should succeed");
     assert!(
         iter_hits
             .iter()
@@ -53,9 +55,9 @@ fn ndjson_cityindex_supports_end_to_end_queries() {
 
     let iter_hits_with_ids = index
         .query_iter_with_ids(&bbox)
-        .expect("ndjson query_iter_with_ids should succeed")
+        .expect("CityJSONSeq query_iter_with_ids should succeed")
         .collect::<cityjson_lib::Result<Vec<_>>>()
-        .expect("ndjson query_iter_with_ids items should succeed");
+        .expect("CityJSONSeq query_iter_with_ids items should succeed");
     assert!(
         iter_hits_with_ids
             .iter()
@@ -64,111 +66,95 @@ fn ndjson_cityindex_supports_end_to_end_queries() {
         "query_iter_with_ids should return the selected feature id and model"
     );
 
-    let metadata = index.metadata().expect("ndjson metadata should succeed");
+    let metadata = index
+        .metadata()
+        .expect("CityJSONSeq metadata should succeed");
     assert!(
         metadata
             .iter()
             .any(|entry| entry.get("transform").is_some()),
-        "ndjson metadata should include at least one transform"
+        "CityJSONSeq metadata should include at least one transform"
     );
 }
 
 #[test]
-fn ndjson_indexes_every_cityobject_key_and_ignores_top_level_id() {
-    let source_root = ndjson_root();
+fn cityjson_seq_indexes_every_cityobject_key_and_ignores_top_level_id() {
+    let source_root = cityjsonseq_root();
     let sample = find_first(&source_root, "city.jsonl", true);
-    let fixture = derive_ndjson_fixture(
+    let fixture = derive_cityjson_seq_fixture(
         &sample,
         &[feature_line(
-            "ignored-ndjson-id",
-            &[("ndjson-key-a", 0), ("ndjson-key-b", 10)],
+            "ignored-cityjson-seq-id",
+            &[("cityjson-seq-key-a", 0), ("cityjson-seq-key-b", 10)],
         )],
-        "ndjson-cityobject-keys",
+        "cityjson-seq-cityobject-keys",
     );
 
-    let index_path = temp_index_path("ndjson-cityobject-keys");
+    let index_path = temp_index_path("cityjson-seq-cityobject-keys");
     let mut index = CityIndex::open(
         StorageLayout::Ndjson {
             paths: vec![fixture],
         },
         &index_path,
     )
-    .expect("ndjson index should open");
-    index.reindex().expect("ndjson reindex should succeed");
+    .expect("CityJSONSeq index should open");
+    index.reindex().expect("CityJSONSeq reindex should succeed");
 
     assert!(
         index
-            .get("ignored-ndjson-id")
+            .get("ignored-cityjson-seq-id")
             .expect("top-level id lookup should succeed")
             .is_none()
     );
 
-    for feature_id in ["ndjson-key-a", "ndjson-key-b"] {
+    for feature_id in ["cityjson-seq-key-a", "cityjson-seq-key-b"] {
         let model = index
             .get(feature_id)
             .expect("cityobject key lookup should succeed")
             .expect("cityobject key should be indexed");
-        assert!(model_contains_id(&model, "ndjson-key-a"));
-        assert!(model_contains_id(&model, "ndjson-key-b"));
+        assert!(model_contains_id(&model, "cityjson-seq-key-a"));
+        assert!(model_contains_id(&model, "cityjson-seq-key-b"));
     }
 }
 
 #[test]
-fn ndjson_allows_duplicate_cityobject_keys() {
-    let source_root = ndjson_root();
+fn cityjson_seq_allows_duplicate_cityobject_keys() {
+    let source_root = cityjsonseq_root();
     let sample = find_first(&source_root, "city.jsonl", true);
-    let fixture = derive_ndjson_fixture(
+    let fixture = derive_cityjson_seq_fixture(
         &sample,
         &[
-            feature_line("ignored-first", &[("duplicate-ndjson-key", 0)]),
-            feature_line("ignored-second", &[("duplicate-ndjson-key", 20)]),
+            feature_line("ignored-first", &[("duplicate-cityjson-seq-key", 0)]),
+            feature_line("ignored-second", &[("duplicate-cityjson-seq-key", 20)]),
         ],
-        "ndjson-duplicate-keys",
+        "cityjson-seq-duplicate-keys",
     );
 
-    let index_path = temp_index_path("ndjson-duplicate-keys");
+    let index_path = temp_index_path("cityjson-seq-duplicate-keys");
     let mut index = CityIndex::open(
         StorageLayout::Ndjson {
             paths: vec![fixture],
         },
         &index_path,
     )
-    .expect("ndjson index should open");
+    .expect("CityJSONSeq index should open");
     index
         .reindex()
-        .expect("duplicate ndjson ids should reindex");
+        .expect("duplicate CityJSONSeq ids should reindex");
 
     let refs = index
-        .lookup_feature_refs("duplicate-ndjson-key")
+        .lookup_feature_refs("duplicate-cityjson-seq-key")
         .expect("plural lookup should succeed");
     assert_eq!(refs.len(), 2, "both duplicate aliases should be indexed");
     assert!(refs[0].row_id < refs[1].row_id);
-
-    let single = index
-        .lookup_feature_ref("duplicate-ndjson-key")
-        .expect("single lookup should succeed")
-        .expect("duplicate key should be indexed");
-    assert_eq!(
-        single.row_id, refs[0].row_id,
-        "single lookup should return the earliest indexed duplicate"
-    );
-
-    let model = index
-        .get("duplicate-ndjson-key")
-        .expect("get should succeed")
-        .expect("duplicate key should return first match");
-    let min_x = bbox_for_model(&model)
-        .expect("bbox should be computable")
-        .min_x;
-    assert!(min_x.abs() < f64::EPSILON);
 }
 
-fn derive_small_ndjson_fixture(source: &Path) -> std::path::PathBuf {
-    let contents = fs::read_to_string(source).expect("sample ndjson tile must be readable");
+fn derive_small_cityjson_seq_fixture(source: &Path) -> std::path::PathBuf {
+    let contents = fs::read_to_string(source).expect("sample CityJSONSeq tile must be readable");
     let mut lines = contents.lines();
     let metadata = lines.next().expect("sample tile must contain metadata");
     let path = std::env::temp_dir().join(format!(
-        "cityjson-index-ndjson-sample-{}.jsonl",
+        "cityjson-index-cityjson-seq-sample-{}.jsonl",
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .expect("system time must be after the unix epoch")
@@ -176,9 +162,9 @@ fn derive_small_ndjson_fixture(source: &Path) -> std::path::PathBuf {
     ));
     let feature = serde_json::json!({
         "type": "CityJSONFeature",
-        "id": "ndjson-test-feature",
+        "id": "cityjson-seq-test-feature",
         "CityObjects": {
-            "ndjson-test-feature": {
+            "cityjson-seq-test-feature": {
                 "type": "Building",
                 "geometry": [{
                     "type": "MultiSurface",
@@ -201,16 +187,16 @@ fn derive_small_ndjson_fixture(source: &Path) -> std::path::PathBuf {
             serde_json::to_string(&feature).expect("feature JSON")
         ),
     )
-    .expect("derived NDJSON fixture must be writable");
+    .expect("derived CityJSONSeq fixture must be writable");
     path
 }
 
-fn derive_ndjson_fixture(
+fn derive_cityjson_seq_fixture(
     source: &Path,
     features: &[serde_json::Value],
     label: &str,
 ) -> std::path::PathBuf {
-    let contents = fs::read_to_string(source).expect("sample ndjson tile must be readable");
+    let contents = fs::read_to_string(source).expect("sample CityJSONSeq tile must be readable");
     let metadata = contents
         .lines()
         .next()
@@ -228,7 +214,7 @@ fn derive_ndjson_fixture(
         output.push_str(&serde_json::to_string(feature).expect("feature JSON"));
         output.push('\n');
     }
-    fs::write(&path, output).expect("derived NDJSON fixture must be writable");
+    fs::write(&path, output).expect("derived CityJSONSeq fixture must be writable");
     path
 }
 

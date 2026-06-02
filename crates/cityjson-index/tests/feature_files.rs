@@ -135,24 +135,6 @@ fn feature_files_allow_duplicate_cityobject_keys() {
     assert!(refs[0].row_id < refs[1].row_id);
     assert_eq!(refs[0].source_path, first_path);
     assert_eq!(refs[1].source_path, second_path);
-
-    let single = index
-        .lookup_feature_ref("duplicate-key")
-        .expect("single lookup should succeed")
-        .expect("duplicate key should be indexed");
-    assert_eq!(
-        single.row_id, refs[0].row_id,
-        "single lookup should return the earliest indexed duplicate"
-    );
-
-    let model = index
-        .get("duplicate-key")
-        .expect("get should succeed")
-        .expect("duplicate key should return first match");
-    let min_x = bbox_for_model(&model)
-        .expect("bbox should be computable")
-        .min_x;
-    assert!(min_x.abs() < f64::EPSILON);
 }
 
 #[test]

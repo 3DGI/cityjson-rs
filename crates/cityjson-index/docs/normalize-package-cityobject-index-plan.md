@@ -141,6 +141,12 @@ After adding the tests:
 | `package_filter_no_match_returns_none_model_with_report` | Building filtered for WaterBody | Aligned outcome has `model = None`; no invalid empty feature exists. |
 | `package_filter_reports_merge_for_batch_lod_validation` | Complementary LoDs plus missing explicit request | One report merges counts and reports unavailable LoDs. |
 
+The public batch tests assert stable ordering and aligned outcomes. Add
+crate-internal decoder instrumentation with the Phase 4 backend replacement so
+`read_packages_decodes_duplicate_request_once_per_package` and
+`package_type_prefilter_excludes_irrelevant_packages_before_decode` also assert
+the internal decode count and pre-decode SQL filter boundary.
+
 ### Terminology And Corpus Tests
 
 | Test | Input | Assertions |
@@ -164,6 +170,9 @@ After adding the tests:
 | `python_get_packages_returns_all_distinct_packages` | Python exposes plural package retrieval only. |
 | `python_filtered_packages_preserve_alignment_and_none_models` | No-match outcomes retain report and alignment. |
 | `tyler_package_paging_does_not_duplicate_filtered_building_parts` | Tyler emits one filtered object per package. |
+
+The Tyler regression belongs in the downstream Tyler repository. Add it in the
+review-gated Tyler migration patch; do not mix it into `cityjson-index`.
 
 ## Phase 2: Extend Benchmark Infrastructure
 
@@ -416,6 +425,13 @@ pub struct IndexedCityObjectRef {
     pub cityobject_type: String,
     pub bounds: Option<Bounds3D>,
 }
+
+/// Reconstructed valid package together with its stable ref and metadata.
+pub struct IndexedPackage {
+    pub reference: IndexedPackageRef,
+    pub metadata: Arc<Meta>,
+    pub model: CityModel,
+}
 ```
 
 ### Package APIs
@@ -451,6 +467,32 @@ pub fn read_cityobject_packages(
     &self,
     cityobject: &IndexedCityObjectRef,
 ) -> Result<Vec<IndexedPackage>>;
+
+/// Returns one stable package-ref page ordered by package record ID.
+pub fn package_ref_page(&self, offset: usize, limit: usize)
+    -> Result<Vec<IndexedPackageRef>>;
+
+/// Returns each package intersecting `bbox` once, ordered by package record ID.
+pub fn query_package_refs(&self, bbox: &BBox) -> Result<Vec<IndexedPackageRef>>;
+
+/// Returns every directly matching CityObject occurrence ordered by record ID.
+pub fn query_cityobject_refs(&self, bbox: &BBox)
+    -> Result<Vec<IndexedCityObjectRef>>;
+
+/// Returns breadth-first descendants once, in deterministic relationship order.
+pub fn descendant_cityobject_refs(&self, cityobject: &IndexedCityObjectRef)
+    -> Result<Vec<IndexedCityObjectRef>>;
+
+/// Reconstructs packages in request order while decoding each distinct record once.
+pub fn read_packages(&self, packages: &[IndexedPackageRef])
+    -> Result<Vec<IndexedPackage>>;
+
+/// Filters packages while preserving one aligned result per requested ref.
+pub fn read_filtered_packages(
+    &self,
+    packages: &[IndexedPackageRef],
+    filter: &PackageFilter,
+) -> Result<Vec<PackageFilterResult>>;
 ```
 
 Do not add first-match variants.
@@ -480,6 +522,18 @@ variants. Package queries deduplicate by package `record_id`.
 Replace separate diagnostics and summary types with one mergeable report:
 
 ```rust
+/// CityObject-type and LoD selection applied to complete valid packages.
+pub struct PackageFilter {
+    pub cityobject_types: Option<BTreeSet<String>>,
+    pub default_lod: LodSelection,
+    pub lods_by_type: BTreeMap<String, LodSelection>,
+}
+
+impl PackageFilter {
+    /// Applies this selection without manufacturing an invalid empty feature.
+    pub fn apply(&self, model: &CityModel) -> Result<PackageFilterResult>;
+}
+
 pub struct PackageFilterReport {
     pub available_types: BTreeSet<String>,
     pub retained_types: BTreeSet<String>,
@@ -495,6 +549,14 @@ pub struct PackageFilterReport {
 pub struct PackageFilterResult {
     pub model: Option<CityModel>,
     pub report: PackageFilterReport,
+}
+
+impl PackageFilterReport {
+    /// Merges package outcomes for batch validation and user-facing summaries.
+    pub fn merge(&mut self, other: &PackageFilterReport);
+
+    /// Rejects explicit LoD requests that matched no geometry in the batch.
+    pub fn ensure_requested_lods_available(&self, filter: &PackageFilter) -> Result<()>;
 }
 ```
 
@@ -574,6 +636,7 @@ bbox_map
 member_ranges
 IndexedFeatureRef
 IndexedFeature
+FeatureFilter
 FeatureFilterDiagnostics
 FeatureFilterSummary
 lookup_feature_ref

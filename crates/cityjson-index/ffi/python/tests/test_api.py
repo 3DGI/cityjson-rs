@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -98,6 +99,62 @@ class OpenedIndexApiTests(unittest.TestCase):
 
                 with self.assertRaisesRegex(RuntimeError, "requested LoD selector matched no geometry"):
                     summary.ensure_requested_lods_available(filter)
+
+
+def _write_shared_child_cityjson(root: Path) -> None:
+    document = {
+        "type": "CityJSON",
+        "version": "2.0",
+        "transform": {"scale": [1.0, 1.0, 1.0], "translate": [0.0, 0.0, 0.0]},
+        "CityObjects": {
+            "building-a": {"type": "Building", "children": ["shared-part"]},
+            "building-b": {"type": "Building", "children": ["shared-part"]},
+            "shared-part": {
+                "type": "BuildingPart",
+                "parents": ["building-a", "building-b"],
+                "geometry": [
+                    {"type": "MultiSurface", "lod": "1.0", "boundaries": [[[0, 1, 2]]]}
+                ],
+            },
+        },
+        "vertices": [[0, 0, 0], [1, 0, 1], [0, 1, 2]],
+    }
+    (root / "shared-child.city.json").write_text(json.dumps(document), encoding="utf-8")
+
+
+class OpenedIndexPluralPackageApiTests(unittest.TestCase):
+    def test_python_get_packages_returns_all_distinct_packages(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir) / "dataset"
+            root.mkdir()
+            _write_shared_child_cityjson(root)
+            with OpenedIndex.open(root, Path(tmpdir) / ".cityjson-index.sqlite") as index:
+                index.reindex()
+                packages = index.get_packages("shared-part")
+
+                self.assertEqual(len(packages), 2)
+                self.assertFalse(hasattr(index, "get"))
+                self.assertFalse(hasattr(index, "get_json"))
+                self.assertFalse(hasattr(index, "lookup_cityobject_ref"))
+
+    def test_python_filtered_packages_preserve_alignment_and_none_models(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir) / "dataset"
+            root.mkdir()
+            _write_shared_child_cityjson(root)
+            with OpenedIndex.open(root, Path(tmpdir) / ".cityjson-index.sqlite") as index:
+                index.reindex()
+                cityobject = index.lookup_cityobject_refs("shared-part")[0]
+                refs = index.package_refs_for_cityobject(cityobject)
+                outcomes = index.read_filtered_packages(
+                    refs,
+                    FeatureFilter(cityobject_types={"WaterBody"}),
+                )
+
+                self.assertEqual(len(outcomes), len(refs))
+                self.assertTrue(outcomes)
+                self.assertTrue(all(outcome.model is None for outcome in outcomes))
+                self.assertTrue(all(outcome.report.ignored_package_count == 1 for outcome in outcomes))
 
 
 if __name__ == "__main__":
