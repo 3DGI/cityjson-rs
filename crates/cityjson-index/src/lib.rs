@@ -212,6 +212,11 @@ impl From<FeatureBounds> for Bounds3D {
 }
 
 impl PackageFilter {
+    /// Applies this package filter to one `CityJSONFeature` package.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the underlying `CityObject` or `LoD` selection fails.
     pub fn apply(&self, model: &CityModel) -> Result<PackageFilterResult> {
         let feature_filter = FeatureFilter {
             cityobject_types: self.cityobject_types.clone(),
@@ -220,23 +225,23 @@ impl PackageFilter {
         };
         let filtered = feature_filter.apply(model)?;
         let mut report = PackageFilterReport::from_diagnostics(&filtered.diagnostics);
-        if let LodSelection::Exact(requested_lod) = &self.default_lod {
-            if filtered.diagnostics.retained_geometry_count == 0 {
-                for cityobject_type in &filtered.diagnostics.available_types {
-                    report
-                        .missing_lods
-                        .entry(cityobject_type.clone())
-                        .or_insert_with(|| MissingLodSelection {
-                            cityobject_type: cityobject_type.clone(),
-                            requested_lod: requested_lod.clone(),
-                            available_lods: filtered
-                                .diagnostics
-                                .available_lods
-                                .get(cityobject_type)
-                                .cloned()
-                                .unwrap_or_default(),
-                        });
-                }
+        if let LodSelection::Exact(requested_lod) = &self.default_lod
+            && filtered.diagnostics.retained_geometry_count == 0
+        {
+            for cityobject_type in &filtered.diagnostics.available_types {
+                report
+                    .missing_lods
+                    .entry(cityobject_type.clone())
+                    .or_insert_with(|| MissingLodSelection {
+                        cityobject_type: cityobject_type.clone(),
+                        requested_lod: requested_lod.clone(),
+                        available_lods: filtered
+                            .diagnostics
+                            .available_lods
+                            .get(cityobject_type)
+                            .cloned()
+                            .unwrap_or_default(),
+                    });
             }
         }
         let model = if filtered.diagnostics.retained_geometry_count == 0 {
@@ -288,6 +293,11 @@ impl PackageFilterReport {
         self.ignored_package_count += other.ignored_package_count;
     }
 
+    /// Ensures every exact `LoD` requested by `filter` was available in the merged report.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when a requested exact `LoD` is absent for a requested `CityObject` type.
     pub fn ensure_requested_lods_available(&self, filter: &PackageFilter) -> Result<()> {
         for (cityobject_type, selection) in &filter.lods_by_type {
             let LodSelection::Exact(requested_lod) = selection else {
@@ -1216,7 +1226,7 @@ pub fn resolve_dataset(
 
     if matches.is_empty() {
         return Err(import_error(format!(
-            "dataset directory {} does not match ndjson, cityjson, or feature-files layouts",
+            "dataset directory {} does not match cityjson-seq, cityjson, or feature-files layouts",
             dataset_root.display()
         )));
     }
@@ -1384,6 +1394,11 @@ impl CityIndex {
         Ok(Some((metadata.value, model)))
     }
 
+    /// Returns every indexed `CityObject` occurrence with the given external id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` lookup fails.
     pub fn lookup_cityobject_refs(&self, external_id: &str) -> Result<Vec<IndexedCityObjectRef>> {
         let mut stmt = sqlite_result(self.index.conn.prepare(
             r"
@@ -1407,6 +1422,11 @@ impl CityIndex {
         sqlite_result(rows.collect())
     }
 
+    /// Returns package refs containing the given `CityObject` occurrence.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` lookup fails.
     pub fn package_refs_for_cityobject(
         &self,
         cityobject: &IndexedCityObjectRef,
@@ -1435,11 +1455,21 @@ impl CityIndex {
         sqlite_result(rows.collect())
     }
 
+    /// Returns every distinct package containing a `CityObject` with `external_id`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if lookup or package reconstruction fails.
     pub fn get_packages(&self, external_id: &str) -> Result<Vec<CityModel>> {
         self.get_packages_with_metadata(external_id)
             .map(|items| items.into_iter().map(|(_, model)| model).collect())
     }
 
+    /// Returns every distinct package containing `external_id` with its source metadata.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if lookup, metadata loading, or package reconstruction fails.
     pub fn get_packages_with_metadata(
         &self,
         external_id: &str,
@@ -1463,6 +1493,11 @@ impl CityIndex {
         })
     }
 
+    /// Reads every package containing the given `CityObject` occurrence.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if lookup or package reconstruction fails.
     pub fn read_cityobject_packages(
         &self,
         cityobject: &IndexedCityObjectRef,
@@ -1471,6 +1506,11 @@ impl CityIndex {
         self.read_packages(&packages)
     }
 
+    /// Returns a page of package refs ordered by package record id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` lookup fails.
     pub fn package_ref_page(&self, offset: usize, limit: usize) -> Result<Vec<IndexedPackageRef>> {
         let mut stmt = sqlite_result(self.index.conn.prepare(
             r"
@@ -1494,6 +1534,11 @@ impl CityIndex {
         sqlite_result(rows.collect())
     }
 
+    /// Returns package refs whose package bbox intersects `bbox`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` query fails.
     pub fn query_package_refs(&self, bbox: &BBox) -> Result<Vec<IndexedPackageRef>> {
         let mut stmt = sqlite_result(self.index.conn.prepare(
             r"
@@ -1523,6 +1568,11 @@ impl CityIndex {
         sqlite_result(rows.collect())
     }
 
+    /// Returns `CityObject` refs whose `CityObject` bbox intersects `bbox`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` query fails.
     pub fn query_cityobject_refs(&self, bbox: &BBox) -> Result<Vec<IndexedCityObjectRef>> {
         let mut stmt = sqlite_result(self.index.conn.prepare(
             r"
@@ -1552,6 +1602,11 @@ impl CityIndex {
         sqlite_result(rows.collect())
     }
 
+    /// Returns descendants of the given `CityObject` occurrence in deterministic order.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if relationship traversal queries fail.
     pub fn descendant_cityobject_refs(
         &self,
         cityobject: &IndexedCityObjectRef,
@@ -1596,11 +1651,21 @@ impl CityIndex {
         Ok(descendants)
     }
 
+    /// Reads one package as a valid `CityJSONFeature` model.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the package cannot be found, read, or reconstructed.
     pub fn read_package(&self, package: &IndexedPackageRef) -> Result<CityModel> {
         self.read_indexed_package(package)
             .map(|package| package.model)
     }
 
+    /// Reads packages while preserving input order and duplicate refs.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any package cannot be found, read, or reconstructed.
     pub fn read_packages(&self, packages: &[IndexedPackageRef]) -> Result<Vec<IndexedPackage>> {
         let mut decoded = BTreeMap::new();
         for package in packages {
@@ -1623,6 +1688,11 @@ impl CityIndex {
             .collect()
     }
 
+    /// Reads and filters packages while preserving input order.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if package reconstruction or filtering fails.
     pub fn read_filtered_packages(
         &self,
         packages: &[IndexedPackageRef],
@@ -1634,6 +1704,11 @@ impl CityIndex {
             .collect()
     }
 
+    /// Looks up a package ref by its `SQLite` package record id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` lookup fails.
     pub fn lookup_package_ref_by_record_id(
         &self,
         record_id: i64,
@@ -1642,6 +1717,11 @@ impl CityIndex {
             .map(|maybe| maybe.map(|location| location.reference))
     }
 
+    /// Reads a package by its `SQLite` package record id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if lookup or package reconstruction fails.
     pub fn read_package_by_record_id(&self, record_id: i64) -> Result<Option<IndexedPackage>> {
         let Some(reference) = self.lookup_package_ref_by_record_id(record_id)? else {
             return Ok(None);
@@ -2103,7 +2183,16 @@ impl CityIndex {
         self.read_indexed_features(&refs)
     }
 
-    /// Returns the total number of indexed feature references.
+    /// Returns the total number of indexed packages.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the count cannot be read from the index.
+    pub fn package_count(&self) -> Result<usize> {
+        self.index.package_count()
+    }
+
+    /// Returns the total number of indexed feature aliases kept for legacy sidecars.
     ///
     /// # Errors
     ///
@@ -3538,6 +3627,10 @@ impl Index {
         Ok(())
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "transactional normalized schema writes are kept together"
+    )]
     fn insert_normalized_features_in_tx(
         tx: &rusqlite::Transaction<'_>,
         entries: &[FeatureIndexEntry],
@@ -5004,7 +5097,7 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
     let line_spans = line_spans(&bytes);
     let Some((_, metadata_bytes)) = line_spans.first() else {
         return Err(import_error(format!(
-            "NDJSON source {} is empty",
+            "CityJSONSeq source {} is empty",
             path.display()
         )));
     };
@@ -5020,9 +5113,9 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
 
         let feature: Value = parse_json_slice(line_bytes)?;
         let (ids, bounds, spatial) = parse_ndjson_feature_bounds(&feature, scale, translate)?;
-        let cityobject_count = feature_cityobject_count(&feature, "ndjson feature")?;
+        let cityobject_count = feature_cityobject_count(&feature, "CityJSONSeq feature")?;
         let length = u64::try_from(line_bytes.len())
-            .map_err(|_| import_error("NDJSON feature line length does not fit in u64"))?;
+            .map_err(|_| import_error("CityJSONSeq feature line length does not fit in u64"))?;
         features.extend(ids.into_iter().map(|id| ScannedFeature {
             id,
             path: path.to_path_buf(),
@@ -5498,7 +5591,7 @@ fn parse_ndjson_transform(metadata: &Value) -> Result<([f64; 3], [f64; 3])> {
     let transform = metadata
         .get("transform")
         .and_then(Value::as_object)
-        .ok_or_else(|| import_error("NDJSON metadata is missing transform"))?;
+        .ok_or_else(|| import_error("CityJSONSeq metadata is missing transform"))?;
 
     let scale = parse_vector3_f64(transform, "scale")?;
     let translate = parse_vector3_f64(transform, "translate")?;
@@ -5566,10 +5659,10 @@ fn parse_ndjson_feature_bounds(
     scale: [f64; 3],
     translate: [f64; 3],
 ) -> Result<(Vec<String>, FeatureBounds, bool)> {
-    let ids = feature_cityobject_keys(feature, "NDJSON feature")?;
+    let ids = feature_cityobject_keys(feature, "CityJSONSeq feature")?;
     let vertices = feature
         .get("vertices")
-        .ok_or_else(|| import_error("NDJSON feature is missing vertices"))?;
+        .ok_or_else(|| import_error("CityJSONSeq feature is missing vertices"))?;
     let vertices: Vec<[i64; 3]> = parse_json_value(vertices.clone())?;
     let referenced_vertices = collect_feature_vertex_indices(feature, vertices.len())?;
     let (bounds, spatial) = if referenced_vertices.is_empty() {
@@ -5600,7 +5693,7 @@ fn feature_bounds_from_vertices(
     for &index in referenced_vertices {
         let vertex = vertices.get(index).copied().ok_or_else(|| {
             import_error(format!(
-                "vertex index {index} is outside the NDJSON feature vertex array"
+                "vertex index {index} is outside the CityJSONSeq feature vertex array"
             ))
         })?;
         let x = translate[0] + scale[0] * vertex[0] as f64;
@@ -5621,7 +5714,9 @@ fn feature_bounds_from_vertices(
         || !max_y.is_finite()
         || !max_z.is_finite()
     {
-        return Err(import_error("NDJSON feature bbox could not be computed"));
+        return Err(import_error(
+            "CityJSONSeq feature bbox could not be computed",
+        ));
     }
 
     Ok(FeatureBounds {
@@ -6000,7 +6095,7 @@ mod tests {
     }
 
     #[test]
-    fn ndjson_backend_scan_and_index_lookup_roundtrip() {
+    fn cityjsonseq_backend_scan_and_index_lookup_roundtrip() {
         let metadata = serde_json::json!({
             "type": "CityJSON",
             "version": "2.0",
@@ -6032,14 +6127,16 @@ mod tests {
         let backend = NdjsonBackend {
             paths: vec![ndjson_path.clone()],
         };
-        let scans = backend.scan(1).expect("NDJSON scan should succeed");
+        let scans = backend.scan(1).expect("CityJSONSeq scan should succeed");
         assert_eq!(scans.len(), 1);
         assert_eq!(scans[0].features.len(), 1);
         assert_eq!(scans[0].features[0].id, "ndjson-test-feature");
 
         let index_path = write_temp_index_path();
         let mut index = Index::open(&index_path).expect("SQLite index should open");
-        index.rebuild(&scans).expect("NDJSON scan should index");
+        index
+            .rebuild(&scans)
+            .expect("CityJSONSeq scan should index");
 
         let by_id = index
             .lookup_id("ndjson-test-feature")
@@ -6206,8 +6303,10 @@ mod tests {
             },
             &ndjson_index_path,
         )
-        .expect("ndjson index should open");
-        ndjson_index.reindex().expect("ndjson dataset should index");
+        .expect("CityJSONSeq index should open");
+        ndjson_index
+            .reindex()
+            .expect("CityJSONSeq dataset should index");
         assert_full_scan_order(&ndjson_index, &expected_ids);
         assert_full_scan_pages(&ndjson_index, &expected_ids);
     }
@@ -6474,7 +6573,7 @@ mod tests {
             serde_json::to_string(metadata).expect("metadata JSON"),
             serde_json::to_string(feature).expect("feature JSON")
         );
-        fs::write(&path, contents).expect("write temp ndjson");
+        fs::write(&path, contents).expect("write temp CityJSONSeq");
         path
     }
 
@@ -6566,7 +6665,7 @@ mod tests {
             );
             contents.push('\n');
         }
-        fs::write(root.join("dataset.city.jsonl"), contents).expect("write ndjson");
+        fs::write(root.join("dataset.city.jsonl"), contents).expect("write CityJSONSeq");
         root
     }
 

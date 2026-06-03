@@ -1,3 +1,8 @@
+#![allow(
+    clippy::doc_markdown,
+    reason = "test docstrings use domain terminology plainly"
+)]
+
 mod common;
 
 use std::fs;
@@ -27,8 +32,10 @@ fn cityjson_seq_cityindex_supports_end_to_end_queries() {
     index.reindex().expect("CityJSONSeq reindex should succeed");
 
     let model = index
-        .get(&feature_id)
-        .expect("CityJSONSeq get should succeed")
+        .get_packages(&feature_id)
+        .expect("CityJSONSeq package lookup should succeed")
+        .into_iter()
+        .next()
         .expect("feature id should be indexed");
     assert!(model_contains_id(&model, &feature_id));
 
@@ -55,17 +62,14 @@ fn cityjson_seq_cityindex_supports_end_to_end_queries() {
         "query_iter should return the selected feature"
     );
 
-    let iter_hits_with_ids = index
-        .query_iter_with_ids(&bbox)
-        .expect("CityJSONSeq query_iter_with_ids should succeed")
-        .collect::<cityjson_lib::Result<Vec<_>>>()
-        .expect("CityJSONSeq query_iter_with_ids items should succeed");
+    let package_hits = index
+        .query_package_refs(&bbox)
+        .expect("CityJSONSeq package query should succeed");
     assert!(
-        iter_hits_with_ids
+        package_hits
             .iter()
-            .any(|(candidate_id, candidate)| candidate_id == &feature_id
-                && model_contains_id(candidate, &feature_id)),
-        "query_iter_with_ids should return the selected feature id and model"
+            .any(|candidate| candidate.model_id == feature_id),
+        "package query should return the selected package id"
     );
 
     let metadata = index
@@ -106,15 +110,17 @@ fn cityjson_seq_indexes_every_cityobject_key_and_ignores_top_level_id() {
 
     assert!(
         index
-            .get("ignored-cityjson-seq-id")
+            .get_packages("ignored-cityjson-seq-id")
             .expect("top-level id lookup should succeed")
-            .is_none()
+            .is_empty()
     );
 
     for feature_id in ["cityjson-seq-key-a", "cityjson-seq-key-b"] {
         let model = index
-            .get(feature_id)
+            .get_packages(feature_id)
             .expect("cityobject key lookup should succeed")
+            .into_iter()
+            .next()
             .expect("cityobject key should be indexed");
         assert!(model_contains_id(&model, "cityjson-seq-key-a"));
         assert!(model_contains_id(&model, "cityjson-seq-key-b"));
@@ -149,10 +155,14 @@ fn cityjson_seq_allows_duplicate_cityobject_keys() {
         .expect("duplicate CityJSONSeq ids should reindex");
 
     let refs = index
-        .lookup_feature_refs("duplicate-cityjson-seq-key")
+        .lookup_cityobject_refs("duplicate-cityjson-seq-key")
         .expect("plural lookup should succeed");
-    assert_eq!(refs.len(), 2, "both duplicate aliases should be indexed");
-    assert!(refs[0].row_id < refs[1].row_id);
+    assert_eq!(
+        refs.len(),
+        2,
+        "both duplicate CityObjects should be indexed"
+    );
+    assert!(refs[0].record_id < refs[1].record_id);
 }
 
 fn derive_small_cityjson_seq_fixture(source: &Path) -> std::path::PathBuf {

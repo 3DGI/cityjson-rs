@@ -1,3 +1,8 @@
+#![allow(
+    clippy::needless_pass_by_value,
+    reason = "fixture builders intentionally take owned JSON values"
+)]
+
 use std::fs;
 use std::path::{Path, PathBuf};
 

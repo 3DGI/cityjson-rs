@@ -1,3 +1,8 @@
+#![allow(
+    clippy::doc_markdown,
+    reason = "test docstrings use domain terminology plainly"
+)]
+
 mod common;
 
 use std::collections::BTreeSet;

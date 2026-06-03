@@ -1,3 +1,9 @@
+#![allow(
+    clippy::doc_markdown,
+    clippy::needless_raw_string_hashes,
+    reason = "test fixtures and docstrings prioritize readability"
+)]
+
 mod common;
 
 use std::fs;

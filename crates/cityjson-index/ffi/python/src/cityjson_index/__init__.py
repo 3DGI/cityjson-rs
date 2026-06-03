@@ -59,7 +59,7 @@ LodSelection.HIGHEST = LodSelection.highest()
 
 
 @dataclass(frozen=True, slots=True)
-class FeatureFilter:
+class PackageFilter:
     cityobject_types: frozenset[str] | None = None
     default_lod: LodSelection = field(default_factory=LodSelection.all)
     lods_by_type: Mapping[str, LodSelection] = field(default_factory=dict)
@@ -81,7 +81,7 @@ class MissingLodSelection:
 
 
 @dataclass(frozen=True, slots=True)
-class FeatureFilterDiagnostics:
+class PackageFilterReport:
     available_types: frozenset[str] = field(default_factory=frozenset)
     retained_types: frozenset[str] = field(default_factory=frozenset)
     ignored_types: frozenset[str] = field(default_factory=frozenset)
@@ -105,25 +105,27 @@ class FeatureFilterDiagnostics:
             {key: frozenset(value) for key, value in self.retained_lods.items()},
         )
 
+    @property
+    def retained_package_count(self) -> int:
+        return 1 if self.retained_geometry_count > 0 else 0
 
-@dataclass(frozen=True, slots=True)
-class FilteredFeature:
-    model: "CityModel"
-    diagnostics: FeatureFilterDiagnostics
+    @property
+    def ignored_package_count(self) -> int:
+        return 1 if self.retained_geometry_count == 0 else 0
 
 
 @dataclass(slots=True)
-class FeatureFilterSummary:
+class PackageFilterSummary:
     available_types: set[str] = field(default_factory=set)
     retained_types: set[str] = field(default_factory=set)
     ignored_types: set[str] = field(default_factory=set)
     available_lods: dict[str, set[str]] = field(default_factory=dict)
     retained_lods: dict[str, set[str]] = field(default_factory=dict)
     missing_lods: dict[str, MissingLodSelection] = field(default_factory=dict)
-    retained_feature_count: int = 0
-    ignored_feature_count: int = 0
+    retained_package_count: int = 0
+    ignored_package_count: int = 0
 
-    def add(self, diagnostics: FeatureFilterDiagnostics) -> None:
+    def add(self, diagnostics: PackageFilterReport) -> None:
         self.available_types.update(diagnostics.available_types)
         self.retained_types.update(diagnostics.retained_types)
         self.ignored_types.update(diagnostics.ignored_types)
@@ -133,11 +135,11 @@ class FeatureFilterSummary:
             if missing.cityobject_type not in self.missing_lods:
                 self.missing_lods[missing.cityobject_type] = missing
         if diagnostics.retained_geometry_count == 0:
-            self.ignored_feature_count += 1
+            self.ignored_package_count += 1
         else:
-            self.retained_feature_count += 1
+            self.retained_package_count += 1
 
-    def requested_lod_failures(self, filter: FeatureFilter) -> list[MissingLodSelection]:
+    def requested_lod_failures(self, filter: PackageFilter) -> list[MissingLodSelection]:
         failures: list[MissingLodSelection] = []
         for cityobject_type, selection in filter.lods_by_type.items():
             if selection.kind is not _LodSelectionKind.EXACT:
@@ -162,7 +164,7 @@ class FeatureFilterSummary:
             )
         return failures
 
-    def ensure_requested_lods_available(self, filter: FeatureFilter) -> None:
+    def ensure_requested_lods_available(self, filter: PackageFilter) -> None:
         failures = self.requested_lod_failures(filter)
         if not failures:
             return
@@ -191,33 +193,6 @@ def _format_available_lods(lods: frozenset[str]) -> str:
 
 
 @dataclass(frozen=True, slots=True)
-class FeatureRef:
-    feature_id: str
-    source_path: str
-    offset: int = 0
-    length: int = 0
-    vertices_offset: int = 0
-    vertices_length: int = 0
-    member_ranges_json: str = ""
-    source_id: int = 0
-    row_id: int = 0
-
-    @classmethod
-    def from_native(cls, native: _native._FeatureRef) -> Self:
-        return cls(
-            feature_id=_native._bytes_to_py(native.feature_id).decode("utf-8"),
-            source_path=_native._bytes_to_py(native.source_path).decode("utf-8"),
-            offset=int(native.offset),
-            length=int(native.length),
-            vertices_offset=int(native.vertices_offset),
-            vertices_length=int(native.vertices_length),
-            member_ranges_json=_native._bytes_to_py(native.member_ranges_json).decode("utf-8"),
-            source_id=int(native.source_id),
-            row_id=int(native.row_id),
-        )
-
-
-@dataclass(frozen=True, slots=True)
 class CityObjectRef:
     record_id: int
     external_id: str
@@ -240,7 +215,7 @@ class IndexedPackage:
 @dataclass(frozen=True, slots=True)
 class FilteredPackageOutcome:
     model: "CityModel | None"
-    report: FeatureFilterDiagnostics
+    report: PackageFilterReport
 
 
 @dataclass(frozen=True, slots=True)
@@ -389,82 +364,22 @@ class OpenedIndex:
     def read_filtered_packages(
         self,
         refs: list[PackageRef],
-        filter: FeatureFilter,
+        filter: PackageFilter,
     ) -> list[FilteredPackageOutcome]:
-        filtered = _native.read_filtered_packages(self._require_handle(), refs, filter)
-        return [
-            FilteredPackageOutcome(model=item.model, report=item.diagnostics)
-            for item in filtered
-        ]
+        return _native.read_filtered_packages(self._require_handle(), refs, filter)
 
-    def feature_ref_count(self) -> int:
-        return _native.feature_ref_count(self._require_handle())
-
-    def feature_ref_page(self, offset: int, limit: int) -> list[FeatureRef]:
-        return _native.feature_ref_page(self._require_handle(), offset, limit)
-
-    def lookup_feature_refs(self, feature_id: str) -> list[FeatureRef]:
-        return _native.lookup_feature_refs(self._require_handle(), feature_id)
-
-    def get_bytes(self, feature_id: str) -> bytes | None:
-        return _native.get_bytes(self._require_handle(), feature_id)
-
-    def get_model_bytes(self, feature_id: str) -> bytes | None:
-        return _native.get_model_bytes(self._require_handle(), feature_id)
-
-    def get(self, feature_id: str) -> "CityModel | None":
-        payload = self.get_model_bytes(feature_id)
-        if payload is None:
-            return None
-        return _parse_citymodel_bytes(payload)
-
-    def get_json(self, feature_id: str) -> Any | None:
-        payload = self.get_model_bytes(feature_id)
-        if payload is None:
-            return None
-        return json.loads(payload)
-
-    def read_feature_bytes(self, ref: FeatureRef) -> bytes:
-        return _native.read_feature_bytes(self._require_handle(), ref.source_path, ref.offset, ref.length)
-
-    def read_feature_model_bytes(self, ref: FeatureRef) -> bytes:
-        return _native.read_feature_model_bytes(
-            self._require_handle(),
-            ref.feature_id,
-            ref.source_path,
-            ref.offset,
-            ref.length,
-            ref.vertices_offset,
-            ref.vertices_length,
-            ref.member_ranges_json,
-            ref.source_id,
-        )
-
-    def read_feature(self, ref: FeatureRef) -> "CityModel":
-        return _parse_citymodel_bytes(self.read_feature_model_bytes(ref))
-
-    def read_feature_json(self, ref: FeatureRef) -> Any:
-        return json.loads(self.read_feature_model_bytes(ref))
-
-    def read_filtered_features(
-        self,
-        refs: list[FeatureRef],
-        filter: FeatureFilter,
-    ) -> list[FilteredFeature]:
-        return _native.read_filtered_features(self._require_handle(), refs, filter)
-
-    def read_filtered_feature(self, ref: FeatureRef, filter: FeatureFilter) -> FilteredFeature:
-        return self.read_filtered_features([ref], filter)[0]
 
 
 __all__ = [
-    "FeatureFilter",
-    "FeatureFilterDiagnostics",
-    "FeatureFilterSummary",
-    "FeatureRef",
-    "FilteredFeature",
+    "CityObjectRef",
+    "FilteredPackageOutcome",
     "IndexStatus",
+    "IndexedPackage",
     "LodSelection",
     "MissingLodSelection",
     "OpenedIndex",
+    "PackageFilter",
+    "PackageFilterReport",
+    "PackageFilterSummary",
+    "PackageRef",
 ]

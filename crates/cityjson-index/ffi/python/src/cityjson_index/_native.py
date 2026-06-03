@@ -72,20 +72,6 @@ class _IndexStatus(Structure):
     ]
 
 
-class _FeatureRef(Structure):
-    _fields_ = [
-        ("row_id", c_int64),
-        ("feature_id", _Bytes),
-        ("source_path", _Bytes),
-        ("offset", c_uint64),
-        ("length", c_uint64),
-        ("vertices_offset", c_uint64),
-        ("vertices_length", c_uint64),
-        ("member_ranges_json", _Bytes),
-        ("source_id", c_int64),
-    ]
-
-
 class _Bounds3D(Structure):
     _fields_ = [
         ("min_x", c_double),
@@ -264,47 +250,6 @@ class FfiLibrary:
         self._lib.cjx_index_status.restype = c_int
         self._lib.cjx_index_reindex.argtypes = [c_void_p]
         self._lib.cjx_index_reindex.restype = c_int
-        self._lib.cjx_index_feature_ref_count.argtypes = [c_void_p, POINTER(c_size_t)]
-        self._lib.cjx_index_feature_ref_count.restype = c_int
-        self._lib.cjx_index_feature_ref_page.argtypes = [
-            c_void_p,
-            c_size_t,
-            c_size_t,
-            POINTER(POINTER(_FeatureRef)),
-            POINTER(c_size_t),
-        ]
-        self._lib.cjx_index_feature_ref_page.restype = c_int
-        self._lib.cjx_legacy_lookup_feature_refs.argtypes = [
-            c_void_p,
-            c_char_p,
-            c_size_t,
-            POINTER(POINTER(_FeatureRef)),
-            POINTER(c_size_t),
-        ]
-        self._lib.cjx_legacy_lookup_feature_refs.restype = c_int
-        self._lib.cjx_feature_ref_page_free.argtypes = [POINTER(_FeatureRef), c_size_t]
-        self._lib.cjx_feature_ref_page_free.restype = c_int
-        self._lib.cjx_legacy_get_bytes.argtypes = [c_void_p, c_char_p, c_size_t, POINTER(_Bytes)]
-        self._lib.cjx_legacy_get_bytes.restype = c_int
-        self._lib.cjx_legacy_get_model_bytes.argtypes = [c_void_p, c_char_p, c_size_t, POINTER(_Bytes)]
-        self._lib.cjx_legacy_get_model_bytes.restype = c_int
-        self._lib.cjx_legacy_read_feature_bytes.argtypes = [c_void_p, POINTER(_FeatureRef), POINTER(_Bytes)]
-        self._lib.cjx_legacy_read_feature_bytes.restype = c_int
-        self._lib.cjx_legacy_read_feature_model_bytes.argtypes = [
-            c_void_p,
-            POINTER(_FeatureRef),
-            POINTER(_Bytes),
-        ]
-        self._lib.cjx_legacy_read_feature_model_bytes.restype = c_int
-        self._lib.cjx_legacy_read_filtered_features.argtypes = [
-            c_void_p,
-            POINTER(_FeatureRef),
-            c_size_t,
-            POINTER(_FeatureFilter),
-            POINTER(POINTER(_FilteredFeature)),
-            POINTER(c_size_t),
-        ]
-        self._lib.cjx_legacy_read_filtered_features.restype = c_int
         self._lib.cjx_filtered_features_free.argtypes = [POINTER(_FilteredFeature), c_size_t]
         self._lib.cjx_filtered_features_free.restype = c_int
         self._lib.cjx_index_lookup_cityobject_refs.argtypes = [
@@ -402,62 +347,6 @@ class FfiLibrary:
     def reindex(self, handle: c_void_p) -> None:
         self._check_status(self._lib.cjx_index_reindex(handle))
 
-    def feature_ref_count(self, handle: c_void_p) -> int:
-        count = c_size_t()
-        self._check_status(self._lib.cjx_index_feature_ref_count(handle, byref(count)))
-        return int(count.value)
-
-    def _feature_refs_from_native(self, refs: POINTER(_FeatureRef), count: int) -> list[object]:
-        if count == 0 or not refs:
-            return []
-
-        from . import FeatureRef
-
-        result: list[FeatureRef] = []
-        for index in range(count):
-            ref = refs[index]
-            result.append(
-                FeatureRef(
-                    row_id=int(ref.row_id),
-                    feature_id=_bytes_to_py(ref.feature_id).decode("utf-8"),
-                    source_path=_bytes_to_py(ref.source_path).decode("utf-8"),
-                    offset=int(ref.offset),
-                    length=int(ref.length),
-                    vertices_offset=int(ref.vertices_offset),
-                    vertices_length=int(ref.vertices_length),
-                    member_ranges_json=_bytes_to_py(ref.member_ranges_json).decode("utf-8"),
-                    source_id=int(ref.source_id),
-                )
-            )
-        return result
-
-    def feature_ref_page(self, handle: c_void_p, offset: int, limit: int) -> list[object]:
-        refs = POINTER(_FeatureRef)()
-        count = c_size_t()
-        self._check_status(
-            self._lib.cjx_index_feature_ref_page(handle, offset, limit, byref(refs), byref(count))
-        )
-
-        try:
-            return self._feature_refs_from_native(refs, count.value)
-        finally:
-            self._check_status(self._lib.cjx_feature_ref_page_free(refs, count.value))
-
-    def lookup_feature_refs(self, handle: c_void_p, feature_id: str) -> list[object]:
-        refs = POINTER(_FeatureRef)()
-        count = c_size_t()
-        payload = feature_id.encode("utf-8")
-        self._check_status(
-            self._lib.cjx_legacy_lookup_feature_refs(
-                handle, c_char_p(payload), len(payload), byref(refs), byref(count)
-            )
-        )
-
-        try:
-            return self._feature_refs_from_native(refs, count.value)
-        finally:
-            self._check_status(self._lib.cjx_feature_ref_page_free(refs, count.value))
-
     def lookup_cityobject_refs(self, handle: c_void_p, external_id: str) -> list[object]:
         refs = POINTER(_CityObjectRef)()
         count = c_size_t()
@@ -516,126 +405,7 @@ class FfiLibrary:
             )
         )
         try:
-            return _filtered_features_from_native(out, count.value)
-        finally:
-            self._check_status(self._lib.cjx_filtered_features_free(out, count.value))
-
-    def _maybe_get_bytes(self, status: int, out: _Bytes) -> bytes | None:
-        if status == Status.INVALID_ARGUMENT:
-            self.clear_error()
-            return None
-
-        self._check_status(status)
-        try:
-            return _bytes_to_py(out)
-        finally:
-            self._check_status(self._lib.cjx_bytes_free(out))
-
-    def get_bytes(self, handle: c_void_p, feature_id: str) -> bytes | None:
-        payload = feature_id.encode("utf-8")
-        out = _Bytes()
-        status = self._lib.cjx_legacy_get_bytes(handle, c_char_p(payload), len(payload), byref(out))
-        return self._maybe_get_bytes(status, out)
-
-    def get_model_bytes(self, handle: c_void_p, feature_id: str) -> bytes | None:
-        payload = feature_id.encode("utf-8")
-        out = _Bytes()
-        status = self._lib.cjx_legacy_get_model_bytes(
-            handle, c_char_p(payload), len(payload), byref(out)
-        )
-        return self._maybe_get_bytes(status, out)
-
-    def read_feature_bytes(self, handle: c_void_p, source_path: str, offset: int, length: int) -> bytes:
-        source_bytes = source_path.encode("utf-8")
-        source_buffer = create_string_buffer(source_bytes)
-        native = _FeatureRef()
-        native.row_id = 0
-        native.feature_id.data = None
-        native.feature_id.len = 0
-        native.source_path.data = cast(source_buffer, c_void_p)
-        native.source_path.len = len(source_bytes)
-        native.offset = offset
-        native.length = length
-        native.vertices_offset = 0
-        native.vertices_length = 0
-        native.member_ranges_json.data = None
-        native.member_ranges_json.len = 0
-        native.source_id = 0
-
-        out = _Bytes()
-        self._check_status(self._lib.cjx_legacy_read_feature_bytes(handle, byref(native), byref(out)))
-        try:
-            return _bytes_to_py(out)
-        finally:
-            self._check_status(self._lib.cjx_bytes_free(out))
-
-    def read_feature_model_bytes(
-        self,
-        handle: c_void_p,
-        feature_id: str,
-        source_path: str,
-        offset: int,
-        length: int,
-        vertices_offset: int,
-        vertices_length: int,
-        member_ranges_json: str,
-        source_id: int,
-    ) -> bytes:
-        feature_id_bytes = feature_id.encode("utf-8")
-        feature_id_buffer = create_string_buffer(feature_id_bytes)
-        source_bytes = source_path.encode("utf-8")
-        source_buffer = create_string_buffer(source_bytes)
-        member_ranges_bytes = member_ranges_json.encode("utf-8")
-        member_ranges_buffer = create_string_buffer(member_ranges_bytes)
-
-        native = _FeatureRef()
-        native.row_id = 0
-        native.feature_id.data = cast(feature_id_buffer, c_void_p)
-        native.feature_id.len = len(feature_id_bytes)
-        native.source_path.data = cast(source_buffer, c_void_p)
-        native.source_path.len = len(source_bytes)
-        native.offset = offset
-        native.length = length
-        native.vertices_offset = vertices_offset
-        native.vertices_length = vertices_length
-        native.member_ranges_json.data = cast(member_ranges_buffer, c_void_p)
-        native.member_ranges_json.len = len(member_ranges_bytes)
-        native.source_id = source_id
-
-        out = _Bytes()
-        self._check_status(
-            self._lib.cjx_legacy_read_feature_model_bytes(handle, byref(native), byref(out))
-        )
-        try:
-            return _bytes_to_py(out)
-        finally:
-            self._check_status(self._lib.cjx_bytes_free(out))
-
-    def read_filtered_features(
-        self,
-        handle: c_void_p,
-        refs: list[object],
-        filter: object,
-    ) -> list[object]:
-        keepalive: list[Any] = []
-        native_refs = _feature_ref_array(refs, keepalive)
-        native_filter = _feature_filter_to_native(filter, keepalive)
-        out = POINTER(_FilteredFeature)()
-        count = c_size_t()
-
-        self._check_status(
-            self._lib.cjx_legacy_read_filtered_features(
-                handle,
-                native_refs,
-                len(refs),
-                byref(native_filter),
-                byref(out),
-                byref(count),
-            )
-        )
-
-        try:
-            return _filtered_features_from_native(out, count.value)
+            return _filtered_package_outcomes_from_native(out, count.value)
         finally:
             self._check_status(self._lib.cjx_filtered_features_free(out, count.value))
 
@@ -758,31 +528,6 @@ def _feature_filter_to_native(filter: object, keepalive: list[Any]) -> _FeatureF
     )
 
 
-def _feature_ref_to_native(ref: object, keepalive: list[Any]) -> _FeatureRef:
-    native = _FeatureRef()
-    native.row_id = int(getattr(ref, "row_id"))
-    native.feature_id = _bytes_from_str(getattr(ref, "feature_id"), keepalive)
-    native.source_path = _bytes_from_str(getattr(ref, "source_path"), keepalive)
-    native.offset = int(getattr(ref, "offset"))
-    native.length = int(getattr(ref, "length"))
-    native.vertices_offset = int(getattr(ref, "vertices_offset"))
-    native.vertices_length = int(getattr(ref, "vertices_length"))
-    native.member_ranges_json = _bytes_from_str(getattr(ref, "member_ranges_json"), keepalive)
-    native.source_id = int(getattr(ref, "source_id"))
-    return native
-
-
-def _feature_ref_array(refs: list[object], keepalive: list[Any]) -> Any:
-    if not refs:
-        return POINTER(_FeatureRef)()
-
-    items = [_feature_ref_to_native(ref, keepalive) for ref in refs]
-    array_type = _FeatureRef * len(items)
-    array = array_type(*items)
-    keepalive.append(array)
-    return array
-
-
 def _string_list_to_frozenset(value: _StringList) -> frozenset[str]:
     if value.len == 0 or not value.data:
         return frozenset()
@@ -821,9 +566,9 @@ def _missing_lods_to_list(value: _MissingLodSelectionList) -> list[object]:
 
 
 def _diagnostics_from_native(value: _FeatureFilterDiagnostics) -> object:
-    from . import FeatureFilterDiagnostics
+    from . import PackageFilterReport
 
-    return FeatureFilterDiagnostics(
+    return PackageFilterReport(
         available_types=_string_list_to_frozenset(value.available_types),
         retained_types=_string_list_to_frozenset(value.retained_types),
         ignored_types=_string_list_to_frozenset(value.ignored_types),
@@ -834,19 +579,20 @@ def _diagnostics_from_native(value: _FeatureFilterDiagnostics) -> object:
     )
 
 
-def _filtered_features_from_native(features: POINTER(_FilteredFeature), count: int) -> list[object]:
+def _filtered_package_outcomes_from_native(features: POINTER(_FilteredFeature), count: int) -> list[object]:
     if count == 0 or not features:
         return []
 
-    from . import FilteredFeature, _parse_citymodel_bytes
+    from . import FilteredPackageOutcome, _parse_citymodel_bytes
 
-    result: list[FilteredFeature] = []
+    result: list[FilteredPackageOutcome] = []
     for index in range(count):
         feature = features[index]
+        model_payload = _bytes_to_py(feature.model_json)
         result.append(
-            FilteredFeature(
-                model=_parse_citymodel_bytes(_bytes_to_py(feature.model_json)),
-                diagnostics=_diagnostics_from_native(feature.diagnostics),
+            FilteredPackageOutcome(
+                model=None if not model_payload else _parse_citymodel_bytes(model_payload),
+                report=_diagnostics_from_native(feature.diagnostics),
             )
         )
     return result
@@ -873,58 +619,6 @@ def index_status(handle: c_void_p) -> _IndexStatus:
 
 def reindex(handle: c_void_p) -> None:
     _ffi.reindex(handle)
-
-
-def feature_ref_count(handle: c_void_p) -> int:
-    return _ffi.feature_ref_count(handle)
-
-
-def feature_ref_page(handle: c_void_p, offset: int, limit: int) -> list[object]:
-    return _ffi.feature_ref_page(handle, offset, limit)
-
-
-def lookup_feature_refs(handle: c_void_p, feature_id: str) -> list[object]:
-    return _ffi.lookup_feature_refs(handle, feature_id)
-
-
-def get_bytes(handle: c_void_p, feature_id: str) -> bytes | None:
-    return _ffi.get_bytes(handle, feature_id)
-
-
-def get_model_bytes(handle: c_void_p, feature_id: str) -> bytes | None:
-    return _ffi.get_model_bytes(handle, feature_id)
-
-
-def read_feature_bytes(handle: c_void_p, source_path: str, offset: int, length: int) -> bytes:
-    return _ffi.read_feature_bytes(handle, source_path, offset, length)
-
-
-def read_feature_model_bytes(
-    handle: c_void_p,
-    feature_id: str,
-    source_path: str,
-    offset: int,
-    length: int,
-    vertices_offset: int,
-    vertices_length: int,
-    member_ranges_json: str,
-    source_id: int,
-) -> bytes:
-    return _ffi.read_feature_model_bytes(
-        handle,
-        feature_id,
-        source_path,
-        offset,
-        length,
-        vertices_offset,
-        vertices_length,
-        member_ranges_json,
-        source_id,
-    )
-
-
-def read_filtered_features(handle: c_void_p, refs: list[object], filter: object) -> list[object]:
-    return _ffi.read_filtered_features(handle, refs, filter)
 
 
 def lookup_cityobject_refs(handle: c_void_p, external_id: str) -> list[object]:

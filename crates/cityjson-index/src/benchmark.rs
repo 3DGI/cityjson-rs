@@ -490,10 +490,10 @@ fn materialize_layout_dataset(
     match layout {
         BenchmarkLayoutKind::CityJson => materialize_cityjson_dataset(sources, prepared_root)?,
         BenchmarkLayoutKind::CityJsonSeq => {
-            materialize_cityjson_seq_dataset(sources, prepared_root)?
+            materialize_cityjson_seq_dataset(sources, prepared_root)?;
         }
         BenchmarkLayoutKind::FeatureFiles => {
-            materialize_feature_files_dataset(sources, prepared_root)?
+            materialize_feature_files_dataset(sources, prepared_root)?;
         }
     }
 
@@ -707,7 +707,7 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
         .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
     let index_ended = profile::current_memory_snapshot()?;
 
-    let feature_count = index.feature_ref_count()?;
+    let feature_count = index.package_count()?;
     let source_count = index.source_count()?;
     let cityobject_count = index.cityobject_count()?;
     let sidecar_byte_size = fs::metadata(&resolved.index_path).map_or(0, |metadata| metadata.len());
@@ -757,7 +757,7 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
         }),
     ];
 
-    let all_refs = index.feature_ref_page(0, feature_count.min(256))?;
+    let all_refs = index.package_ref_page(0, feature_count.min(256))?;
     let sampled_refs = all_refs.into_iter().take(256).collect::<Vec<_>>();
 
     runs.extend(run_full_scan(
@@ -784,7 +784,7 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
         source_count,
         cityobject_count,
     )?);
-    runs.push(run_read_feature(
+    runs.push(run_read_package(
         &index,
         manifest,
         worker_count,
@@ -828,8 +828,14 @@ fn run_full_scan(
 ) -> Result<Vec<BenchmarkOperationRecord>> {
     let started = Instant::now();
     let mut count = 0usize;
-    for page in index.iter_all_feature_ref_pages(512)? {
-        count += page?.len();
+    let mut offset = 0usize;
+    loop {
+        let page = index.package_ref_page(offset, 512)?;
+        if page.is_empty() {
+            break;
+        }
+        offset += page.len();
+        count += page.len();
     }
     let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
         .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
@@ -873,7 +879,7 @@ fn run_gets(
     let mut runs = Vec::new();
     for feature_id in representative_ids(manifest, feature_count) {
         let started = Instant::now();
-        let hit = index.get(&feature_id)?;
+        let hit = index.get_packages(&feature_id)?;
         let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
             .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
         let memory = profile::current_memory_snapshot()?;
@@ -901,7 +907,7 @@ fn run_gets(
             cityobject_count,
             cityobject_relationship_count: manifest.cityobject_relationship_count,
             multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
-            query_hit_count: Some(usize::from(hit.is_some())),
+            query_hit_count: Some(hit.len()),
         }));
     }
     Ok(runs)
@@ -918,7 +924,8 @@ fn run_queries(
     let mut runs = Vec::new();
     for window in &manifest.query_windows {
         let started = Instant::now();
-        let hits = index.query(&window.bbox)?;
+        let hits = index.query_package_refs(&window.bbox)?;
+        let _packages = index.read_packages(&hits)?;
         let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
             .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
         let memory = profile::current_memory_snapshot()?;
@@ -952,19 +959,19 @@ fn run_queries(
     Ok(runs)
 }
 
-fn run_read_feature(
+fn run_read_package(
     index: &CityIndex,
     manifest: &BenchmarkManifest,
     worker_count: usize,
     feature_count: usize,
     source_count: usize,
     cityobject_count: usize,
-    refs: &[crate::IndexedFeatureRef],
+    refs: &[crate::IndexedPackageRef],
 ) -> Result<BenchmarkOperationRecord> {
     let started = Instant::now();
     let mut reconstructed = 0usize;
-    for feature in refs {
-        let _model = index.read_feature(feature)?;
+    for package in refs {
+        let _model = index.read_package(package)?;
         reconstructed += 1;
     }
     let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
@@ -984,7 +991,7 @@ fn run_read_feature(
         )
         .map_or(0, |metadata| metadata.len()),
         worker_count,
-        operation: "read_feature".to_owned(),
+        operation: "read_package".to_owned(),
         variant: Some(format!("sample-{}", refs.len())),
         elapsed_ns,
         memory,
@@ -1572,7 +1579,7 @@ mod tests {
             let resolved = resolve_dataset(&manifest.prepared_dataset, Some(index_path))?;
             let mut index = CityIndex::open(resolved.storage_layout(), &resolved.index_path)?;
             index.reindex()?;
-            assert_eq!(index.feature_ref_count()?, manifest.feature_count);
+            assert_eq!(index.package_count()?, manifest.feature_count);
             assert_eq!(index.cityobject_count()?, manifest.cityobject_count);
         }
 

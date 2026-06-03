@@ -1,4 +1,8 @@
 #![allow(
+    clippy::doc_markdown,
+    reason = "test docstrings use domain terminology plainly"
+)]
+#![allow(
     clippy::let_and_return,
     clippy::redundant_closure_for_method_calls,
     clippy::similar_names,

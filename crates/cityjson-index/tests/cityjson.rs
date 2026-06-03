@@ -1,3 +1,8 @@
+#![allow(
+    clippy::doc_markdown,
+    reason = "test docstrings use domain terminology plainly"
+)]
+
 mod common;
 
 use std::fs;
@@ -58,8 +63,10 @@ fn cityjson_cityindex_supports_end_to_end_queries() {
     index.reindex().expect("cityjson reindex should succeed");
 
     let model = index
-        .get(&feature_id)
-        .expect("cityjson get should succeed")
+        .get_packages(&feature_id)
+        .expect("cityjson package lookup should succeed")
+        .into_iter()
+        .next()
         .expect("feature id should be indexed");
     assert!(model_contains_id(&model, &feature_id));
 
@@ -84,17 +91,14 @@ fn cityjson_cityindex_supports_end_to_end_queries() {
         "query_iter should return the selected feature"
     );
 
-    let iter_hits_with_ids = index
-        .query_iter_with_ids(&bbox)
-        .expect("cityjson query_iter_with_ids should succeed")
-        .collect::<cityjson_lib::Result<Vec<_>>>()
-        .expect("cityjson query_iter_with_ids items should succeed");
+    let package_hits = index
+        .query_package_refs(&bbox)
+        .expect("cityjson package query should succeed");
     assert!(
-        iter_hits_with_ids
+        package_hits
             .iter()
-            .any(|(candidate_id, candidate)| candidate_id == &feature_id
-                && model_contains_id(candidate, &feature_id)),
-        "query_iter_with_ids should return the selected feature id and model"
+            .any(|candidate| candidate.model_id == feature_id),
+        "package query should return the selected package id"
     );
 
     let metadata = index.metadata().expect("cityjson metadata should succeed");

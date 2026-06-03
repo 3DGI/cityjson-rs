@@ -12,15 +12,15 @@ This crate gives you a consistent indexing layer so you can:
 - reindex changed data
 - fetch features by identifier
 - query features by bounding box
-- read regular CityJSON, CityJSONSeq / NDJSON, and feature-file datasets through the same API
+- read regular CityJSON, CityJSONSeq, and feature-files datasets through the same package API
 
 ## What It Does
 
 `cityjson-index` aims to be a small, predictable indexing layer for CityJSON data:
 
 - builds or refreshes a `.cityjson-index.sqlite` sidecar
-- tracks indexed source and feature metadata
-- reconstructs CityJSON feature payloads on read
+- tracks indexed sources, packages, CityObjects, relationships, and 3D bounds
+- reconstructs valid CityJSONFeature package payloads on read
 - exposes a CLI for dataset inspection, querying, and retrieval
 
 ## Install
@@ -100,17 +100,17 @@ cjindex get \
 
 ## Storage Layouts
 
-### CityJSONSeq / NDJSON
+### CityJSONSeq
 
-Each `.city.jsonl` file begins with metadata, followed by one feature per line. The index stores byte offsets for each feature line.
+Each `.city.jsonl` file begins with metadata, followed by one CityJSONFeature per line. The index stores one package record per feature line and one CityObject record per CityObject occurrence.
 
 ### CityJSON
 
-Regular CityJSON files share a vertices array and a `CityObjects` dictionary. The index stores the feature package ranges and reconstructs the requested model on read.
+Regular CityJSON files share a vertices array and a `CityObjects` dictionary. The index stores one package record per root CityObject package and reconstructs a valid CityJSONFeature on read.
 
 ### Feature Files
 
-Each feature lives in its own file. Metadata is discovered through ancestor `.json` files and cached in the SQLite index.
+Each CityJSONFeature package lives in its own file. Metadata is discovered through ancestor `.json` files and cached in the SQLite index.
 
 ## Benchmarks
 
@@ -121,7 +121,7 @@ just bench-index
 just bench-index-json
 ```
 
-Default cases include the original single-tile full/subset datasets and a generated multi-source dataset derived from the pinned artifact. NDJSON and regular CityJSON indexing parallelism currently depends on multiple source files, so the generated multi-source case is the default signal for worker-count comparisons. Feature-file indexing parallelizes across individual feature files while keeping one source row per metadata file.
+Default cases include the original single-tile full/subset datasets and a generated multi-source dataset derived from the pinned artifact. CityJSONSeq and regular CityJSON indexing parallelism currently depends on multiple source files, so the generated multi-source case is the default signal for worker-count comparisons. Feature-file indexing parallelizes across individual feature files while keeping one source row per metadata file.
 
 Each worker-count measurement uses a fresh SQLite index path. Treat one pass as a smoke measurement and use repeated runs for timing comparisons. Memory fields report process RSS snapshots: `current_rss_bytes` is current RSS, `process_peak_rss_bytes` is process-lifetime peak RSS, and `peak_rss_bytes` is a deprecated compatibility alias for the same process-lifetime peak.
 
