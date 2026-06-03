@@ -62,6 +62,7 @@ pub struct CityIndex {
 
 pub const WORKER_COUNT_ENV: &str = "CITYJSON_INDEX_WORKERS";
 const DEFAULT_SCAN_PAGE_SIZE: usize = 512;
+const SCHEMA_VERSION: i64 = 1;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct IndexedFeatureRef {
@@ -1651,6 +1652,7 @@ struct FeatureIndexEntry {
     offset: u64,
     length: u64,
     bounds: FeatureBounds,
+    spatial: bool,
     cityobject_count: u64,
     member_ranges_json: Option<String>,
 }
@@ -1922,9 +1924,50 @@ impl Index {
         }
 
         let conn = sqlite_result(rusqlite::Connection::open(path))?;
+        sqlite_result(conn.execute_batch("PRAGMA foreign_keys = ON;"))?;
+
+        let has_schema_state = Self::table_exists(&conn, "schema_state")?;
+        let has_legacy_features = Self::table_exists(&conn, "features")?;
+        if has_schema_state {
+            let schema_version = Self::schema_version(&conn)?;
+            if schema_version > SCHEMA_VERSION {
+                return Err(import_error(format!(
+                    "unsupported cityjson-index schema version {schema_version}; rebuild with a newer cjindex"
+                )));
+            }
+        }
+
+        Self::create_schema(&conn)?;
+        if has_schema_state {
+            Self::ensure_schema_state(&conn, 0)?;
+        } else if has_legacy_features {
+            Self::ensure_schema_state(&conn, 1)?;
+        } else {
+            Self::ensure_schema_state(&conn, 0)?;
+        }
+
+        Self::ensure_duplicate_feature_ids_allowed(&conn)?;
+        Self::ensure_member_ranges_column(&conn)?;
+        Self::ensure_source_status_columns(&conn)?;
+        Self::ensure_feature_status_columns(&conn)?;
+        Self::ensure_feature_bounds_columns(&conn)?;
+
+        Ok(Self {
+            conn,
+            metadata_cache: Mutex::new(HashMap::new()),
+        })
+    }
+
+    fn create_schema(conn: &rusqlite::Connection) -> Result<()> {
         sqlite_result(conn.execute_batch(
             r"
             PRAGMA foreign_keys = ON;
+
+            CREATE TABLE IF NOT EXISTS schema_state (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                schema_version INTEGER NOT NULL,
+                needs_reindex INTEGER NOT NULL CHECK (needs_reindex IN (0, 1))
+            );
 
             CREATE TABLE IF NOT EXISTS sources (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1932,9 +1975,70 @@ impl Index {
                 metadata TEXT NOT NULL,
                 vertices_offset INTEGER,
                 vertices_length INTEGER,
-                source_size INTEGER,
-                source_mtime_ns INTEGER
+                source_size INTEGER NOT NULL DEFAULT 0,
+                source_mtime_ns INTEGER NOT NULL DEFAULT 0,
+                CHECK ((vertices_offset IS NULL) = (vertices_length IS NULL))
             );
+
+            CREATE TABLE IF NOT EXISTS packages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+                package_type TEXT NOT NULL CHECK (package_type IN ('cityjson', 'cityjson-seq', 'feature-files')),
+                model_id TEXT NOT NULL,
+                path TEXT NOT NULL,
+                offset INTEGER,
+                length INTEGER,
+                file_size INTEGER NOT NULL,
+                file_mtime_ns INTEGER NOT NULL,
+                CHECK ((offset IS NULL) = (length IS NULL))
+            );
+
+            CREATE TABLE IF NOT EXISTS cityobjects (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+                external_id TEXT NOT NULL,
+                cityobject_type TEXT NOT NULL,
+                path TEXT NOT NULL,
+                offset INTEGER NOT NULL,
+                length INTEGER NOT NULL,
+                CHECK (offset >= 0),
+                CHECK (length > 0),
+                UNIQUE (path, offset, length)
+            );
+
+            CREATE TABLE IF NOT EXISTS package_cityobjects (
+                package_id INTEGER NOT NULL REFERENCES packages(id) ON DELETE CASCADE,
+                cityobject_id INTEGER NOT NULL REFERENCES cityobjects(id) ON DELETE CASCADE,
+                ordinal INTEGER NOT NULL,
+                is_root INTEGER NOT NULL CHECK (is_root IN (0, 1)),
+                PRIMARY KEY (package_id, cityobject_id),
+                UNIQUE (package_id, ordinal)
+            );
+
+            CREATE TABLE IF NOT EXISTS cityobject_relationships (
+                parent_cityobject_id INTEGER NOT NULL REFERENCES cityobjects(id) ON DELETE CASCADE,
+                child_cityobject_id INTEGER NOT NULL REFERENCES cityobjects(id) ON DELETE CASCADE,
+                PRIMARY KEY (parent_cityobject_id, child_cityobject_id),
+                CHECK (parent_cityobject_id <> child_cityobject_id)
+            );
+
+            CREATE VIRTUAL TABLE IF NOT EXISTS package_bbox USING rtree(
+                package_id, min_x, max_x, min_y, max_y, min_z, max_z
+            );
+
+            CREATE VIRTUAL TABLE IF NOT EXISTS cityobject_bbox USING rtree(
+                cityobject_id, min_x, max_x, min_y, max_y, min_z, max_z
+            );
+
+            CREATE INDEX IF NOT EXISTS packages_source_id_idx ON packages(source_id);
+            CREATE INDEX IF NOT EXISTS packages_model_id_idx ON packages(model_id);
+            CREATE INDEX IF NOT EXISTS cityobjects_external_id_idx ON cityobjects(external_id);
+            CREATE INDEX IF NOT EXISTS cityobjects_type_idx ON cityobjects(cityobject_type);
+            CREATE INDEX IF NOT EXISTS cityobjects_source_id_idx ON cityobjects(source_id);
+            CREATE INDEX IF NOT EXISTS package_cityobjects_cityobject_id_idx
+                ON package_cityobjects(cityobject_id);
+            CREATE INDEX IF NOT EXISTS cityobject_relationships_child_idx
+                ON cityobject_relationships(child_cityobject_id);
 
             CREATE TABLE IF NOT EXISTS features (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1952,13 +2056,7 @@ impl Index {
             );
 
             CREATE VIRTUAL TABLE IF NOT EXISTS feature_bbox
-            USING rtree(
-                feature_rowid,
-                min_x,
-                max_x,
-                min_y,
-                max_y
-            );
+            USING rtree(feature_rowid, min_x, max_x, min_y, max_y);
 
             CREATE TABLE IF NOT EXISTS bbox_map (
                 feature_rowid INTEGER PRIMARY KEY,
@@ -1966,16 +2064,41 @@ impl Index {
             );
             ",
         ))?;
-        Self::ensure_duplicate_feature_ids_allowed(&conn)?;
-        Self::ensure_member_ranges_column(&conn)?;
-        Self::ensure_source_status_columns(&conn)?;
-        Self::ensure_feature_status_columns(&conn)?;
-        Self::ensure_feature_bounds_columns(&conn)?;
+        Ok(())
+    }
 
-        Ok(Self {
-            conn,
-            metadata_cache: Mutex::new(HashMap::new()),
-        })
+    fn table_exists(conn: &rusqlite::Connection, table: &str) -> Result<bool> {
+        let exists = sqlite_result(conn.query_row(
+            "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type IN ('table', 'view') AND name = ?1)",
+            params![table],
+            |row| row.get::<_, i64>(0),
+        ))?;
+        Ok(exists != 0)
+    }
+
+    fn schema_version(conn: &rusqlite::Connection) -> Result<i64> {
+        sqlite_result(conn.query_row(
+            "SELECT schema_version FROM schema_state WHERE id = 1",
+            [],
+            |row| row.get::<_, i64>(0),
+        ))
+    }
+
+    fn ensure_schema_state(conn: &rusqlite::Connection, needs_reindex: i64) -> Result<()> {
+        sqlite_result(conn.execute(
+            r"
+            INSERT INTO schema_state (id, schema_version, needs_reindex)
+            VALUES (1, ?1, ?2)
+            ON CONFLICT(id) DO UPDATE SET
+                schema_version = excluded.schema_version,
+                needs_reindex = CASE
+                    WHEN schema_state.needs_reindex = 1 THEN 1
+                    ELSE excluded.needs_reindex
+                END
+            ",
+            params![SCHEMA_VERSION, needs_reindex],
+        ))?;
+        Ok(())
     }
 
     fn rebuild(&mut self, scans: &[SourceScan]) -> Result<()> {
@@ -2003,6 +2126,7 @@ impl Index {
                     offset: feature.offset,
                     length: feature.length,
                     bounds: feature.bounds,
+                    spatial: feature.spatial,
                     cityobject_count: feature.cityobject_count,
                     member_ranges_json: feature
                         .member_ranges
@@ -2013,6 +2137,11 @@ impl Index {
             }
         }
         Self::insert_features_in_tx(&tx, &feature_entries)?;
+        Self::insert_normalized_features_in_tx(&tx, &feature_entries)?;
+        sqlite_result(tx.execute(
+            "UPDATE schema_state SET schema_version = ?1, needs_reindex = 0 WHERE id = 1",
+            params![SCHEMA_VERSION],
+        ))?;
         sqlite_result(tx.commit())?;
 
         self.metadata_cache
@@ -2672,6 +2801,12 @@ impl Index {
     fn clear_tables(tx: &rusqlite::Transaction<'_>) -> Result<()> {
         sqlite_result(tx.execute_batch(
             r"
+            DELETE FROM cityobject_relationships;
+            DELETE FROM package_cityobjects;
+            DELETE FROM cityobject_bbox;
+            DELETE FROM package_bbox;
+            DELETE FROM cityobjects;
+            DELETE FROM packages;
             DELETE FROM bbox_map;
             DELETE FROM feature_bbox;
             DELETE FROM features;
@@ -2784,6 +2919,133 @@ impl Index {
         Ok(())
     }
 
+    fn insert_normalized_features_in_tx(
+        tx: &rusqlite::Transaction<'_>,
+        entries: &[FeatureIndexEntry],
+    ) -> Result<()> {
+        let mut inserted_physical_packages = BTreeSet::new();
+        for entry in entries {
+            let package_type = normalized_package_type(entry);
+            if package_type != "cityjson"
+                && !inserted_physical_packages.insert((
+                    entry.path.clone(),
+                    entry.offset,
+                    entry.length,
+                ))
+            {
+                continue;
+            }
+            let file_size = sqlite_result(u64_to_i64(entry.file_size))?;
+            let file_mtime_ns = entry.file_mtime_ns;
+            let (package_offset, package_length) = if package_type == "cityjson" {
+                (None, None)
+            } else {
+                (
+                    Some(sqlite_result(u64_to_i64(entry.offset))?),
+                    Some(sqlite_result(u64_to_i64(entry.length))?),
+                )
+            };
+            sqlite_result(tx.execute(
+                r"
+                INSERT INTO packages (
+                    source_id,
+                    package_type,
+                    model_id,
+                    path,
+                    offset,
+                    length,
+                    file_size,
+                    file_mtime_ns
+                )
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+                ",
+                params![
+                    entry.source_id,
+                    package_type,
+                    &entry.id,
+                    entry.path.to_string_lossy(),
+                    package_offset,
+                    package_length,
+                    file_size,
+                    file_mtime_ns,
+                ],
+            ))?;
+            let package_id = tx.last_insert_rowid();
+            if entry.spatial {
+                insert_package_bbox(tx, package_id, entry.bounds)?;
+            }
+
+            let objects = normalized_cityobjects_for_entry(entry)?;
+            validate_normalized_relationships(&objects)?;
+            let root_external_id = entry.id.as_str();
+            let mut object_ids_by_external_id = BTreeMap::new();
+
+            for (ordinal, object) in objects.iter().enumerate() {
+                let cityobject_id = insert_or_lookup_cityobject(tx, entry.source_id, object)?;
+                object_ids_by_external_id.insert(object.external_id.clone(), cityobject_id);
+                sqlite_result(tx.execute(
+                    r"
+                    INSERT OR IGNORE INTO package_cityobjects (
+                        package_id,
+                        cityobject_id,
+                        ordinal,
+                        is_root
+                    )
+                    VALUES (?1, ?2, ?3, ?4)
+                    ",
+                    params![
+                        package_id,
+                        cityobject_id,
+                        i64::try_from(ordinal).map_err(|_| {
+                            import_error("package CityObject ordinal does not fit in i64")
+                        })?,
+                        i64::from(object.external_id == root_external_id),
+                    ],
+                ))?;
+                if entry.spatial {
+                    insert_cityobject_bbox(tx, cityobject_id, entry.bounds)?;
+                }
+            }
+
+            for object in &objects {
+                let parent_id = object_ids_by_external_id
+                    .get(&object.external_id)
+                    .copied()
+                    .ok_or_else(|| {
+                        import_error(format!(
+                            "CityObject {} was not inserted",
+                            object.external_id
+                        ))
+                    })?;
+                for child_external_id in &object.children {
+                    let child_id = object_ids_by_external_id
+                        .get(child_external_id)
+                        .copied()
+                        .ok_or_else(|| {
+                            import_error(format!("missing relationship target {child_external_id}"))
+                        })?;
+                    if parent_id == child_id {
+                        return Err(import_error(format!(
+                            "relationship cycle includes {}",
+                            object.external_id
+                        )));
+                    }
+                    sqlite_result(tx.execute(
+                        r"
+                        INSERT OR IGNORE INTO cityobject_relationships (
+                            parent_cityobject_id,
+                            child_cityobject_id
+                        )
+                        VALUES (?1, ?2)
+                        ",
+                        params![parent_id, child_id],
+                    ))?;
+                }
+            }
+        }
+        Ok(())
+    }
+
     fn feature_location_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<FeatureLocation> {
         Self::feature_location_from_row_offset(row, 0)
     }
@@ -2872,6 +3134,242 @@ impl Index {
     }
 }
 
+#[derive(Debug)]
+struct NormalizedCityObjectScan {
+    external_id: String,
+    cityobject_type: String,
+    path: PathBuf,
+    offset: u64,
+    length: u64,
+    children: BTreeSet<String>,
+}
+
+fn normalized_package_type(entry: &FeatureIndexEntry) -> &'static str {
+    if entry.member_ranges_json.is_some() {
+        "cityjson"
+    } else if entry.offset == 0 && entry.length == entry.file_size {
+        "feature-files"
+    } else {
+        "cityjson-seq"
+    }
+}
+
+fn normalized_cityobjects_for_entry(
+    entry: &FeatureIndexEntry,
+) -> Result<Vec<NormalizedCityObjectScan>> {
+    if let Some(member_ranges_json) = &entry.member_ranges_json {
+        let member_ranges: Vec<IndexedObjectRange> = parse_json_str(member_ranges_json)?;
+        return member_ranges
+            .into_iter()
+            .map(|member| {
+                let fragment = read_exact_range(&entry.path, member.offset, member.length)?;
+                let (external_id, object) = parse_cityobject_entry(&fragment)?;
+                let cityobject_type = cityobject_type(&object, &external_id)?;
+                let children = normalized_children(&external_id, &object)?;
+                Ok(NormalizedCityObjectScan {
+                    external_id,
+                    cityobject_type,
+                    path: entry.path.clone(),
+                    offset: member.offset,
+                    length: member.length,
+                    children,
+                })
+            })
+            .collect();
+    }
+
+    let feature_bytes = read_exact_range(&entry.path, entry.offset, entry.length)?;
+    let feature: Value = parse_json_slice(&feature_bytes)?;
+    let cityobjects = feature
+        .get("CityObjects")
+        .and_then(Value::as_object)
+        .ok_or_else(|| import_error(format!("feature {} is missing CityObjects", entry.id)))?;
+    let mut objects = Vec::with_capacity(cityobjects.len());
+    for (ordinal, (external_id, object)) in cityobjects.iter().enumerate() {
+        let cityobject_type = cityobject_type(object, external_id)?;
+        let children = normalized_children(external_id, object)?;
+        objects.push(NormalizedCityObjectScan {
+            external_id: external_id.clone(),
+            cityobject_type,
+            path: entry.path.clone(),
+            offset: entry.offset
+                + u64::try_from(ordinal)
+                    .map_err(|_| import_error("CityObject ordinal does not fit in u64"))?,
+            length: 1,
+            children,
+        });
+    }
+    objects.sort_by(|left, right| left.external_id.cmp(&right.external_id));
+    Ok(objects)
+}
+
+fn cityobject_type(object: &Value, external_id: &str) -> Result<String> {
+    object
+        .get("type")
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned)
+        .ok_or_else(|| import_error(format!("CityObject {external_id} is missing type")))
+}
+
+fn normalized_children(external_id: &str, object: &Value) -> Result<BTreeSet<String>> {
+    let mut children = BTreeSet::new();
+    if let Some(values) = object.get("children").and_then(Value::as_array) {
+        for value in values {
+            let child = value.as_str().ok_or_else(|| {
+                import_error(format!(
+                    "CityObject {external_id} child reference is not a string"
+                ))
+            })?;
+            children.insert(child.to_owned());
+        }
+    }
+    Ok(children)
+}
+
+fn validate_normalized_relationships(objects: &[NormalizedCityObjectScan]) -> Result<()> {
+    let ids = objects
+        .iter()
+        .map(|object| object.external_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let graph = objects
+        .iter()
+        .map(|object| {
+            for child in &object.children {
+                if !ids.contains(child.as_str()) {
+                    return Err(import_error(format!("missing relationship target {child}")));
+                }
+            }
+            Ok((
+                object.external_id.as_str(),
+                object
+                    .children
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>(),
+            ))
+        })
+        .collect::<Result<BTreeMap<_, _>>>()?;
+    ensure_relationship_graph_acyclic(&graph)
+}
+
+fn ensure_relationship_graph_acyclic(graph: &BTreeMap<&str, Vec<&str>>) -> Result<()> {
+    fn visit<'a>(
+        node: &'a str,
+        graph: &BTreeMap<&'a str, Vec<&'a str>>,
+        visiting: &mut BTreeSet<&'a str>,
+        visited: &mut BTreeSet<&'a str>,
+    ) -> Result<()> {
+        if visited.contains(node) {
+            return Ok(());
+        }
+        if !visiting.insert(node) {
+            return Err(import_error(format!("relationship cycle includes {node}")));
+        }
+        if let Some(children) = graph.get(node) {
+            for child in children {
+                visit(child, graph, visiting, visited)?;
+            }
+        }
+        visiting.remove(node);
+        visited.insert(node);
+        Ok(())
+    }
+
+    let mut visiting = BTreeSet::new();
+    let mut visited = BTreeSet::new();
+    for node in graph.keys() {
+        visit(node, graph, &mut visiting, &mut visited)?;
+    }
+    Ok(())
+}
+
+fn insert_or_lookup_cityobject(
+    tx: &rusqlite::Transaction<'_>,
+    source_id: i64,
+    object: &NormalizedCityObjectScan,
+) -> Result<i64> {
+    sqlite_result(tx.execute(
+        r"
+        INSERT OR IGNORE INTO cityobjects (
+            source_id,
+            external_id,
+            cityobject_type,
+            path,
+            offset,
+            length
+        )
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+        ",
+        params![
+            source_id,
+            &object.external_id,
+            &object.cityobject_type,
+            object.path.to_string_lossy(),
+            sqlite_result(u64_to_i64(object.offset))?,
+            sqlite_result(u64_to_i64(object.length))?,
+        ],
+    ))?;
+    sqlite_result(tx.query_row(
+        "SELECT id FROM cityobjects WHERE path = ?1 AND offset = ?2 AND length = ?3",
+        params![
+            object.path.to_string_lossy(),
+            sqlite_result(u64_to_i64(object.offset))?,
+            sqlite_result(u64_to_i64(object.length))?,
+        ],
+        |row| row.get::<_, i64>(0),
+    ))
+}
+
+fn insert_package_bbox(
+    tx: &rusqlite::Transaction<'_>,
+    package_id: i64,
+    bounds: FeatureBounds,
+) -> Result<()> {
+    sqlite_result(tx.execute(
+        r"
+        INSERT OR REPLACE INTO package_bbox (
+            package_id, min_x, max_x, min_y, max_y, min_z, max_z
+        )
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+        ",
+        params![
+            package_id,
+            bounds.min_x,
+            bounds.max_x,
+            bounds.min_y,
+            bounds.max_y,
+            bounds.min_z,
+            bounds.max_z,
+        ],
+    ))?;
+    Ok(())
+}
+
+fn insert_cityobject_bbox(
+    tx: &rusqlite::Transaction<'_>,
+    cityobject_id: i64,
+    bounds: FeatureBounds,
+) -> Result<()> {
+    sqlite_result(tx.execute(
+        r"
+        INSERT OR REPLACE INTO cityobject_bbox (
+            cityobject_id, min_x, max_x, min_y, max_y, min_z, max_z
+        )
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+        ",
+        params![
+            cityobject_id,
+            bounds.min_x,
+            bounds.max_x,
+            bounds.min_y,
+            bounds.max_y,
+            bounds.min_z,
+            bounds.max_z,
+        ],
+    ))?;
+    Ok(())
+}
+
 trait StorageBackend: Send + Sync {
     fn scan(&self, worker_count: usize) -> Result<Vec<SourceScan>>;
     fn read_one(&self, loc: &FeatureLocation, metadata_bytes: Arc<[u8]>) -> Result<CityModel>;
@@ -2905,6 +3403,7 @@ struct ScannedFeature {
     offset: u64,
     length: u64,
     bounds: FeatureBounds,
+    spatial: bool,
     cityobject_count: u64,
     member_ranges: Option<Vec<IndexedObjectRange>>,
 }
@@ -3304,6 +3803,7 @@ fn scan_feature_file(item: &FeatureFileScanItem<'_>) -> Result<(usize, Vec<Scann
             offset: 0,
             length: file_size,
             bounds,
+            spatial: true,
             cityobject_count,
             member_ranges: None,
         })
@@ -3849,6 +4349,7 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
             offset,
             length,
             bounds,
+            spatial: true,
             cityobject_count,
             member_ranges: None,
         }));
@@ -3913,6 +4414,7 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
                 path.display()
             ))
         })?;
+    validate_cityjson_relationship_graph(cityobjects)?;
     let vertices_value = document.get("vertices").ok_or_else(|| {
         import_error(format!(
             "CityJSON source {} is missing vertices",
@@ -3961,14 +4463,14 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
             &mut referenced_vertices,
             &mut visited,
         )?;
-        if referenced_vertices.is_empty() {
-            return Err(import_error(format!(
-                "CityObject {id} in {} does not reference any vertices",
-                path.display()
-            )));
-        }
-        let bounds =
-            feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?;
+        let (bounds, spatial) = if referenced_vertices.is_empty() {
+            (empty_feature_bounds(), false)
+        } else {
+            (
+                feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?,
+                true,
+            )
+        };
         features.push(ScannedFeature {
             id: id.clone(),
             path: path.to_path_buf(),
@@ -3977,6 +4479,7 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
             offset,
             length,
             bounds,
+            spatial,
             cityobject_count: u64::try_from(member_ranges.len())
                 .map_err(|_| import_error("CityObject count does not fit in u64"))?,
             member_ranges: Some(member_ranges),
@@ -3992,6 +4495,39 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
         source_mtime_ns,
         features,
     })
+}
+
+fn validate_cityjson_relationship_graph(cityobjects: &Map<String, Value>) -> Result<()> {
+    let mut graph = BTreeMap::new();
+    for (object_id, object) in cityobjects {
+        let mut children = Vec::new();
+        if let Some(values) = object.get("children").and_then(Value::as_array) {
+            for value in values {
+                let child = value.as_str().ok_or_else(|| {
+                    import_error(format!(
+                        "CityObject {object_id} child reference is not a string"
+                    ))
+                })?;
+                if !cityobjects.contains_key(child) {
+                    return Err(import_error(format!("missing relationship target {child}")));
+                }
+                children.push(child);
+            }
+        }
+        graph.insert(object_id.as_str(), children);
+    }
+    ensure_relationship_graph_acyclic(&graph)
+}
+
+fn empty_feature_bounds() -> FeatureBounds {
+    FeatureBounds {
+        min_x: 0.0,
+        max_x: 0.0,
+        min_y: 0.0,
+        max_y: 0.0,
+        min_z: 0.0,
+        max_z: 0.0,
+    }
 }
 
 fn cityjson_base_metadata(document: &Value) -> Result<Meta> {
