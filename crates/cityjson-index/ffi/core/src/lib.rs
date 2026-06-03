@@ -113,7 +113,7 @@ pub struct cjx_lod_by_type_t {
 #[allow(non_camel_case_types)]
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct cjx_feature_filter_t {
+pub struct cjx_package_filter_t {
     pub has_cityobject_types: bool,
     pub cityobject_types: cjx_string_list_t,
     pub default_lod: cjx_lod_selection_t,
@@ -157,7 +157,7 @@ pub struct cjx_missing_lod_selection_list_t {
 #[allow(non_camel_case_types)]
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct cjx_feature_filter_diagnostics_t {
+pub struct cjx_package_filter_report_t {
     pub available_types: cjx_string_list_t,
     pub retained_types: cjx_string_list_t,
     pub ignored_types: cjx_string_list_t,
@@ -170,9 +170,9 @@ pub struct cjx_feature_filter_diagnostics_t {
 #[allow(non_camel_case_types)]
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct cjx_filtered_feature_t {
+pub struct cjx_filtered_package_t {
     pub model_json: cj_bytes_t,
-    pub diagnostics: cjx_feature_filter_diagnostics_t,
+    pub diagnostics: cjx_package_filter_report_t,
 }
 
 impl From<IndexedCityObjectRef> for cjx_cityobject_ref_t {
@@ -325,7 +325,7 @@ impl OpenedIndex {
         &self,
         packages: &[cjx_package_ref_t],
         filter: &PackageFilter,
-    ) -> Result<Vec<cjx_filtered_feature_t>, AbiError> {
+    ) -> Result<Vec<cjx_filtered_package_t>, AbiError> {
         let packages = packages
             .iter()
             .map(IndexedPackageRef::try_from)
@@ -343,7 +343,7 @@ impl OpenedIndex {
                     .transpose()
                     .map_err(AbiError::from)?
                     .unwrap_or_default();
-                Ok(cjx_filtered_feature_t {
+                Ok(cjx_filtered_package_t {
                     model_json,
                     diagnostics: package_report_from_abi(&outcome.report),
                 })
@@ -371,7 +371,7 @@ fn lod_selection_from_abi(
     }
 }
 
-fn package_filter_from_abi(filter: &cjx_feature_filter_t) -> Result<PackageFilter, AbiError> {
+fn package_filter_from_abi(filter: &cjx_package_filter_t) -> Result<PackageFilter, AbiError> {
     let cityobject_types = if filter.has_cityobject_types {
         Some(string_list_to_set(
             filter.cityobject_types,
@@ -480,9 +480,9 @@ fn missing_lods_from_abi(items: &[MissingLodSelection]) -> cjx_missing_lod_selec
     cjx_missing_lod_selection_list_t { data, len }
 }
 
-fn package_report_from_abi(report: &PackageFilterReport) -> cjx_feature_filter_diagnostics_t {
+fn package_report_from_abi(report: &PackageFilterReport) -> cjx_package_filter_report_t {
     let missing = report.missing_lods.values().cloned().collect::<Vec<_>>();
-    cjx_feature_filter_diagnostics_t {
+    cjx_package_filter_report_t {
         available_types: string_list_from_set(&report.available_types),
         retained_types: string_list_from_set(&report.retained_types),
         ignored_types: string_list_from_set(&report.ignored_types),
@@ -685,7 +685,7 @@ fn free_missing_lod_selection_list(list: cjx_missing_lod_selection_list_t) {
     }
 }
 
-fn free_diagnostics(diagnostics: cjx_feature_filter_diagnostics_t) {
+fn free_diagnostics(diagnostics: cjx_package_filter_report_t) {
     free_string_list(diagnostics.available_types);
     free_string_list(diagnostics.retained_types);
     free_string_list(diagnostics.ignored_types);
@@ -694,7 +694,7 @@ fn free_diagnostics(diagnostics: cjx_feature_filter_diagnostics_t) {
     free_missing_lod_selection_list(diagnostics.missing_lods);
 }
 
-fn free_filtered_feature(feature: cjx_filtered_feature_t) {
+fn free_filtered_package(feature: cjx_filtered_package_t) {
     // SAFETY: the model buffer was allocated by this ABI.
     unsafe {
         bytes_free(feature.model_json);
@@ -917,8 +917,8 @@ pub extern "C" fn cjx_index_read_filtered_packages(
     handle: *const cjx_index_t,
     refs: *const cjx_package_ref_t,
     ref_count: usize,
-    filter: *const cjx_feature_filter_t,
-    out_features: *mut *mut cjx_filtered_feature_t,
+    filter: *const cjx_package_filter_t,
+    out_packages: *mut *mut cjx_filtered_package_t,
     out_count: *mut usize,
 ) -> cj_status_t {
     match run_ffi(|| {
@@ -934,8 +934,8 @@ pub extern "C" fn cjx_index_read_filtered_packages(
             })?;
             unsafe { slice::from_raw_parts(refs.as_ptr(), ref_count) }
         };
-        let features = handle.read_filtered_packages(refs, &filter)?;
-        write_ref_slice(out_features, out_count, features)
+        let packages = handle.read_filtered_packages(refs, &filter)?;
+        write_ref_slice(out_packages, out_count, packages)
     }) {
         Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
         Err(status) => status,
@@ -945,25 +945,25 @@ pub extern "C" fn cjx_index_read_filtered_packages(
 #[unsafe(no_mangle)]
 /// # Safety
 ///
-/// `features` must either be null or point to `count` filtered features
+/// `packages` must either be null or point to `count` filtered packages
 /// allocated by `cjx_index_read_filtered_packages`.
-pub unsafe extern "C" fn cjx_filtered_features_free(
-    features: *mut cjx_filtered_feature_t,
+pub unsafe extern "C" fn cjx_filtered_packages_free(
+    packages: *mut cjx_filtered_package_t,
     count: usize,
 ) -> cj_status_t {
     match run_ffi(|| {
-        if features.is_null() || count == 0 {
+        if packages.is_null() || count == 0 {
             return Ok::<(), AbiError>(());
         }
 
-        // SAFETY: the caller promises `count` valid filtered features starting at `features`.
-        let slice = unsafe { slice::from_raw_parts_mut(features, count) };
-        for feature in slice.iter_mut() {
-            free_filtered_feature(*feature);
+        // SAFETY: the caller promises `count` valid filtered packages starting at `packages`.
+        let slice = unsafe { slice::from_raw_parts_mut(packages, count) };
+        for package in slice.iter_mut() {
+            free_filtered_package(*package);
         }
 
-        // SAFETY: `features` was allocated as a boxed slice by this ABI.
-        let raw = ptr::slice_from_raw_parts_mut(features, count);
+        // SAFETY: `packages` was allocated as a boxed slice by this ABI.
+        let raw = ptr::slice_from_raw_parts_mut(packages, count);
         unsafe {
             drop(Box::from_raw(raw));
         }

@@ -239,12 +239,16 @@ fn cli_query_rejects_incompatible_metadata_roots() {
     )
     .expect("index should open");
     let model_a = index
-        .get(&feature_a_id)
+        .get_packages(&feature_a_id)
         .expect("feature A should load")
+        .into_iter()
+        .next()
         .expect("feature A should be indexed");
     let model_b = index
-        .get(&feature_b_id)
+        .get_packages(&feature_b_id)
         .expect("feature B should load")
+        .into_iter()
+        .next()
         .expect("feature B should be indexed");
     let bbox_a = bbox_for_model(&model_a).expect("feature A bbox should compute");
     let bbox_b = bbox_for_model(&model_b).expect("feature B bbox should compute");
@@ -437,8 +441,10 @@ fn load_model(root: &Path, index_path: &Path, feature_id: &str) -> cityjson_lib:
     )
     .expect("index should open");
     let model = index
-        .get(feature_id)
+        .get_packages(feature_id)
         .expect("get should succeed")
+        .into_iter()
+        .next()
         .expect("feature should be indexed");
     model
 }
@@ -738,7 +744,7 @@ fn cli_inspect_reports_normalized_counts_and_schema() {
         "--json",
     ]))
     .expect("inspect output should parse");
-    assert_eq!(report["index"]["schema_version"], 1);
+    assert_eq!(report["index"]["schema_version"], 2);
     assert_eq!(report["index"]["indexed_source_count"], 1);
     assert_eq!(report["index"]["indexed_package_count"], 1);
     assert_eq!(report["index"]["indexed_cityobject_count"], 2);

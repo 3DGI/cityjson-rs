@@ -398,16 +398,24 @@ fn run_query(args: QueryCommand) -> Result<()> {
             };
             let writer = open_writer(output)?;
             let mut writer = BufWriter::new(writer);
-            let package_refs = recorder.measure("bbox lookup or id lookup", || {
-                index.query_package_refs(&bbox)
-            })?;
-            let packages = recorder.measure("feature reconstruction", || {
-                index.read_packages(&package_refs)
-            })?;
+            let mut after_package_id = None;
+            let mut stream_metadata = None;
+            loop {
+                let package_refs = recorder.measure("bbox lookup or id lookup", || {
+                    index.query_package_refs_page(&bbox, after_package_id, 512)
+                })?;
+                if package_refs.is_empty() {
+                    break;
+                }
+                after_package_id = package_refs.last().map(|package| package.record_id);
+                let packages = recorder.measure("feature reconstruction", || {
+                    index.read_packages(&package_refs)
+                })?;
+                recorder.measure("output serialization/write", || {
+                    write_package_stream_page(&mut writer, &packages, &mut stream_metadata)
+                })?;
+            }
             recorder.measure("metadata lookup/cache", || Ok::<_, Error>(()))?;
-            recorder.measure("output serialization/write", || {
-                write_package_stream(&mut writer, &packages)
-            })?;
             recorder.measure("output serialization/write", || {
                 writer.flush()?;
                 Ok(())
@@ -666,6 +674,33 @@ fn open_writer(output: Option<PathBuf>) -> Result<Box<dyn Write>> {
         Some(path) => Ok(Box::new(File::create(path)?)),
         None => Ok(Box::new(io::stdout())),
     }
+}
+
+fn write_package_stream_page<W>(
+    writer: &mut W,
+    packages: &[IndexedPackage],
+    stream_metadata: &mut Option<Value>,
+) -> Result<()>
+where
+    W: Write,
+{
+    for package in packages {
+        match stream_metadata {
+            Some(metadata) if metadata != package.metadata.as_ref() => {
+                return Err(Error::Import(
+                    "query results span incompatible metadata roots".to_string(),
+                ));
+            }
+            Some(_) => {}
+            None => {
+                let metadata = package.metadata.as_ref().clone();
+                write_model_stream_header(writer, &metadata)?;
+                *stream_metadata = Some(metadata);
+            }
+        }
+        write_feature_line(writer, &package.model)?;
+    }
+    Ok(())
 }
 
 fn write_package_stream<W>(writer: &mut W, packages: &[IndexedPackage]) -> Result<()>

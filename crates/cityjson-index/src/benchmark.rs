@@ -769,7 +769,7 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
         }),
     ];
 
-    let all_refs = index.package_ref_page(0, feature_count.min(256))?;
+    let all_refs = index.package_ref_page_after_record_id(None, feature_count.min(256))?;
     let sampled_refs = all_refs.into_iter().take(256).collect::<Vec<_>>();
 
     runs.extend(run_full_scan(
@@ -840,13 +840,13 @@ fn run_full_scan(
 ) -> Result<Vec<BenchmarkOperationRecord>> {
     let started = Instant::now();
     let mut count = 0usize;
-    let mut offset = 0usize;
+    let mut after_record_id = None;
     loop {
-        let page = index.package_ref_page(offset, 512)?;
+        let page = index.package_ref_page_after_record_id(after_record_id, 512)?;
         if page.is_empty() {
             break;
         }
-        offset += page.len();
+        after_record_id = page.last().map(|package| package.record_id);
         count += page.len();
     }
     let elapsed_ns = u64::try_from(started.elapsed().as_nanos())

@@ -54,25 +54,13 @@ fn feature_files_cityindex_supports_end_to_end_queries() {
 
     let bbox = bbox_for_model(&model).expect("bbox should be computable from indexed model");
     let query_hits = index
-        .query(&bbox)
+        .query_package_models(&bbox)
         .expect("feature-files query should succeed");
     assert!(
         query_hits
             .iter()
             .any(|candidate| model_contains_id(candidate, &feature_id)),
         "query should return the selected feature"
-    );
-
-    let iter_hits = index
-        .query_iter(&bbox)
-        .expect("feature-files query_iter should succeed")
-        .collect::<cityjson_lib::Result<Vec<_>>>()
-        .expect("feature-files query_iter items should succeed");
-    assert!(
-        iter_hits
-            .iter()
-            .any(|candidate| model_contains_id(candidate, &feature_id)),
-        "query_iter should return the selected feature"
     );
 
     let metadata = index
@@ -238,8 +226,12 @@ fn feature_files_reindex_is_stable_across_worker_counts() {
     );
 
     let bbox = bbox_for_model(&single_model).expect("sample model bbox should be computable");
-    let single_hits = single.query(&bbox).expect("single query should succeed");
-    let multi_hits = multi.query(&bbox).expect("multi query should succeed");
+    let single_hits = single
+        .query_package_models(&bbox)
+        .expect("single query should succeed");
+    let multi_hits = multi
+        .query_package_models(&bbox)
+        .expect("multi query should succeed");
     assert_eq!(
         single_hits.len(),
         1,
@@ -330,8 +322,12 @@ fn feature_files_single_metadata_parallelizes_by_feature_file() {
     );
 
     let bbox = bbox_for_model(&single_model).expect("sample model bbox should be computable");
-    let single_hits = single.query(&bbox).expect("single query should succeed");
-    let multi_hits = multi.query(&bbox).expect("multi query should succeed");
+    let single_hits = single
+        .query_package_models(&bbox)
+        .expect("single query should succeed");
+    let multi_hits = multi
+        .query_package_models(&bbox)
+        .expect("multi query should succeed");
     assert_eq!(
         single_hits.len(),
         multi_hits.len(),
@@ -362,13 +358,13 @@ fn collect_package_ids(
     index: &CityIndex,
 ) -> cityjson_lib::Result<std::collections::BTreeSet<String>> {
     let mut ids = std::collections::BTreeSet::new();
-    let mut offset = 0usize;
+    let mut after_record_id = None;
     loop {
-        let page = index.package_ref_page(offset, 128)?;
+        let page = index.package_ref_page_after_record_id(after_record_id, 128)?;
         if page.is_empty() {
             break;
         }
-        offset += page.len();
+        after_record_id = page.last().map(|package| package.record_id);
         ids.extend(page.into_iter().map(|package| package.model_id));
     }
     Ok(ids)

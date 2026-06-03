@@ -10,8 +10,8 @@ This crate gives you a consistent indexing layer so you can:
 
 - inspect dataset layout and freshness
 - reindex changed data
-- fetch features by identifier
-- query features by bounding box
+- fetch packages by identifier
+- query packages by bounding box
 - read regular CityJSON, CityJSONSeq, and feature-files datasets through the same package API
 
 ## What It Does

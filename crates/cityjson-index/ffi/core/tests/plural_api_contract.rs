@@ -9,6 +9,7 @@ fn ffi_cityobject_lookup_is_plural_only() {
         "cjx_index_package_refs_for_cityobject",
         "cjx_index_read_package_model_bytes",
         "cjx_index_read_filtered_packages",
+        "cjx_filtered_packages_free",
     ] {
         assert!(
             source.contains(symbol),
@@ -22,6 +23,7 @@ fn ffi_cityobject_lookup_is_plural_only() {
         "cjx_index_read_feature_bytes",
         "cjx_index_read_feature_model_bytes",
         "cjx_index_read_filtered_features",
+        "cjx_filtered_features_free",
     ] {
         assert!(
             !source.contains(removed),

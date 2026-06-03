@@ -41,25 +41,13 @@ fn cityjson_seq_cityindex_supports_end_to_end_queries() {
 
     let bbox = bbox_for_model(&model).expect("bbox should be computable from indexed model");
     let query_hits = index
-        .query(&bbox)
+        .query_package_models(&bbox)
         .expect("CityJSONSeq query should succeed");
     assert!(
         query_hits
             .iter()
             .any(|candidate| model_contains_id(candidate, &feature_id)),
         "query should return the selected feature"
-    );
-
-    let iter_hits = index
-        .query_iter(&bbox)
-        .expect("CityJSONSeq query_iter should succeed")
-        .collect::<cityjson_lib::Result<Vec<_>>>()
-        .expect("CityJSONSeq query_iter items should succeed");
-    assert!(
-        iter_hits
-            .iter()
-            .any(|candidate| model_contains_id(candidate, &feature_id)),
-        "query_iter should return the selected feature"
     );
 
     let package_hits = index

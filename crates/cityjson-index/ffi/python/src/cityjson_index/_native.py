@@ -115,7 +115,7 @@ class _LodByType(Structure):
     _fields_ = [("cityobject_type", _Bytes), ("selection", _LodSelection)]
 
 
-class _FeatureFilter(Structure):
+class _PackageFilter(Structure):
     _fields_ = [
         ("has_cityobject_types", c_bool),
         ("cityobject_types", _StringList),
@@ -145,7 +145,7 @@ class _MissingLodSelectionList(Structure):
     _fields_ = [("data", POINTER(_MissingLodSelection)), ("len", c_size_t)]
 
 
-class _FeatureFilterDiagnostics(Structure):
+class _PackageFilterReport(Structure):
     _fields_ = [
         ("available_types", _StringList),
         ("retained_types", _StringList),
@@ -157,8 +157,8 @@ class _FeatureFilterDiagnostics(Structure):
     ]
 
 
-class _FilteredFeature(Structure):
-    _fields_ = [("model_json", _Bytes), ("diagnostics", _FeatureFilterDiagnostics)]
+class _FilteredPackage(Structure):
+    _fields_ = [("model_json", _Bytes), ("diagnostics", _PackageFilterReport)]
 
 
 def _library_name() -> str:
@@ -250,8 +250,8 @@ class FfiLibrary:
         self._lib.cjx_index_status.restype = c_int
         self._lib.cjx_index_reindex.argtypes = [c_void_p]
         self._lib.cjx_index_reindex.restype = c_int
-        self._lib.cjx_filtered_features_free.argtypes = [POINTER(_FilteredFeature), c_size_t]
-        self._lib.cjx_filtered_features_free.restype = c_int
+        self._lib.cjx_filtered_packages_free.argtypes = [POINTER(_FilteredPackage), c_size_t]
+        self._lib.cjx_filtered_packages_free.restype = c_int
         self._lib.cjx_index_lookup_cityobject_refs.argtypes = [
             c_void_p,
             c_char_p,
@@ -277,8 +277,8 @@ class FfiLibrary:
             c_void_p,
             POINTER(_PackageRef),
             c_size_t,
-            POINTER(_FeatureFilter),
-            POINTER(POINTER(_FilteredFeature)),
+            POINTER(_PackageFilter),
+            POINTER(POINTER(_FilteredPackage)),
             POINTER(c_size_t),
         ]
         self._lib.cjx_index_read_filtered_packages.restype = c_int
@@ -396,8 +396,8 @@ class FfiLibrary:
     def read_filtered_packages(self, handle: c_void_p, refs: list[object], filter: object) -> list[object]:
         keepalive: list[Any] = []
         native_refs = _package_ref_array(refs, keepalive)
-        native_filter = _feature_filter_to_native(filter, keepalive)
-        out = POINTER(_FilteredFeature)()
+        native_filter = _package_filter_to_native(filter, keepalive)
+        out = POINTER(_FilteredPackage)()
         count = c_size_t()
         self._check_status(
             self._lib.cjx_index_read_filtered_packages(
@@ -407,7 +407,7 @@ class FfiLibrary:
         try:
             return _filtered_package_outcomes_from_native(out, count.value)
         finally:
-            self._check_status(self._lib.cjx_filtered_features_free(out, count.value))
+            self._check_status(self._lib.cjx_filtered_packages_free(out, count.value))
 
 
 def _cityobject_ref_to_native(ref: object, keepalive: list[Any]) -> _CityObjectRef:
@@ -492,7 +492,7 @@ def _lod_selection_to_native(selection: object, keepalive: list[Any]) -> _LodSel
     return _LodSelection(int(getattr(selection, "_native_kind")), exact_lod_bytes)
 
 
-def _feature_filter_to_native(filter: object, keepalive: list[Any]) -> _FeatureFilter:
+def _package_filter_to_native(filter: object, keepalive: list[Any]) -> _PackageFilter:
     cityobject_types = getattr(filter, "cityobject_types")
     if cityobject_types is None:
         native_cityobject_types = _StringList(POINTER(_Bytes)(), 0)
@@ -519,7 +519,7 @@ def _feature_filter_to_native(filter: object, keepalive: list[Any]) -> _FeatureF
     else:
         lods_by_type_ptr = POINTER(_LodByType)()
 
-    return _FeatureFilter(
+    return _PackageFilter(
         has_cityobject_types,
         native_cityobject_types,
         _lod_selection_to_native(getattr(filter, "default_lod"), keepalive),
@@ -565,7 +565,7 @@ def _missing_lods_to_list(value: _MissingLodSelectionList) -> list[object]:
     return result
 
 
-def _diagnostics_from_native(value: _FeatureFilterDiagnostics) -> object:
+def _package_report_from_native(value: _PackageFilterReport) -> object:
     from . import PackageFilterReport
 
     return PackageFilterReport(
@@ -579,20 +579,20 @@ def _diagnostics_from_native(value: _FeatureFilterDiagnostics) -> object:
     )
 
 
-def _filtered_package_outcomes_from_native(features: POINTER(_FilteredFeature), count: int) -> list[object]:
-    if count == 0 or not features:
+def _filtered_package_outcomes_from_native(packages: POINTER(_FilteredPackage), count: int) -> list[object]:
+    if count == 0 or not packages:
         return []
 
     from . import FilteredPackageOutcome, _parse_citymodel_bytes
 
     result: list[FilteredPackageOutcome] = []
     for index in range(count):
-        feature = features[index]
-        model_payload = _bytes_to_py(feature.model_json)
+        package = packages[index]
+        model_payload = _bytes_to_py(package.model_json)
         result.append(
             FilteredPackageOutcome(
                 model=None if not model_payload else _parse_citymodel_bytes(model_payload),
-                report=_diagnostics_from_native(feature.diagnostics),
+                report=_package_report_from_native(package.diagnostics),
             )
         )
     return result
