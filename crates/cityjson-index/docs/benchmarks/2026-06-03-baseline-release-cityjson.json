@@ -1,4 +1,16 @@
 {
+  "benchmark_metadata": {
+    "role": "baseline",
+    "captured_at": "2026-06-03T05:09:25+02:00",
+    "cityjson_rs_commit": "1c5195f89c32918be5d6a94b85b135a559292230",
+    "build_profile": "release",
+    "layout": "city-json",
+    "command": "cargo run -p cityjson-index --bin bench-index --release --target-dir target -- --json",
+    "os": "Linux 6.17.0-29-generic #29~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon May 11 10:30:58 UTC 2 x86_64 GNU/Linux",
+    "cpu_model": "AMD Ryzen 9 9900X 12-Core Processor",
+    "logical_cpus": 24,
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)"
+  },
   "runs": [
     {
       "dataset_label": "single-tile-full",

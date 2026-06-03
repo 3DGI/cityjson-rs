@@ -1,12 +1,11 @@
 # Release CityJSON Benchmark Comparison
 
-Captured after rerunning both the pre-normalization baseline commit and the
-current checkout with optimized release binaries.
+Captured after rerunning the baseline and the implementation with optimized release binaries.
 
 ## Environment
 
-- Captured: `2026-06-03T05:09:25+02:00`
-- OS: `Linux workstation 6.17.0-29-generic #29~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon May 11 10:30:58 UTC 2 x86_64 GNU/Linux`
+- Captured: `2026-06-03T13:48:34+02:00`
+- OS: `Linux 6.17.0-29-generic #29~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon May 11 10:30:58 UTC 2 x86_64 GNU/Linux`
 - CPU: `AMD Ryzen 9 9900X 12-Core Processor`
 - Logical CPUs: `24`
 - Rust: `rustc 1.94.1 (e408947bf 2026-03-25)`
@@ -14,9 +13,9 @@ current checkout with optimized release binaries.
 ## Inputs
 
 - Baseline commit: `1c5195f89c32918be5d6a94b85b135a559292230`
-- Current commit: `157e80fe7500aba698a6339b5cf681c55588ab1d`
+- Implementation commit: `038f3edbe11eaeae2508e7a55eef3f7d698534af`
 - Baseline JSON: [`2026-06-03-baseline-release-cityjson.json`](2026-06-03-baseline-release-cityjson.json)
-- Current JSON: [`2026-06-03-current-release-cityjson.json`](2026-06-03-current-release-cityjson.json)
+- Implementation JSON: [`2026-06-03-implementation-release-cityjson.json`](2026-06-03-implementation-release-cityjson.json)
 
 ## Commands
 
@@ -27,72 +26,66 @@ cargo run -p cityjson-index --bin bench-index --release --target-dir target -- -
   > docs/benchmarks/2026-06-03-baseline-release-cityjson.json
 ```
 
-Current was run from the current checkout. The current harness benchmarks
-multiple layouts by default, so this comparison uses the `city-json` layout to
-match the older harness:
+Implementation was run from commit `038f3edbe11eaeae2508e7a55eef3f7d698534af`. The implementation harness supports multiple layouts, so this report uses `--layout city-json` to match the older baseline harness:
 
 ```bash
 cargo run -p cityjson-index --bin bench-index --release --target-dir target -- --json --layout city-json \
-  > docs/benchmarks/2026-06-03-current-release-cityjson.json
+  > docs/benchmarks/2026-06-03-implementation-release-cityjson.json
 ```
 
-## Comparison Notes
+## Summary
 
-- Compared `162` matched dataset/worker/operation groups.
-- `151` groups are slower in the current checkout, `11` are faster.
-- Mean current/baseline speed ratio: `0.435x`.
-- Current dataset labels ending in `-cityjson` were normalized to the older
-  baseline labels.
-- `read_feature sample-256` in the baseline was compared with
-  `read_package sample-256` in the current harness.
-- Repeated `get` samples are represented by median speed.
+- Compared `198` matched dataset/worker/operation groups using median elapsed time.
+- `72` groups are faster than baseline, `126` are slower than baseline.
+- Mean implementation/baseline elapsed-time ratio: `1.190x`.
+- Implementation dataset labels ending in `-cityjson` were normalized to the older baseline labels.
+- Baseline `read_feature sample-256` was compared with implementation `read_package sample-256`.
 
-## Largest Slowdowns
+## Largest Speedups Vs Baseline
 
-| Dataset | Workers | Operation | Baseline | Current | Ratio | Delta |
+| Dataset | Workers | Operation | Baseline | Implementation | Impl/Baseline Time | Delta |
 |---|---:|---|---:|---:|---:|---:|
-| single-tile-full | 1 | bbox_query medium | 22086 | 645 | 0.03x | -97.1% |
-| single-tile-full | 24 | bbox_query medium | 20487 | 626 | 0.03x | -96.9% |
-| single-tile-full | 4 | bbox_query medium | 20587 | 631 | 0.03x | -96.9% |
-| single-tile-full | 24 | bbox_query large | 16316 | 617 | 0.04x | -96.2% |
-| single-tile-full | 4 | bbox_query large | 16299 | 627 | 0.04x | -96.2% |
-| single-tile-full | 1 | bbox_query large | 16199 | 638 | 0.04x | -96.1% |
-| single-tile-full | 24 | bbox_query full | 13816 | 617 | 0.04x | -95.5% |
-| single-tile-full | 4 | bbox_query full | 13825 | 624 | 0.05x | -95.5% |
-| single-tile-full | 1 | bbox_query full | 13765 | 638 | 0.05x | -95.4% |
-| single-tile-subset-25000 | 4 | bbox_query medium | 20538 | 1014 | 0.05x | -95.1% |
-| single-tile-subset-25000 | 1 | bbox_query medium | 20426 | 1016 | 0.05x | -95.0% |
-| single-tile-subset-25000 | 24 | bbox_query medium | 20405 | 1027 | 0.05x | -95.0% |
+| single-tile-subset-25000 | 24 | get 01HP91VX9EH4KBG5MP1REBVEAB | 0.0012s | 0.0001s | 0.072x | -92.8% |
+| single-tile-subset-25000 | 4 | get 01HP91VX9EH4KBG5MP1REBVEAB | 0.0011s | 0.0001s | 0.076x | -92.4% |
+| single-tile-full | 1 | get NL.IMBAG.Pand.1926100000570105 | 0.0019s | 0.0002s | 0.080x | -92.0% |
+| single-tile-full | 4 | get NL.IMBAG.Pand.1926100000570105 | 0.0019s | 0.0002s | 0.084x | -91.6% |
+| single-tile-full | 24 | get NL.IMBAG.Pand.1926100000570105 | 0.0020s | 0.0002s | 0.085x | -91.5% |
+| single-tile-subset-25000 | 1 | get 01HP91VX9EH4KBG5MP1REBVEAB | 0.0011s | 0.0001s | 0.090x | -91.0% |
+| single-tile-full | 24 | get 01HP6ACVDER3X6V0HWX93WAT4K | 0.0012s | 0.0002s | 0.170x | -83.0% |
+| single-tile-full | 4 | get 01HP6ACVDER3X6V0HWX93WAT4K | 0.0012s | 0.0002s | 0.172x | -82.8% |
+| single-tile-subset-10000 | 1 | get 01HP5C61FVCDE1SNEP2F7YDJ7Y | 0.0005s | 0.0001s | 0.175x | -82.5% |
+| single-tile-full | 1 | get 01HP6ACVDER3X6V0HWX93WAT4K | 0.0012s | 0.0002s | 0.178x | -82.2% |
+| single-tile-subset-10000 | 4 | get 01HP5C61FVCDE1SNEP2F7YDJ7Y | 0.0004s | 0.0001s | 0.198x | -80.2% |
+| single-tile-subset-10000 | 24 | get 01HP5C61FVCDE1SNEP2F7YDJ7Y | 0.0004s | 0.0001s | 0.204x | -79.6% |
 
-## Largest Speedups
+## Largest Remaining Slowdowns Vs Baseline
 
-| Dataset | Workers | Operation | Baseline | Current | Ratio | Delta |
+| Dataset | Workers | Operation | Baseline | Implementation | Impl/Baseline Time | Delta |
 |---|---:|---|---:|---:|---:|---:|
-| multi-source | 1 | get median | 1226 | 1570 | 1.28x | +28.1% |
-| multi-source | 24 | get median | 1236 | 1581 | 1.28x | +28.0% |
-| multi-source | 4 | get median | 1224 | 1566 | 1.28x | +27.9% |
-| single-tile-subset-1000 | 4 | full_scan_reference_iteration | 812197 | 938431 | 1.16x | +15.5% |
-| single-tile-subset-1000 | 24 | full_scan_reference_iteration | 801251 | 920837 | 1.15x | +14.9% |
-| single-tile-subset-1000 | 4 | bbox_query small | 3211 | 3496 | 1.09x | +8.9% |
-| single-tile-subset-1000 | 24 | index_reindex | 7454 | 7889 | 1.06x | +5.8% |
-| single-tile-subset-1000 | 1 | index_reindex | 7551 | 7964 | 1.05x | +5.5% |
+| single-tile-subset-10000 | 1 | dataset_open | 0.0155s | 0.0670s | 4.338x | +333.8% |
+| single-tile-subset-1000 | 1 | dataset_open | 0.0149s | 0.0639s | 4.286x | +328.6% |
+| single-tile-full | 4 | dataset_open | 0.0183s | 0.0677s | 3.700x | +270.0% |
+| multi-source | 24 | dataset_open | 0.0180s | 0.0646s | 3.601x | +260.1% |
+| single-tile-subset-5000 | 4 | dataset_open | 0.0181s | 0.0638s | 3.519x | +251.9% |
+| single-tile-subset-1000 | 4 | dataset_open | 0.0182s | 0.0639s | 3.510x | +251.0% |
+| single-tile-subset-5000 | 1 | dataset_open | 0.0180s | 0.0617s | 3.437x | +243.7% |
+| single-tile-full | 24 | dataset_open | 0.0184s | 0.0630s | 3.422x | +242.2% |
+| single-tile-subset-5000 | 24 | dataset_open | 0.0192s | 0.0656s | 3.414x | +241.4% |
+| single-tile-full | 1 | dataset_open | 0.0210s | 0.0662s | 3.147x | +214.7% |
+| multi-source | 4 | dataset_open | 0.0196s | 0.0615s | 3.131x | +213.1% |
+| single-tile-subset-1000 | 24 | dataset_open | 0.0204s | 0.0627s | 3.076x | +207.6% |
 
 ## Focused Cases
 
-Units are `hits/s` for bbox queries, `opens/s` for dataset open, `gets/s` for
-get, and `features/s` for the remaining operations.
-
-| Dataset | Workers | Operation | Unit | Baseline | Current | Ratio | Delta |
-|---|---:|---|---:|---:|---:|---:|---:|
-| multi-source | 1 | bbox_query full | hits/s | 29044 | 7270 | 0.25x | -75.0% |
-| multi-source | 1 | bbox_query medium | hits/s | 35745 | 7585 | 0.21x | -78.8% |
-| multi-source | 1 | full_scan_reference_iteration | features/s | 849491 | 483250 | 0.57x | -43.1% |
-| multi-source | 1 | index_reindex | features/s | 19616 | 16170 | 0.82x | -17.6% |
-| multi-source | 1 | read sample-256 | features/s | 9312 | 4870 | 0.52x | -47.7% |
-| multi-source | 1 | get median | gets/s | 1226 | 1570 | 1.28x | +28.1% |
-| single-tile-full | 1 | bbox_query full | hits/s | 13765 | 638 | 0.05x | -95.4% |
-| single-tile-full | 1 | bbox_query medium | hits/s | 22086 | 645 | 0.03x | -97.1% |
-| single-tile-full | 1 | full_scan_reference_iteration | features/s | 839052 | 59995 | 0.07x | -92.8% |
-| single-tile-full | 1 | index_reindex | features/s | 17479 | 10539 | 0.60x | -39.7% |
-| single-tile-full | 1 | read sample-256 | features/s | 10372 | 616 | 0.06x | -94.1% |
-| single-tile-full | 1 | get median | gets/s | 517 | 418 | 0.81x | -19.3% |
+| Dataset | Workers | Operation | Baseline | Implementation | Impl/Baseline Time | Delta |
+|---|---:|---|---:|---:|---:|---:|
+| multi-source | 1 | bbox_query full | 0.1377s | 0.1989s | 1.444x | +44.4% |
+| multi-source | 1 | bbox_query medium | 0.0030s | 0.0045s | 1.482x | +48.2% |
+| multi-source | 1 | full_scan_reference_iteration | 0.0047s | 0.0027s | 0.563x | -43.7% |
+| multi-source | 1 | index_reindex | 0.2039s | 0.2399s | 1.176x | +17.6% |
+| multi-source | 1 | read_package sample-256 | 0.0275s | 0.0285s | 1.038x | +3.8% |
+| single-tile-full | 1 | bbox_query full | 2.9287s | 3.9942s | 1.364x | +36.4% |
+| single-tile-full | 1 | bbox_query medium | 0.0572s | 0.0807s | 1.410x | +41.0% |
+| single-tile-full | 1 | full_scan_reference_iteration | 0.0480s | 0.0647s | 1.348x | +34.8% |
+| single-tile-full | 1 | index_reindex | 2.3063s | 3.7703s | 1.635x | +63.5% |
+| single-tile-full | 1 | read_package sample-256 | 0.0247s | 0.0290s | 1.174x | +17.4% |
