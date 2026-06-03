@@ -1605,7 +1605,11 @@ impl CityIndex {
                     .length
                     .ok_or_else(|| import_error("package length is missing"))?;
                 let bytes = read_exact_range(&location.path, offset, length)?;
-                feature_slice_with_preserved_package_id(&bytes, metadata.bytes.as_ref())?
+                feature_slice_with_preserved_package_id(
+                    &bytes,
+                    &location.reference.model_id,
+                    metadata.bytes.as_ref(),
+                )?
             }
         };
         Ok(IndexedPackage {
@@ -3309,9 +3313,10 @@ fn read_exact_range(path: &Path, offset: u64, length: u64) -> Result<Vec<u8>> {
 
 fn feature_slice_with_preserved_package_id(
     feature_bytes: &[u8],
+    package_id: &str,
     metadata_bytes: &[u8],
 ) -> Result<CityModel> {
-    staged::from_feature_slice_with_base_direct(feature_bytes, metadata_bytes)
+    staged::from_feature_slice_with_indexed_id_and_base(feature_bytes, package_id, metadata_bytes)
 }
 
 fn read_exact_range_from_file(

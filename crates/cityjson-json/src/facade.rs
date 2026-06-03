@@ -70,7 +70,7 @@ pub mod staged {
         feature_bytes: &[u8],
         base_document_bytes: &[u8],
     ) -> Result<OwnedCityModel> {
-        build_feature_slice_with_base_direct(feature_bytes, None, base_document_bytes)
+        build_feature_slice_with_base_direct(feature_bytes, None, base_document_bytes, false)
     }
 
     /// # Errors
@@ -91,13 +91,19 @@ pub mod staged {
         indexed_id: &str,
         base_document_bytes: &[u8],
     ) -> Result<OwnedCityModel> {
-        build_feature_slice_with_base_direct(feature_bytes, Some(indexed_id), base_document_bytes)
+        build_feature_slice_with_base_direct(
+            feature_bytes,
+            Some(indexed_id),
+            base_document_bytes,
+            true,
+        )
     }
 
     fn build_feature_slice_with_base_direct(
         feature_bytes: &[u8],
         indexed_id: Option<&str>,
         base_document_bytes: &[u8],
+        insert_missing_root: bool,
     ) -> Result<OwnedCityModel> {
         let base_input = std::str::from_utf8(base_document_bytes)?;
         let feature_input = std::str::from_utf8(feature_bytes)?;
@@ -107,8 +113,11 @@ pub mod staged {
             Some(id) => Cow::Borrowed(id),
             None => feature_root_id(feature.id.take())?,
         };
-        let adjusted_cityobjects =
-            cityobjects_raw_with_feature_root(feature.cityobjects, root_id.as_ref())?;
+        let adjusted_cityobjects = if insert_missing_root {
+            cityobjects_raw_with_feature_root(feature.cityobjects, root_id.as_ref())?
+        } else {
+            None
+        };
         let cityobjects = adjusted_cityobjects
             .as_deref()
             .unwrap_or(feature.cityobjects);

@@ -63,7 +63,7 @@ fn explicit_json_module_rejects_malformed_feature_packages() {
 }
 
 #[test]
-fn staged_direct_feature_slice_adds_missing_root_cityobject() -> cityjson_lib::Result<()> {
+fn staged_indexed_feature_slice_adds_missing_root_cityobject() -> cityjson_lib::Result<()> {
     let base = br#"{
         "type":"CityJSON",
         "version":"2.0",
@@ -81,7 +81,8 @@ fn staged_direct_feature_slice_adds_missing_root_cityobject() -> cityjson_lib::R
         "vertices":[]
     }"#;
 
-    let model = json::staged::from_feature_slice_with_base_direct(feature, base)?;
+    let model =
+        json::staged::from_feature_slice_with_indexed_id_and_base(feature, "feature-root", base)?;
     let output: serde_json::Value = serde_json::from_str(&json::to_feature_string(&model)?)
         .expect("direct feature output should parse");
 
