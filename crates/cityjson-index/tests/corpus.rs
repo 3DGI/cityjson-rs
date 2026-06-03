@@ -32,6 +32,8 @@ fn basisvoorziening_artifact_is_parseable_cityjson() {
     );
 }
 
+/// Input: CITYJSON_SHARED_CORPUS_ROOT pointing at the finalized ops_3dbag corpus case and acquired artifact.
+/// Assertions: the case advertises required invariants and the artifact contains hierarchy, multiple geometries, and non-zero Z extent.
 #[test]
 fn shared_corpus_ops_3dbag_covers_normalization_cases() {
     let Some(root) = common::shared_corpus_root() else {
@@ -104,6 +106,8 @@ fn shared_corpus_ops_3dbag_covers_normalization_cases() {
     assert!(min_z < max_z);
 }
 
+/// Input: CITYJSON_SHARED_CORPUS_ROOT pointing at the focused CityJSONSeq feature-root-id corpus case.
+/// Assertions: the stream has one CityJSON header and two feature records whose ids and CityObject keys remain feature-local.
 #[test]
 fn shared_corpus_cityjson_seq_case_preserves_feature_boundaries() {
     let Some(root) = common::shared_corpus_root() else {

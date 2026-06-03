@@ -13,6 +13,8 @@ use common::{
 use rusqlite::Connection;
 use serde_json::json;
 
+/// Input: a CityJSON document with one root Building and one BuildingPart child.
+/// Assertions: reindex creates one package, two CityObjects, two memberships, and one relationship record.
 #[test]
 fn cityjson_scan_normalizes_root_package_cityobjects_and_relationships() {
     let index_path = temp_index_path("normalized-cityjson");
@@ -29,6 +31,8 @@ fn cityjson_scan_normalizes_root_package_cityobjects_and_relationships() {
     assert_normalized_counts(&index_path, 1, 2, 2, 1);
 }
 
+/// Input: one CityJSONSeq feature line containing a root Building and BuildingPart child.
+/// Assertions: reindex creates one package, two CityObjects, two memberships, and one relationship record without alias packages.
 #[test]
 fn cityjson_seq_scan_indexes_one_package_and_each_cityobject_once() {
     let index_path = temp_index_path("normalized-cityjson-seq");
@@ -48,6 +52,8 @@ fn cityjson_seq_scan_indexes_one_package_and_each_cityobject_once() {
     assert_normalized_counts(&index_path, 1, 2, 2, 1);
 }
 
+/// Input: one feature-files package containing a root Building and BuildingPart child.
+/// Assertions: reindex creates the same normalized package, CityObject, membership, and relationship counts as CityJSONSeq.
 #[test]
 fn feature_files_scan_indexes_one_package_and_each_cityobject_once() {
     let index_path = temp_index_path("normalized-feature-files");
@@ -63,6 +69,8 @@ fn feature_files_scan_indexes_one_package_and_each_cityobject_once() {
     assert_normalized_counts(&index_path, 1, 2, 2, 1);
 }
 
+/// Input: a geometry-less parent CityObject with a spatial descendant child.
+/// Assertions: parent CityObject bounds and package bounds include the descendant XYZ extent.
 #[test]
 fn cityobject_bounds_include_descendant_geometry() {
     let index_path = temp_index_path("descendant-bounds");
@@ -84,6 +92,8 @@ fn cityobject_bounds_include_descendant_geometry() {
     assert_eq!(package_bounds(&conn), (10.0, 14.0, 20.0, 26.0, 30.0, 36.0));
 }
 
+/// Input: a CityJSON document containing one CityObject with no geometry and no spatial descendants.
+/// Assertions: the CityObject is indexed for id lookup while no cityobject_bbox RTree record is written.
 #[test]
 fn non_spatial_cityobject_is_addressable_without_rtree_record() {
     let index_path = temp_index_path("non-spatial-cityobject");
@@ -108,6 +118,8 @@ fn non_spatial_cityobject_is_addressable_without_rtree_record() {
     assert_eq!(scalar(&conn, "SELECT COUNT(*) FROM cityobject_bbox"), 0);
 }
 
+/// Input: a spatial root-child hierarchy with non-zero Z coordinates.
+/// Assertions: package_bbox and cityobject_bbox expose six XYZ columns while packages and cityobjects do not duplicate min_z or max_z.
 #[test]
 fn bbox_rtrees_store_complete_xyz_bounds() {
     let index_path = temp_index_path("xyz-rtrees");
@@ -152,6 +164,8 @@ fn bbox_rtrees_store_complete_xyz_bounds() {
     );
 }
 
+/// Input: a CityJSON document with two root Buildings that share one BuildingPart child.
+/// Assertions: reindex creates two packages, three CityObjects, four memberships, two relationships, and two memberships for the shared child.
 #[test]
 fn cityjson_shared_child_has_multiple_package_memberships() {
     let index_path = temp_index_path("shared-child");
@@ -176,6 +190,8 @@ fn cityjson_shared_child_has_multiple_package_memberships() {
     );
 }
 
+/// Input: two CityJSONSeq feature lines that reuse the external CityObject id duplicate.
+/// Assertions: reindex stores two packages and two distinct CityObject records for the duplicated id.
 #[test]
 fn duplicate_external_ids_remain_distinct_occurrences() {
     let index_path = temp_index_path("duplicate-cityobject-id");
@@ -210,6 +226,8 @@ fn duplicate_external_ids_remain_distinct_occurrences() {
     );
 }
 
+/// Input: a CityJSON hierarchy whose child reference points to a missing CityObject id.
+/// Assertions: reindex fails and the error identifies the missing target id.
 #[test]
 fn reindex_rejects_missing_relationship_target() {
     let index_path = temp_index_path("missing-relationship-target");
@@ -225,6 +243,8 @@ fn reindex_rejects_missing_relationship_target() {
     assert_error_contains(index.reindex(), "missing-part");
 }
 
+/// Input: a CityJSON hierarchy where two spatial CityObjects reference each other as parent and child.
+/// Assertions: reindex fails before replacement and reports a relationship cycle.
 #[test]
 fn reindex_rejects_relationship_cycle() {
     let index_path = temp_index_path("relationship-cycle");
@@ -250,6 +270,8 @@ fn reindex_rejects_relationship_cycle() {
     assert_error_contains(index.reindex(), "cycle");
 }
 
+/// Input: a valid indexed hierarchy followed by an invalid source edit with a missing child reference.
+/// Assertions: the failed reindex reports the missing id and leaves the previous CityObject records intact.
 #[test]
 fn failed_reindex_preserves_previous_index() {
     let index_path = temp_index_path("failed-reindex-preserves-index");
@@ -289,6 +311,8 @@ fn failed_reindex_preserves_previous_index() {
     );
 }
 
+/// Input: an existing legacy sidecar containing features, feature_bbox, and bbox_map tables.
+/// Assertions: opening the index marks schema_state.needs_reindex so legacy data is rebuilt rather than migrated in place.
 #[test]
 fn legacy_sidecar_requires_reindex() {
     let root = write_cityjson_fixture(
@@ -307,6 +331,8 @@ fn legacy_sidecar_requires_reindex() {
     );
 }
 
+/// Input: a sidecar with schema_state.schema_version set to 999.
+/// Assertions: opening the index fails and the unsupported version appears in the error message.
 #[test]
 fn future_schema_version_is_rejected() {
     let root = write_cityjson_fixture(

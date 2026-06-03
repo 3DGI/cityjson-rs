@@ -6,6 +6,8 @@ use std::path::Path;
 use cityjson_index::{CityIndex, StorageLayout};
 use common::{bbox_for_model, cityjsonseq_root, find_first, model_contains_id, temp_index_path};
 
+/// Input: a derived single-feature CityJSONSeq stream with metadata, geometry, and transform.
+/// Assertions: indexing, get, bbox query, iterators, id-aware iteration, and metadata retrieval all return the selected feature.
 #[test]
 fn cityjson_seq_cityindex_supports_end_to_end_queries() {
     let source_root = cityjsonseq_root();
@@ -77,6 +79,8 @@ fn cityjson_seq_cityindex_supports_end_to_end_queries() {
     );
 }
 
+/// Input: one CityJSONSeq feature whose top-level id differs from two CityObject keys.
+/// Assertions: the top-level id is not addressable while both CityObject keys reconstruct the complete package.
 #[test]
 fn cityjson_seq_indexes_every_cityobject_key_and_ignores_top_level_id() {
     let source_root = cityjsonseq_root();
@@ -117,6 +121,8 @@ fn cityjson_seq_indexes_every_cityobject_key_and_ignores_top_level_id() {
     }
 }
 
+/// Input: two CityJSONSeq feature lines that reuse the same CityObject key at different positions.
+/// Assertions: plural lookup returns both duplicate occurrences in increasing record order.
 #[test]
 fn cityjson_seq_allows_duplicate_cityobject_keys() {
     let source_root = cityjsonseq_root();

@@ -124,6 +124,9 @@ def _write_shared_child_cityjson(root: Path) -> None:
 
 class OpenedIndexPluralPackageApiTests(unittest.TestCase):
     def test_python_get_packages_returns_all_distinct_packages(self) -> None:
+        """Input: a temporary CityJSON dataset with two root Buildings sharing one BuildingPart child.
+        Assertions: get_packages returns both containing packages and obsolete singular conveniences are absent.
+        """
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir) / "dataset"
             root.mkdir()
@@ -138,6 +141,9 @@ class OpenedIndexPluralPackageApiTests(unittest.TestCase):
                 self.assertFalse(hasattr(index, "lookup_cityobject_ref"))
 
     def test_python_filtered_packages_preserve_alignment_and_none_models(self) -> None:
+        """Input: package refs for a shared child filtered with a non-matching WaterBody type.
+        Assertions: one outcome is returned per input ref, every model is None, and each report counts one ignored package.
+        """
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir) / "dataset"
             root.mkdir()

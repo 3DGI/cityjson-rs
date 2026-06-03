@@ -115,6 +115,8 @@ fn feature_files_index_every_cityobject_key_and_ignore_top_level_id() {
         .expect("reindexing aliases should remain stable");
 }
 
+/// Input: two feature-files packages that reuse the same CityObject key in different files.
+/// Assertions: plural lookup returns both duplicate occurrences in row order with their original source paths.
 #[test]
 fn feature_files_allow_duplicate_cityobject_keys() {
     let root = temp_parallel_fixture_root("feature-files-duplicate-keys");

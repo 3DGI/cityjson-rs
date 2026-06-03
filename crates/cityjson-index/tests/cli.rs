@@ -336,6 +336,8 @@ fn cli_dataset_mode_get_query_and_metadata_work() {
     );
 }
 
+/// Input: fixture roots for feature-files, CityJSONSeq, and CityJSON layouts.
+/// Assertions: inspect auto-detects each layout using ecosystem names and reports the canonical dataset root.
 #[test]
 fn cli_inspect_autodetects_all_supported_layouts() {
     for (root, expected_layout) in [
@@ -532,6 +534,8 @@ fn first_two_feature_files(root: &Path) -> Vec<PathBuf> {
     features
 }
 
+/// Input: an explicit cjindex index command using --layout cityjson-seq and a .city.jsonl source path.
+/// Assertions: the command succeeds, proving cityjson-seq is an accepted user-facing layout value.
 #[test]
 fn cli_layout_cityjson_seq_is_accepted() {
     let source = find_first(&cityjsonseq_root(), "city.jsonl", true);
@@ -553,6 +557,8 @@ fn cli_layout_cityjson_seq_is_accepted() {
     );
 }
 
+/// Input: an explicit cjindex index command using the removed --layout ndjson alias.
+/// Assertions: the command fails instead of accepting legacy NDJSON terminology.
 #[test]
 fn cli_layout_ndjson_is_rejected() {
     let source = find_first(&cityjsonseq_root(), "city.jsonl", true);
@@ -573,6 +579,8 @@ fn cli_layout_ndjson_is_rejected() {
     );
 }
 
+/// Input: a CityJSON document with two root Buildings that share one BuildingPart child.
+/// Assertions: cjindex get by child id emits one header plus both distinct containing packages in stable order.
 #[test]
 fn cli_get_child_id_emits_all_valid_containing_packages() {
     let root = write_cityjson_fixture(
@@ -611,6 +619,8 @@ fn cli_get_child_id_emits_all_valid_containing_packages() {
     assert!(lines[2]["CityObjects"].get("building-b").is_some());
 }
 
+/// Input: feature-files data with duplicate CityObject ids under two incompatible metadata roots.
+/// Assertions: cjindex get fails explicitly instead of emitting a mixed-header CityJSONSeq stream.
 #[test]
 fn cli_get_rejects_incompatible_metadata_roots() {
     let root = temp_fixture_root("cli-get-metadata-mismatch");
@@ -663,6 +673,8 @@ fn cli_get_rejects_incompatible_metadata_roots() {
     assert!(String::from_utf8_lossy(&output.stderr).contains("incompatible metadata roots"));
 }
 
+/// Input: a CityJSON hierarchy where one bbox query intersects both root and child objects in the same package.
+/// Assertions: cjindex query emits one header and one package, without duplicating the containing package.
 #[test]
 fn cli_query_emits_each_matching_package_once() {
     let root = write_cityjson_fixture(
@@ -705,6 +717,8 @@ fn cli_query_emits_each_matching_package_once() {
     );
 }
 
+/// Input: an indexed CityJSON root-child hierarchy.
+/// Assertions: inspect JSON reports schema version and normalized source, package, CityObject, and relationship counts.
 #[test]
 fn cli_inspect_reports_normalized_counts_and_schema() {
     let root = write_cityjson_fixture(

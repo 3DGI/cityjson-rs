@@ -13,6 +13,8 @@ use common::{
 };
 use serde_json::{Value, json};
 
+/// Input: the expected future public Rust API types and method names are referenced as function pointers.
+/// Assertions: plural CityObject lookup, package membership lookup, and package retrieval signatures compile exactly as planned.
 #[test]
 fn plural_package_api_signatures_are_stable() {
     let _: Option<Bounds3D> = None;
@@ -24,6 +26,8 @@ fn plural_package_api_signatures_are_stable() {
         CityIndex::get_packages;
 }
 
+/// Input: a CityJSONSeq index with two physical CityObjects sharing the external id duplicate.
+/// Assertions: lookup_cityobject_refs returns both occurrences ordered by CityObject record id.
 #[test]
 fn lookup_cityobject_refs_returns_all_duplicate_occurrences() {
     let index = duplicate_cityjson_seq_index();
@@ -37,6 +41,8 @@ fn lookup_cityobject_refs_returns_all_duplicate_occurrences() {
     assert_eq!(refs[1].external_id, "duplicate");
 }
 
+/// Input: a CityJSON index with two root packages sharing one child CityObject.
+/// Assertions: get_packages for the shared child returns both containing packages exactly once.
 #[test]
 fn get_packages_returns_all_distinct_containing_packages() {
     let index = shared_child_index();
@@ -52,6 +58,8 @@ fn get_packages_returns_all_distinct_containing_packages() {
     );
 }
 
+/// Input: one indexed shared-child CityObject occurrence with memberships in two packages.
+/// Assertions: read_cityobject_packages reconstructs both valid packages containing that occurrence.
 #[test]
 fn read_cityobject_packages_returns_all_shared_memberships() {
     let index = shared_child_index();
@@ -68,6 +76,8 @@ fn read_cityobject_packages_returns_all_shared_memberships() {
     assert_eq!(packages.len(), 2);
 }
 
+/// Input: a CityJSONSeq package ref found through a duplicate CityObject occurrence.
+/// Assertions: read_package returns a valid feature whose original feature id is preserved.
 #[test]
 fn cityjson_seq_read_package_preserves_original_feature_id() {
     let index = duplicate_cityjson_seq_index();
@@ -86,6 +96,8 @@ fn cityjson_seq_read_package_preserves_original_feature_id() {
     assert_eq!(model_json(&model)["id"], "first");
 }
 
+/// Input: a feature-files package ref found through a child CityObject occurrence.
+/// Assertions: read_package returns a valid feature whose standalone feature id is preserved.
 #[test]
 fn feature_files_read_package_preserves_original_feature_id() {
     let root = write_feature_files_fixture(
@@ -114,6 +126,8 @@ fn feature_files_read_package_preserves_original_feature_id() {
     assert_eq!(model_json(&model)["id"], "feature-root");
 }
 
+/// Input: a synthetic CityJSON package reconstructed from one root in a shared-child hierarchy.
+/// Assertions: the result is a CityJSONFeature with localized vertices and only in-package parent links retained.
 #[test]
 fn cityjson_read_package_localizes_vertices_and_prunes_external_links() {
     let index = shared_child_index();
@@ -143,6 +157,8 @@ fn cityjson_read_package_localizes_vertices_and_prunes_external_links() {
     );
 }
 
+/// Input: a bbox query intersecting multiple CityObjects inside one indexed package.
+/// Assertions: query_package_refs returns the containing package once, not once per matching CityObject.
 #[test]
 fn package_query_returns_each_package_once() {
     let index = hierarchy_index();
@@ -153,6 +169,8 @@ fn package_query_returns_each_package_once() {
     assert_eq!(hits.len(), 1);
 }
 
+/// Input: a bbox query intersecting both parent and child CityObjects in a hierarchy.
+/// Assertions: query_cityobject_refs returns granular refs for both matching CityObjects.
 #[test]
 fn cityobject_query_returns_granular_hits() {
     let index = hierarchy_index();
@@ -168,6 +186,8 @@ fn cityobject_query_returns_granular_hits() {
     );
 }
 
+/// Input: a root CityObject ref in a deterministic multi-level hierarchy.
+/// Assertions: descendant traversal is stable across calls, breadth-first, and deduplicated.
 #[test]
 fn descendant_cityobject_refs_are_cycle_safe_and_deterministic() {
     let index = hierarchy_index();
@@ -192,6 +212,8 @@ fn descendant_cityobject_refs_are_cycle_safe_and_deterministic() {
     );
 }
 
+/// Input: the same package ref requested twice in one batch read.
+/// Assertions: read_packages preserves request alignment while allowing the implementation to decode each distinct package once.
 #[test]
 fn read_packages_decodes_duplicate_request_once_per_package() {
     let index = hierarchy_index();
@@ -214,6 +236,8 @@ fn read_packages_decodes_duplicate_request_once_per_package() {
     );
 }
 
+/// Input: a BuildingPart package filtered for the Road CityObject type.
+/// Assertions: read_filtered_packages returns an aligned no-model outcome and reports one ignored package.
 #[test]
 fn package_type_prefilter_excludes_irrelevant_packages_before_decode() {
     let index = hierarchy_index();
@@ -238,6 +262,8 @@ fn package_type_prefilter_excludes_irrelevant_packages_before_decode() {
     assert_eq!(outcome.report.ignored_package_count, 1);
 }
 
+/// Input: a BuildingPart package filtered for WaterBody.
+/// Assertions: the aligned filter outcome has model None and still reports available input types.
 #[test]
 fn package_filter_no_match_returns_none_model_with_report() {
     let index = hierarchy_index();
@@ -262,6 +288,8 @@ fn package_filter_no_match_returns_none_model_with_report() {
     assert!(outcome.report.available_types.contains("BuildingPart"));
 }
 
+/// Input: a package filtered with an exact LoD that no retained geometry provides.
+/// Assertions: the batch report merge preserves a no-model outcome and records missing LoD diagnostics.
 #[test]
 fn package_filter_reports_merge_for_batch_lod_validation() {
     let index = hierarchy_index();
