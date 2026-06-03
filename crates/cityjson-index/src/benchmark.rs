@@ -308,6 +308,11 @@ fn prepare_single_tile_dataset(
     let bytes = fs::read(artifact)?;
     let mut document: Value =
         serde_json::from_slice(&bytes).map_err(|error| Error::Import(error.to_string()))?;
+    let original_bytes = if subset_size.is_none() {
+        Some(bytes.clone())
+    } else {
+        None
+    };
     if let Some(limit) = subset_size {
         document = subset_cityjson_document(&mut document, limit)?;
     }
@@ -317,6 +322,7 @@ fn prepare_single_tile_dataset(
     let source = CityJsonSourceDocument {
         file_stem: "dataset".to_owned(),
         document,
+        original_bytes,
     };
     let manifest = materialize_layout_dataset(
         label,
@@ -365,6 +371,7 @@ fn prepare_multi_source_dataset(
         sources.push(CityJsonSourceDocument {
             file_stem: format!("source-{shard_index:02}"),
             document: subset,
+            original_bytes: None,
         });
     }
 
@@ -436,6 +443,7 @@ fn prepare_multi_tile_dataset(
         sources.push(CityJsonSourceDocument {
             file_stem: stem,
             document,
+            original_bytes: Some(bytes),
         });
     }
     if sources.is_empty() {
@@ -462,6 +470,7 @@ fn prepare_multi_tile_dataset(
 struct CityJsonSourceDocument {
     file_stem: String,
     document: Value,
+    original_bytes: Option<Vec<u8>>,
 }
 
 fn benchmark_layouts(requested: &[BenchmarkLayoutKind]) -> Vec<BenchmarkLayoutKind> {
@@ -551,9 +560,13 @@ fn materialize_cityjson_dataset(
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
         }
-        let bytes = serde_json::to_vec_pretty(&source.document)
-            .map_err(|error| Error::Import(error.to_string()))?;
-        fs::write(path, bytes)?;
+        if let Some(bytes) = &source.original_bytes {
+            fs::write(path, bytes)?;
+        } else {
+            let bytes = serde_json::to_vec(&source.document)
+                .map_err(|error| Error::Import(error.to_string()))?;
+            fs::write(path, bytes)?;
+        }
     }
     Ok(())
 }
@@ -591,8 +604,7 @@ fn materialize_feature_files_dataset(
         let metadata = cityjson_base_document(&source.document)?;
         fs::write(
             metadata_path,
-            serde_json::to_vec_pretty(&metadata)
-                .map_err(|error| Error::Import(error.to_string()))?,
+            serde_json::to_vec(&metadata).map_err(|error| Error::Import(error.to_string()))?,
         )?;
         for feature in feature_documents_for_roots(&source.document)? {
             let feature_id = feature
@@ -1587,6 +1599,90 @@ mod tests {
     }
 
     #[test]
+    fn single_tile_cityjson_preparation_preserves_unmodified_artifact_bytes() -> Result<()> {
+        // Input: a minified CityJSON artifact prepared as the full single-tile CityJSON layout.
+        // Assertions: the prepared dataset file is byte-for-byte identical to the source artifact
+        // and the manifest records that exact prepared size.
+        let root = temp_dir("benchmark-cityjson-raw-bytes");
+        let artifact = root.join("basisvoorziening.city.json");
+        let artifact_bytes = serde_json::to_vec(&synthetic_cityjson_document(3))
+            .map_err(|error| Error::Import(error.to_string()))?;
+        fs::write(&artifact, &artifact_bytes)?;
+        let cli = BenchmarkCli {
+            json: false,
+            corpus_root: root.clone(),
+            work_root: root.join("work"),
+            artifact: Some(artifact.clone()),
+            case: Vec::new(),
+            layout: vec![BenchmarkLayoutKind::CityJson],
+            workers: vec![1],
+            multi_tile_root: None,
+        };
+
+        let prepared = prepare_case(
+            &cli,
+            BenchmarkCaseKind::SingleTileFull,
+            BenchmarkLayoutKind::CityJson,
+            &artifact,
+        )?;
+        let manifest = &prepared[0].manifest;
+        let prepared_bytes = fs::read(manifest.prepared_dataset.join("dataset.city.json"))?;
+
+        assert_eq!(prepared_bytes, artifact_bytes);
+        assert_eq!(
+            manifest.byte_size,
+            u64::try_from(artifact_bytes.len())
+                .map_err(|_| Error::Import("test artifact size overflowed u64".to_owned()))?
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn subset_cityjson_preparation_writes_compact_valid_json() -> Result<()> {
+        // Input: a pretty-printed CityJSON artifact prepared as a two-package CityJSON subset.
+        // Assertions: the transformed prepared file is valid CityJSON JSON, contains the requested
+        // package count, and is serialized compactly without pretty-print newlines.
+        let root = temp_dir("benchmark-cityjson-compact-subset");
+        let artifact = root.join("basisvoorziening.city.json");
+        fs::write(
+            &artifact,
+            serde_json::to_vec_pretty(&synthetic_cityjson_document(4))
+                .map_err(|error| Error::Import(error.to_string()))?,
+        )?;
+        let cli = BenchmarkCli {
+            json: false,
+            corpus_root: root.clone(),
+            work_root: root.join("work"),
+            artifact: Some(artifact.clone()),
+            case: Vec::new(),
+            layout: vec![BenchmarkLayoutKind::CityJson],
+            workers: vec![1],
+            multi_tile_root: None,
+        };
+
+        let prepared = prepare_single_tile_dataset(
+            &cli,
+            "single-tile-subset-2",
+            BenchmarkLayoutKind::CityJson,
+            &artifact,
+            Some(2),
+        )?;
+        let prepared_bytes =
+            fs::read(prepared.manifest.prepared_dataset.join("dataset.city.json"))?;
+        let prepared_document: Value = serde_json::from_slice(&prepared_bytes)
+            .map_err(|error| Error::Import(error.to_string()))?;
+
+        assert_eq!(extract_root_ids(&prepared_document)?.len(), 2);
+        assert!(
+            !prepared_bytes.contains(&b'\n'),
+            "transformed CityJSON benchmark fixtures should not be pretty-printed"
+        );
+
+        Ok(())
+    }
+
+    #[test]
     fn multi_source_preparation_creates_parallel_source_shards() -> Result<()> {
         let root = temp_dir("benchmark-multi-source");
         let artifact = root.join("basisvoorziening.city.json");
@@ -1624,6 +1720,19 @@ mod tests {
             resolved.source_paths().len() > 1,
             "resolved prepared dataset should expose multiple source shards"
         );
+        for source_path in resolved.source_paths() {
+            let shard_bytes = fs::read(source_path)?;
+            let shard_document: Value = serde_json::from_slice(&shard_bytes)
+                .map_err(|error| Error::Import(error.to_string()))?;
+            assert!(
+                !shard_bytes.contains(&b'\n'),
+                "derived multi-source CityJSON shards should be compact JSON"
+            );
+            assert!(
+                !extract_root_ids(&shard_document)?.is_empty(),
+                "each benchmark shard should contain at least one package"
+            );
+        }
         assert!(
             resolved.source_paths().len().min(4) > 1,
             "a worker count greater than one should be able to reach multiple shards"
