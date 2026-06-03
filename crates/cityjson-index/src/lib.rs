@@ -184,9 +184,7 @@ impl PackageFilter {
     pub fn apply(&self, model: &CityModel) -> Result<PackageFilterResult> {
         let retained_handles = retained_cityobject_handles(model, self)?;
         let diagnostics = filter_diagnostics(model, &retained_handles, self);
-        let filtered_model = if !self.is_active() {
-            model.clone()
-        } else {
+        let filtered_model = if self.is_active() {
             let type_selection = self
                 .cityobject_types
                 .as_ref()
@@ -205,6 +203,8 @@ impl PackageFilter {
                 (None, None) => model_selection_all(model)?,
             };
             extract_or_empty_package(model, &selection)?
+        } else {
+            model.clone()
         };
 
         let mut report = PackageFilterReport::from_diagnostics(&diagnostics);
