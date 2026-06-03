@@ -647,20 +647,72 @@ fn feature_documents_for_roots(document: &Value) -> Result<Vec<Value>> {
 }
 
 fn cityjson_feature_for_root(document: &Value, root_id: &str) -> Result<Value> {
-    let subset = subset_cityjson_document_by_roots(document, &[root_id.to_owned()])?;
+    let cityobjects = document
+        .get("CityObjects")
+        .and_then(Value::as_object)
+        .ok_or_else(|| Error::Import("CityJSON document is missing CityObjects".to_owned()))?;
+    let vertices = document
+        .get("vertices")
+        .and_then(Value::as_array)
+        .ok_or_else(|| Error::Import("CityJSON document is missing vertices".to_owned()))?;
+
+    let mut selected_ids = BTreeSet::new();
+    collect_cityobject_closure(root_id, cityobjects, &mut selected_ids)?;
+
+    let mut selected_cityobjects = BTreeMap::new();
+    for id in &selected_ids {
+        let object = cityobjects
+            .get(id)
+            .ok_or_else(|| Error::Import(format!("CityObject {id} was not found")))?;
+        let mut object = object.clone();
+        filter_cityobject_relationships(&mut object, &selected_ids)?;
+        selected_cityobjects.insert(id.clone(), object);
+    }
+
+    let mut referenced_vertices = BTreeSet::new();
+    let mut visited = BTreeSet::new();
+    collect_object_vertex_indices(
+        &selected_cityobjects,
+        root_id,
+        &mut referenced_vertices,
+        &mut visited,
+    )?;
+
+    let mut remap = HashMap::new();
+    let mut local_vertices = Vec::with_capacity(referenced_vertices.len());
+    for (new_index, old_index) in referenced_vertices.iter().enumerate() {
+        remap.insert(*old_index, new_index);
+        let vertex = vertices
+            .get(*old_index)
+            .ok_or_else(|| Error::Import(format!("vertex index {old_index} is out of bounds")))?;
+        local_vertices.push(vertex.clone());
+    }
+
+    for object in selected_cityobjects.values_mut() {
+        if let Some(geometries) = object
+            .as_object_mut()
+            .and_then(|object| object.get_mut("geometry"))
+            .and_then(Value::as_array_mut)
+        {
+            for geometry in geometries {
+                if let Some(boundaries) = geometry.get_mut("boundaries") {
+                    remap_vertex_indices(boundaries, &remap)?;
+                }
+            }
+        }
+    }
+
     let mut feature = serde_json::Map::new();
     feature.insert(
         "type".to_owned(),
         Value::String("CityJSONFeature".to_owned()),
     );
     feature.insert("id".to_owned(), Value::String(root_id.to_owned()));
-    for key in ["CityObjects", "vertices"] {
-        let value = subset
-            .get(key)
-            .cloned()
-            .ok_or_else(|| Error::Import(format!("CityJSON subset is missing {key}")))?;
-        feature.insert(key.to_owned(), value);
-    }
+    feature.insert(
+        "CityObjects".to_owned(),
+        Value::Object(selected_cityobjects.into_iter().collect()),
+    );
+    feature.insert("vertices".to_owned(), Value::Array(local_vertices));
     Ok(Value::Object(feature))
 }
 
