@@ -218,6 +218,32 @@ class FeatureRef:
 
 
 @dataclass(frozen=True, slots=True)
+class CityObjectRef:
+    record_id: int
+    external_id: str
+    cityobject_type: str
+
+
+@dataclass(frozen=True, slots=True)
+class PackageRef:
+    record_id: int
+    model_id: str
+    package_type: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class IndexedPackage:
+    reference: PackageRef
+    model: "CityModel"
+
+
+@dataclass(frozen=True, slots=True)
+class FilteredPackageOutcome:
+    model: "CityModel | None"
+    report: FeatureFilterDiagnostics
+
+
+@dataclass(frozen=True, slots=True)
 class IndexStatus:
     exists: bool = True
     needs_reindex: bool = False
@@ -332,6 +358,44 @@ class OpenedIndex:
 
     def reindex(self) -> None:
         _native.reindex(self._require_handle())
+
+    def lookup_cityobject_refs(self, external_id: str) -> list[CityObjectRef]:
+        return _native.lookup_cityobject_refs(self._require_handle(), external_id)
+
+    def package_refs_for_cityobject(self, ref: CityObjectRef) -> list[PackageRef]:
+        return _native.package_refs_for_cityobject(self._require_handle(), ref)
+
+    def read_package(self, ref: PackageRef) -> "CityModel":
+        return _parse_citymodel_bytes(_native.read_package_model_bytes(self._require_handle(), ref))
+
+    def read_cityobject_packages(self, ref: CityObjectRef) -> list[IndexedPackage]:
+        return [
+            IndexedPackage(reference=package_ref, model=self.read_package(package_ref))
+            for package_ref in self.package_refs_for_cityobject(ref)
+        ]
+
+    def get_packages(self, external_id: str) -> list["CityModel"]:
+        seen: set[int] = set()
+        refs: list[PackageRef] = []
+        for cityobject in self.lookup_cityobject_refs(external_id):
+            for package in self.package_refs_for_cityobject(cityobject):
+                if package.record_id in seen:
+                    continue
+                seen.add(package.record_id)
+                refs.append(package)
+        refs.sort(key=lambda ref: ref.record_id)
+        return [self.read_package(ref) for ref in refs]
+
+    def read_filtered_packages(
+        self,
+        refs: list[PackageRef],
+        filter: FeatureFilter,
+    ) -> list[FilteredPackageOutcome]:
+        filtered = _native.read_filtered_packages(self._require_handle(), refs, filter)
+        return [
+            FilteredPackageOutcome(model=item.model, report=item.diagnostics)
+            for item in filtered
+        ]
 
     def feature_ref_count(self) -> int:
         return _native.feature_ref_count(self._require_handle())

@@ -715,7 +715,7 @@ fn extract_or_empty_feature(
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DatasetLayoutKind {
-    #[serde(rename = "ndjson")]
+    #[serde(rename = "cityjson-seq")]
     Ndjson,
     #[serde(rename = "cityjson")]
     CityJson,
@@ -727,7 +727,7 @@ impl DatasetLayoutKind {
     #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
-            Self::Ndjson => "ndjson",
+            Self::Ndjson => "cityjson-seq",
             Self::CityJson => "cityjson",
             Self::FeatureFiles => "feature-files",
         }
@@ -758,9 +758,12 @@ pub struct IndexStatus {
     pub path: PathBuf,
     pub exists: bool,
     pub index_mtime_ns: Option<i64>,
+    pub schema_version: Option<i64>,
     pub indexed_source_count: Option<usize>,
     pub indexed_feature_count: Option<usize>,
+    pub indexed_package_count: Option<usize>,
     pub indexed_cityobject_count: Option<usize>,
+    pub indexed_cityobject_relationship_count: Option<usize>,
     pub fresh: Option<bool>,
     pub covered: Option<bool>,
     pub needs_reindex: bool,
@@ -858,9 +861,12 @@ fn inspect_resolved_dataset(resolved: &ResolvedDataset) -> Result<DatasetInspect
         path: resolved.index_path.clone(),
         exists: resolved.index_path.exists(),
         index_mtime_ns: None,
+        schema_version: None,
         indexed_source_count: None,
         indexed_feature_count: None,
+        indexed_package_count: None,
         indexed_cityobject_count: None,
+        indexed_cityobject_relationship_count: None,
         fresh: None,
         covered: None,
         needs_reindex: false,
@@ -878,9 +884,12 @@ fn inspect_resolved_dataset(resolved: &ResolvedDataset) -> Result<DatasetInspect
         status.index_mtime_ns = Some(mtime_ns);
 
         let index = Index::open(&resolved.index_path)?;
+        status.schema_version = Some(index.current_schema_version()?);
         status.indexed_source_count = Some(index.source_count()?);
         status.indexed_feature_count = Some(index.feature_count()?);
-        status.indexed_cityobject_count = Some(index.cityobject_count()?);
+        status.indexed_package_count = Some(index.package_count()?);
+        status.indexed_cityobject_count = Some(index.normalized_cityobject_count()?);
+        status.indexed_cityobject_relationship_count = Some(index.cityobject_relationship_count()?);
         if !index.feature_bounds_complete()? {
             status.needs_reindex = true;
             status
@@ -3167,6 +3176,22 @@ impl Index {
         ))?;
         usize::try_from(total)
             .map_err(|_| import_error("indexed CityObject count does not fit in usize"))
+    }
+
+    fn current_schema_version(&self) -> Result<i64> {
+        Self::schema_version(&self.conn)
+    }
+
+    fn package_count(&self) -> Result<usize> {
+        self.query_count("SELECT COUNT(*) FROM packages")
+    }
+
+    fn normalized_cityobject_count(&self) -> Result<usize> {
+        self.query_count("SELECT COUNT(*) FROM cityobjects")
+    }
+
+    fn cityobject_relationship_count(&self) -> Result<usize> {
+        self.query_count("SELECT COUNT(*) FROM cityobject_relationships")
     }
 
     fn query_count(&self, sql: &str) -> Result<usize> {

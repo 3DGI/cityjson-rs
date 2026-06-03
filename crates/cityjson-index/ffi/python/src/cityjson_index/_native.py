@@ -11,6 +11,7 @@ from ctypes import (
     c_int64,
     c_size_t,
     c_uint64,
+    c_double,
     c_void_p,
     cast,
     create_string_buffer,
@@ -82,6 +83,37 @@ class _FeatureRef(Structure):
         ("vertices_length", c_uint64),
         ("member_ranges_json", _Bytes),
         ("source_id", c_int64),
+    ]
+
+
+class _Bounds3D(Structure):
+    _fields_ = [
+        ("min_x", c_double),
+        ("max_x", c_double),
+        ("min_y", c_double),
+        ("max_y", c_double),
+        ("min_z", c_double),
+        ("max_z", c_double),
+    ]
+
+
+class _CityObjectRef(Structure):
+    _fields_ = [
+        ("record_id", c_int64),
+        ("external_id", _Bytes),
+        ("cityobject_type", _Bytes),
+        ("has_bounds", c_bool),
+        ("bounds", _Bounds3D),
+    ]
+
+
+class _PackageRef(Structure):
+    _fields_ = [
+        ("record_id", c_int64),
+        ("model_id", _Bytes),
+        ("package_type", c_int),
+        ("has_bounds", c_bool),
+        ("bounds", _Bounds3D),
     ]
 
 
@@ -242,29 +274,29 @@ class FfiLibrary:
             POINTER(c_size_t),
         ]
         self._lib.cjx_index_feature_ref_page.restype = c_int
-        self._lib.cjx_index_lookup_feature_refs.argtypes = [
+        self._lib.cjx_legacy_lookup_feature_refs.argtypes = [
             c_void_p,
             c_char_p,
             c_size_t,
             POINTER(POINTER(_FeatureRef)),
             POINTER(c_size_t),
         ]
-        self._lib.cjx_index_lookup_feature_refs.restype = c_int
+        self._lib.cjx_legacy_lookup_feature_refs.restype = c_int
         self._lib.cjx_feature_ref_page_free.argtypes = [POINTER(_FeatureRef), c_size_t]
         self._lib.cjx_feature_ref_page_free.restype = c_int
-        self._lib.cjx_index_get_bytes.argtypes = [c_void_p, c_char_p, c_size_t, POINTER(_Bytes)]
-        self._lib.cjx_index_get_bytes.restype = c_int
-        self._lib.cjx_index_get_model_bytes.argtypes = [c_void_p, c_char_p, c_size_t, POINTER(_Bytes)]
-        self._lib.cjx_index_get_model_bytes.restype = c_int
-        self._lib.cjx_index_read_feature_bytes.argtypes = [c_void_p, POINTER(_FeatureRef), POINTER(_Bytes)]
-        self._lib.cjx_index_read_feature_bytes.restype = c_int
-        self._lib.cjx_index_read_feature_model_bytes.argtypes = [
+        self._lib.cjx_legacy_get_bytes.argtypes = [c_void_p, c_char_p, c_size_t, POINTER(_Bytes)]
+        self._lib.cjx_legacy_get_bytes.restype = c_int
+        self._lib.cjx_legacy_get_model_bytes.argtypes = [c_void_p, c_char_p, c_size_t, POINTER(_Bytes)]
+        self._lib.cjx_legacy_get_model_bytes.restype = c_int
+        self._lib.cjx_legacy_read_feature_bytes.argtypes = [c_void_p, POINTER(_FeatureRef), POINTER(_Bytes)]
+        self._lib.cjx_legacy_read_feature_bytes.restype = c_int
+        self._lib.cjx_legacy_read_feature_model_bytes.argtypes = [
             c_void_p,
             POINTER(_FeatureRef),
             POINTER(_Bytes),
         ]
-        self._lib.cjx_index_read_feature_model_bytes.restype = c_int
-        self._lib.cjx_index_read_filtered_features.argtypes = [
+        self._lib.cjx_legacy_read_feature_model_bytes.restype = c_int
+        self._lib.cjx_legacy_read_filtered_features.argtypes = [
             c_void_p,
             POINTER(_FeatureRef),
             c_size_t,
@@ -272,9 +304,43 @@ class FfiLibrary:
             POINTER(POINTER(_FilteredFeature)),
             POINTER(c_size_t),
         ]
-        self._lib.cjx_index_read_filtered_features.restype = c_int
+        self._lib.cjx_legacy_read_filtered_features.restype = c_int
         self._lib.cjx_filtered_features_free.argtypes = [POINTER(_FilteredFeature), c_size_t]
         self._lib.cjx_filtered_features_free.restype = c_int
+        self._lib.cjx_index_lookup_cityobject_refs.argtypes = [
+            c_void_p,
+            c_char_p,
+            c_size_t,
+            POINTER(POINTER(_CityObjectRef)),
+            POINTER(c_size_t),
+        ]
+        self._lib.cjx_index_lookup_cityobject_refs.restype = c_int
+        self._lib.cjx_index_package_refs_for_cityobject.argtypes = [
+            c_void_p,
+            POINTER(_CityObjectRef),
+            POINTER(POINTER(_PackageRef)),
+            POINTER(c_size_t),
+        ]
+        self._lib.cjx_index_package_refs_for_cityobject.restype = c_int
+        self._lib.cjx_index_read_package_model_bytes.argtypes = [
+            c_void_p,
+            POINTER(_PackageRef),
+            POINTER(_Bytes),
+        ]
+        self._lib.cjx_index_read_package_model_bytes.restype = c_int
+        self._lib.cjx_index_read_filtered_packages.argtypes = [
+            c_void_p,
+            POINTER(_PackageRef),
+            c_size_t,
+            POINTER(_FeatureFilter),
+            POINTER(POINTER(_FilteredFeature)),
+            POINTER(c_size_t),
+        ]
+        self._lib.cjx_index_read_filtered_packages.restype = c_int
+        self._lib.cjx_cityobject_refs_free.argtypes = [POINTER(_CityObjectRef), c_size_t]
+        self._lib.cjx_cityobject_refs_free.restype = c_int
+        self._lib.cjx_package_refs_free.argtypes = [POINTER(_PackageRef), c_size_t]
+        self._lib.cjx_package_refs_free.restype = c_int
 
     def clear_error(self) -> None:
         self._check_status(self._lib.cjx_clear_error())
@@ -382,7 +448,7 @@ class FfiLibrary:
         count = c_size_t()
         payload = feature_id.encode("utf-8")
         self._check_status(
-            self._lib.cjx_index_lookup_feature_refs(
+            self._lib.cjx_legacy_lookup_feature_refs(
                 handle, c_char_p(payload), len(payload), byref(refs), byref(count)
             )
         )
@@ -391,6 +457,68 @@ class FfiLibrary:
             return self._feature_refs_from_native(refs, count.value)
         finally:
             self._check_status(self._lib.cjx_feature_ref_page_free(refs, count.value))
+
+    def lookup_cityobject_refs(self, handle: c_void_p, external_id: str) -> list[object]:
+        refs = POINTER(_CityObjectRef)()
+        count = c_size_t()
+        payload = external_id.encode("utf-8")
+        self._check_status(
+            self._lib.cjx_index_lookup_cityobject_refs(
+                handle, c_char_p(payload), len(payload), byref(refs), byref(count)
+            )
+        )
+        try:
+            from . import CityObjectRef
+
+            return [
+                CityObjectRef(
+                    record_id=int(refs[index].record_id),
+                    external_id=_bytes_to_py(refs[index].external_id).decode("utf-8"),
+                    cityobject_type=_bytes_to_py(refs[index].cityobject_type).decode("utf-8"),
+                )
+                for index in range(count.value)
+            ]
+        finally:
+            self._check_status(self._lib.cjx_cityobject_refs_free(refs, count.value))
+
+    def package_refs_for_cityobject(self, handle: c_void_p, ref: object) -> list[object]:
+        keepalive: list[Any] = []
+        native = _cityobject_ref_to_native(ref, keepalive)
+        refs = POINTER(_PackageRef)()
+        count = c_size_t()
+        self._check_status(
+            self._lib.cjx_index_package_refs_for_cityobject(handle, byref(native), byref(refs), byref(count))
+        )
+        try:
+            return _package_refs_from_native(refs, count.value)
+        finally:
+            self._check_status(self._lib.cjx_package_refs_free(refs, count.value))
+
+    def read_package_model_bytes(self, handle: c_void_p, ref: object) -> bytes:
+        keepalive: list[Any] = []
+        native = _package_ref_to_native(ref, keepalive)
+        out = _Bytes()
+        self._check_status(self._lib.cjx_index_read_package_model_bytes(handle, byref(native), byref(out)))
+        try:
+            return _bytes_to_py(out)
+        finally:
+            self._check_status(self._lib.cjx_bytes_free(out))
+
+    def read_filtered_packages(self, handle: c_void_p, refs: list[object], filter: object) -> list[object]:
+        keepalive: list[Any] = []
+        native_refs = _package_ref_array(refs, keepalive)
+        native_filter = _feature_filter_to_native(filter, keepalive)
+        out = POINTER(_FilteredFeature)()
+        count = c_size_t()
+        self._check_status(
+            self._lib.cjx_index_read_filtered_packages(
+                handle, native_refs, len(refs), byref(native_filter), byref(out), byref(count)
+            )
+        )
+        try:
+            return _filtered_features_from_native(out, count.value)
+        finally:
+            self._check_status(self._lib.cjx_filtered_features_free(out, count.value))
 
     def _maybe_get_bytes(self, status: int, out: _Bytes) -> bytes | None:
         if status == Status.INVALID_ARGUMENT:
@@ -406,13 +534,13 @@ class FfiLibrary:
     def get_bytes(self, handle: c_void_p, feature_id: str) -> bytes | None:
         payload = feature_id.encode("utf-8")
         out = _Bytes()
-        status = self._lib.cjx_index_get_bytes(handle, c_char_p(payload), len(payload), byref(out))
+        status = self._lib.cjx_legacy_get_bytes(handle, c_char_p(payload), len(payload), byref(out))
         return self._maybe_get_bytes(status, out)
 
     def get_model_bytes(self, handle: c_void_p, feature_id: str) -> bytes | None:
         payload = feature_id.encode("utf-8")
         out = _Bytes()
-        status = self._lib.cjx_index_get_model_bytes(
+        status = self._lib.cjx_legacy_get_model_bytes(
             handle, c_char_p(payload), len(payload), byref(out)
         )
         return self._maybe_get_bytes(status, out)
@@ -435,7 +563,7 @@ class FfiLibrary:
         native.source_id = 0
 
         out = _Bytes()
-        self._check_status(self._lib.cjx_index_read_feature_bytes(handle, byref(native), byref(out)))
+        self._check_status(self._lib.cjx_legacy_read_feature_bytes(handle, byref(native), byref(out)))
         try:
             return _bytes_to_py(out)
         finally:
@@ -476,7 +604,7 @@ class FfiLibrary:
 
         out = _Bytes()
         self._check_status(
-            self._lib.cjx_index_read_feature_model_bytes(handle, byref(native), byref(out))
+            self._lib.cjx_legacy_read_feature_model_bytes(handle, byref(native), byref(out))
         )
         try:
             return _bytes_to_py(out)
@@ -496,7 +624,7 @@ class FfiLibrary:
         count = c_size_t()
 
         self._check_status(
-            self._lib.cjx_index_read_filtered_features(
+            self._lib.cjx_legacy_read_filtered_features(
                 handle,
                 native_refs,
                 len(refs),
@@ -510,6 +638,55 @@ class FfiLibrary:
             return _filtered_features_from_native(out, count.value)
         finally:
             self._check_status(self._lib.cjx_filtered_features_free(out, count.value))
+
+
+def _cityobject_ref_to_native(ref: object, keepalive: list[Any]) -> _CityObjectRef:
+    external = str(getattr(ref, "external_id", "")).encode("utf-8")
+    cityobject_type = str(getattr(ref, "cityobject_type", "")).encode("utf-8")
+    external_buffer = create_string_buffer(external)
+    type_buffer = create_string_buffer(cityobject_type)
+    native = _CityObjectRef()
+    native.record_id = int(getattr(ref, "record_id"))
+    native.external_id = _Bytes(cast(external_buffer, c_void_p), len(external))
+    native.cityobject_type = _Bytes(cast(type_buffer, c_void_p), len(cityobject_type))
+    keepalive.extend([external_buffer, type_buffer])
+    return native
+
+
+def _package_ref_to_native(ref: object, keepalive: list[Any]) -> _PackageRef:
+    model_id = str(getattr(ref, "model_id", "")).encode("utf-8")
+    model_buffer = create_string_buffer(model_id)
+    native = _PackageRef()
+    native.record_id = int(getattr(ref, "record_id"))
+    native.model_id = _Bytes(cast(model_buffer, c_void_p), len(model_id))
+    native.package_type = int(getattr(ref, "package_type", 0))
+    keepalive.append(model_buffer)
+    return native
+
+
+def _package_ref_array(refs: list[object], keepalive: list[Any]) -> Any:
+    if not refs:
+        return POINTER(_PackageRef)()
+    items = [_package_ref_to_native(ref, keepalive) for ref in refs]
+    array_type = _PackageRef * len(items)
+    array = array_type(*items)
+    keepalive.append(array)
+    return array
+
+
+def _package_refs_from_native(refs: POINTER(_PackageRef), count: int) -> list[object]:
+    if count == 0 or not refs:
+        return []
+    from . import PackageRef
+
+    return [
+        PackageRef(
+            record_id=int(refs[index].record_id),
+            model_id=_bytes_to_py(refs[index].model_id).decode("utf-8"),
+            package_type=int(refs[index].package_type),
+        )
+        for index in range(count)
+    ]
 
 
 def _bytes_to_py(value: _Bytes) -> bytes:
@@ -748,3 +925,19 @@ def read_feature_model_bytes(
 
 def read_filtered_features(handle: c_void_p, refs: list[object], filter: object) -> list[object]:
     return _ffi.read_filtered_features(handle, refs, filter)
+
+
+def lookup_cityobject_refs(handle: c_void_p, external_id: str) -> list[object]:
+    return _ffi.lookup_cityobject_refs(handle, external_id)
+
+
+def package_refs_for_cityobject(handle: c_void_p, ref: object) -> list[object]:
+    return _ffi.package_refs_for_cityobject(handle, ref)
+
+
+def read_package_model_bytes(handle: c_void_p, ref: object) -> bytes:
+    return _ffi.read_package_model_bytes(handle, ref)
+
+
+def read_filtered_packages(handle: c_void_p, refs: list[object], filter: object) -> list[object]:
+    return _ffi.read_filtered_packages(handle, refs, filter)

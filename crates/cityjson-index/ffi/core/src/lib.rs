@@ -14,8 +14,9 @@ use cityjson_lib_ffi_core::{
 };
 
 use cityjson_index::{
-    CityIndex, FeatureBounds, FeatureFilter, FeatureFilterDiagnostics, IndexedFeatureRef,
-    LodSelection, MissingLodSelection, ResolvedDataset, resolve_dataset,
+    CityIndex, FeatureBounds, FeatureFilter, FeatureFilterDiagnostics, IndexedCityObjectRef,
+    IndexedFeatureRef, IndexedPackageRef, LodSelection, MissingLodSelection, PackageFilter,
+    PackageFilterReport, PackageType, ResolvedDataset, resolve_dataset,
 };
 
 #[allow(non_camel_case_types)]
@@ -47,6 +48,50 @@ pub struct cjx_feature_ref_t {
     pub vertices_length: u64,
     pub member_ranges_json: cj_bytes_t,
     pub source_id: i64,
+}
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct cjx_bounds3d_t {
+    pub min_x: f64,
+    pub max_x: f64,
+    pub min_y: f64,
+    pub max_y: f64,
+    pub min_z: f64,
+    pub max_z: f64,
+}
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum cjx_package_type_t {
+    #[default]
+    CJX_PACKAGE_TYPE_CITYJSON = 0,
+    CJX_PACKAGE_TYPE_CITYJSON_SEQ = 1,
+    CJX_PACKAGE_TYPE_FEATURE_FILES = 2,
+}
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct cjx_cityobject_ref_t {
+    pub record_id: i64,
+    pub external_id: cj_bytes_t,
+    pub cityobject_type: cj_bytes_t,
+    pub has_bounds: bool,
+    pub bounds: cjx_bounds3d_t,
+}
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct cjx_package_ref_t {
+    pub record_id: i64,
+    pub model_id: cj_bytes_t,
+    pub package_type: cjx_package_type_t,
+    pub has_bounds: bool,
+    pub bounds: cjx_bounds3d_t,
 }
 
 #[allow(non_camel_case_types)]
@@ -198,6 +243,98 @@ impl TryFrom<&cjx_feature_ref_t> for IndexedFeatureRef {
     }
 }
 
+impl From<IndexedCityObjectRef> for cjx_cityobject_ref_t {
+    fn from(value: IndexedCityObjectRef) -> Self {
+        let (has_bounds, bounds) = value
+            .bounds
+            .map(|bounds| {
+                (
+                    true,
+                    cjx_bounds3d_t {
+                        min_x: bounds.min_x,
+                        max_x: bounds.max_x,
+                        min_y: bounds.min_y,
+                        max_y: bounds.max_y,
+                        min_z: bounds.min_z,
+                        max_z: bounds.max_z,
+                    },
+                )
+            })
+            .unwrap_or_default();
+        Self {
+            record_id: value.record_id,
+            external_id: bytes_from_string(value.external_id),
+            cityobject_type: bytes_from_string(value.cityobject_type),
+            has_bounds,
+            bounds,
+        }
+    }
+}
+
+impl From<IndexedPackageRef> for cjx_package_ref_t {
+    fn from(value: IndexedPackageRef) -> Self {
+        let package_type = match value.package_type {
+            PackageType::CityJson => cjx_package_type_t::CJX_PACKAGE_TYPE_CITYJSON,
+            PackageType::CityJsonSeq => cjx_package_type_t::CJX_PACKAGE_TYPE_CITYJSON_SEQ,
+            PackageType::FeatureFiles => cjx_package_type_t::CJX_PACKAGE_TYPE_FEATURE_FILES,
+        };
+        let (has_bounds, bounds) = value
+            .bounds
+            .map(|bounds| {
+                (
+                    true,
+                    cjx_bounds3d_t {
+                        min_x: bounds.min_x,
+                        max_x: bounds.max_x,
+                        min_y: bounds.min_y,
+                        max_y: bounds.max_y,
+                        min_z: bounds.min_z,
+                        max_z: bounds.max_z,
+                    },
+                )
+            })
+            .unwrap_or_default();
+        Self {
+            record_id: value.record_id,
+            model_id: bytes_from_string(value.model_id),
+            package_type,
+            has_bounds,
+            bounds,
+        }
+    }
+}
+
+impl TryFrom<&cjx_cityobject_ref_t> for IndexedCityObjectRef {
+    type Error = AbiError;
+
+    fn try_from(value: &cjx_cityobject_ref_t) -> Result<Self, Self::Error> {
+        Ok(Self {
+            record_id: value.record_id,
+            external_id: bytes_to_string(value.external_id, "external_id")?,
+            cityobject_type: bytes_to_string(value.cityobject_type, "cityobject_type")?,
+            bounds: None,
+        })
+    }
+}
+
+impl TryFrom<&cjx_package_ref_t> for IndexedPackageRef {
+    type Error = AbiError;
+
+    fn try_from(value: &cjx_package_ref_t) -> Result<Self, Self::Error> {
+        let package_type = match value.package_type {
+            cjx_package_type_t::CJX_PACKAGE_TYPE_CITYJSON => PackageType::CityJson,
+            cjx_package_type_t::CJX_PACKAGE_TYPE_CITYJSON_SEQ => PackageType::CityJsonSeq,
+            cjx_package_type_t::CJX_PACKAGE_TYPE_FEATURE_FILES => PackageType::FeatureFiles,
+        };
+        Ok(Self {
+            record_id: value.record_id,
+            model_id: bytes_to_string(value.model_id, "model_id")?,
+            package_type,
+            bounds: None,
+        })
+    }
+}
+
 struct OpenedIndex {
     resolved: ResolvedDataset,
     index: CityIndex,
@@ -267,6 +404,63 @@ impl OpenedIndex {
         let feature = IndexedFeatureRef::try_from(feature)?;
         let model = self.index.read_feature(&feature).map_err(AbiError::from)?;
         json::to_vec(&model).map_err(AbiError::from)
+    }
+
+    fn lookup_cityobject_refs(
+        &self,
+        external_id: &str,
+    ) -> Result<Vec<cjx_cityobject_ref_t>, AbiError> {
+        self.index
+            .lookup_cityobject_refs(external_id)
+            .map(|refs| refs.into_iter().map(Into::into).collect())
+            .map_err(AbiError::from)
+    }
+
+    fn package_refs_for_cityobject(
+        &self,
+        cityobject: &cjx_cityobject_ref_t,
+    ) -> Result<Vec<cjx_package_ref_t>, AbiError> {
+        let cityobject = IndexedCityObjectRef::try_from(cityobject)?;
+        self.index
+            .package_refs_for_cityobject(&cityobject)
+            .map(|refs| refs.into_iter().map(Into::into).collect())
+            .map_err(AbiError::from)
+    }
+
+    fn read_package_model_bytes(&self, package: &cjx_package_ref_t) -> Result<Vec<u8>, AbiError> {
+        let package = IndexedPackageRef::try_from(package)?;
+        let model = self.index.read_package(&package).map_err(AbiError::from)?;
+        json::to_vec(&model).map_err(AbiError::from)
+    }
+
+    fn read_filtered_packages(
+        &self,
+        packages: &[cjx_package_ref_t],
+        filter: &PackageFilter,
+    ) -> Result<Vec<cjx_filtered_feature_t>, AbiError> {
+        let packages = packages
+            .iter()
+            .map(IndexedPackageRef::try_from)
+            .collect::<Result<Vec<_>, _>>()?;
+        let filtered = self
+            .index
+            .read_filtered_packages(&packages, filter)
+            .map_err(AbiError::from)?;
+        filtered
+            .into_iter()
+            .map(|outcome| {
+                let model_json = outcome
+                    .model
+                    .map(|model| json::to_vec(&model).map(bytes_from_vec))
+                    .transpose()
+                    .map_err(AbiError::from)?
+                    .unwrap_or_default();
+                Ok(cjx_filtered_feature_t {
+                    model_json,
+                    diagnostics: package_report_from_abi(&outcome.report),
+                })
+            })
+            .collect::<Result<Vec<_>, AbiError>>()
     }
 
     fn read_filtered_features(
@@ -460,6 +654,15 @@ fn feature_filter_from_abi(filter: &cjx_feature_filter_t) -> Result<FeatureFilte
     })
 }
 
+fn package_filter_from_abi(filter: &cjx_feature_filter_t) -> Result<PackageFilter, AbiError> {
+    let feature_filter = feature_filter_from_abi(filter)?;
+    Ok(PackageFilter {
+        cityobject_types: feature_filter.cityobject_types,
+        default_lod: feature_filter.default_lod,
+        lods_by_type: feature_filter.lods_by_type,
+    })
+}
+
 fn string_list_from_set(items: &BTreeSet<String>) -> cjx_string_list_t {
     let items = items
         .iter()
@@ -535,6 +738,19 @@ fn diagnostics_from_abi(
     }
 }
 
+fn package_report_from_abi(report: &PackageFilterReport) -> cjx_feature_filter_diagnostics_t {
+    let missing = report.missing_lods.values().cloned().collect::<Vec<_>>();
+    cjx_feature_filter_diagnostics_t {
+        available_types: string_list_from_set(&report.available_types),
+        retained_types: string_list_from_set(&report.retained_types),
+        ignored_types: string_list_from_set(&report.ignored_types),
+        available_lods: lod_map_from_abi(&report.available_lods),
+        retained_lods: lod_map_from_abi(&report.retained_lods),
+        missing_lods: missing_lods_from_abi(&missing),
+        retained_geometry_count: report.retained_geometry_count,
+    }
+}
+
 fn required_string(
     data: *const c_char,
     len: usize,
@@ -566,6 +782,26 @@ fn optional_path(
     required_string(data, len, name)
         .map(PathBuf::from)
         .map(Some)
+}
+
+fn write_ref_slice<T>(
+    out_items: *mut *mut T,
+    out_count: *mut usize,
+    items: Vec<T>,
+) -> Result<(), AbiError> {
+    let count = items.len();
+    write_value(out_count, "out_count", count)?;
+    if count == 0 {
+        let out_items = NonNull::new(out_items)
+            .ok_or_else(|| AbiError::invalid_argument("out_items must not be null"))?;
+        unsafe {
+            ptr::write(out_items.as_ptr(), ptr::null_mut());
+        }
+        return Ok(());
+    }
+    let boxed = items.into_boxed_slice();
+    let ptr = Box::into_raw(boxed).cast::<T>();
+    write_value(out_items, "out_items", ptr)
 }
 
 fn write_value<T>(out: *mut T, name: &'static str, value: T) -> Result<(), AbiError> {
@@ -611,6 +847,21 @@ fn free_feature_ref(feature: cjx_feature_ref_t) {
         bytes_free(feature.feature_id);
         bytes_free(feature.source_path);
         bytes_free(feature.member_ranges_json);
+    }
+}
+
+fn free_cityobject_ref(value: cjx_cityobject_ref_t) {
+    // SAFETY: each field is an owned byte buffer allocated by this ABI.
+    unsafe {
+        bytes_free(value.external_id);
+        bytes_free(value.cityobject_type);
+    }
+}
+
+fn free_package_ref(value: cjx_package_ref_t) {
+    // SAFETY: each field is an owned byte buffer allocated by this ABI.
+    unsafe {
+        bytes_free(value.model_id);
     }
 }
 
@@ -839,7 +1090,7 @@ pub extern "C" fn cjx_index_feature_ref_page(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn cjx_index_lookup_feature_refs(
+pub extern "C" fn cjx_legacy_lookup_feature_refs(
     handle: *const cjx_index_t,
     feature_id: *const c_char,
     feature_id_len: usize,
@@ -906,7 +1157,7 @@ pub unsafe extern "C" fn cjx_feature_ref_page_free(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn cjx_index_get_bytes(
+pub extern "C" fn cjx_legacy_get_bytes(
     handle: *const cjx_index_t,
     feature_id: *const c_char,
     feature_id_len: usize,
@@ -928,7 +1179,7 @@ pub extern "C" fn cjx_index_get_bytes(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn cjx_index_get_model_bytes(
+pub extern "C" fn cjx_legacy_get_model_bytes(
     handle: *const cjx_index_t,
     feature_id: *const c_char,
     feature_id_len: usize,
@@ -950,7 +1201,7 @@ pub extern "C" fn cjx_index_get_model_bytes(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn cjx_index_read_feature_bytes(
+pub extern "C" fn cjx_legacy_read_feature_bytes(
     handle: *const cjx_index_t,
     feature: *const cjx_feature_ref_t,
     out_bytes: *mut cj_bytes_t,
@@ -970,7 +1221,7 @@ pub extern "C" fn cjx_index_read_feature_bytes(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn cjx_index_read_feature_model_bytes(
+pub extern "C" fn cjx_legacy_read_feature_model_bytes(
     handle: *const cjx_index_t,
     feature: *const cjx_feature_ref_t,
     out_bytes: *mut cj_bytes_t,
@@ -990,7 +1241,7 @@ pub extern "C" fn cjx_index_read_feature_model_bytes(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn cjx_index_read_filtered_features(
+pub extern "C" fn cjx_legacy_read_filtered_features(
     handle: *const cjx_index_t,
     refs: *const cjx_feature_ref_t,
     ref_count: usize,
@@ -1038,10 +1289,150 @@ pub extern "C" fn cjx_index_read_filtered_features(
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_lookup_cityobject_refs(
+    handle: *const cjx_index_t,
+    external_id: *const c_char,
+    external_id_len: usize,
+    out_refs: *mut *mut cjx_cityobject_ref_t,
+    out_count: *mut usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let external_id = required_string(external_id, external_id_len, "external_id")?;
+        let refs = handle.lookup_cityobject_refs(&external_id)?;
+        write_ref_slice(out_refs, out_count, refs)
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_package_refs_for_cityobject(
+    handle: *const cjx_index_t,
+    cityobject: *const cjx_cityobject_ref_t,
+    out_refs: *mut *mut cjx_package_ref_t,
+    out_count: *mut usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let cityobject = NonNull::new(cityobject.cast_mut())
+            .ok_or_else(|| AbiError::invalid_argument("cityobject must not be null"))?;
+        let refs = handle.package_refs_for_cityobject(unsafe { cityobject.as_ref() })?;
+        write_ref_slice(out_refs, out_count, refs)
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+/// # Safety
+///
+/// `refs` must either be null or point to `count` CityObject refs allocated by this ABI.
+pub unsafe extern "C" fn cjx_cityobject_refs_free(
+    refs: *mut cjx_cityobject_ref_t,
+    count: usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        if refs.is_null() || count == 0 {
+            return Ok::<(), AbiError>(());
+        }
+        let slice = unsafe { slice::from_raw_parts_mut(refs, count) };
+        for item in slice.iter_mut() {
+            free_cityobject_ref(*item);
+        }
+        let raw = ptr::slice_from_raw_parts_mut(refs, count);
+        unsafe {
+            drop(Box::from_raw(raw));
+        }
+        Ok::<(), AbiError>(())
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+/// # Safety
+///
+/// `refs` must either be null or point to `count` package refs allocated by this ABI.
+pub unsafe extern "C" fn cjx_package_refs_free(
+    refs: *mut cjx_package_ref_t,
+    count: usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        if refs.is_null() || count == 0 {
+            return Ok::<(), AbiError>(());
+        }
+        let slice = unsafe { slice::from_raw_parts_mut(refs, count) };
+        for item in slice.iter_mut() {
+            free_package_ref(*item);
+        }
+        let raw = ptr::slice_from_raw_parts_mut(refs, count);
+        unsafe {
+            drop(Box::from_raw(raw));
+        }
+        Ok::<(), AbiError>(())
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_read_package_model_bytes(
+    handle: *const cjx_index_t,
+    package: *const cjx_package_ref_t,
+    out_bytes: *mut cj_bytes_t,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let package = NonNull::new(package.cast_mut())
+            .ok_or_else(|| AbiError::invalid_argument("package must not be null"))?;
+        let bytes = handle.read_package_model_bytes(unsafe { package.as_ref() })?;
+        write_value(out_bytes, "out_bytes", bytes_from_vec(bytes))
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_read_filtered_packages(
+    handle: *const cjx_index_t,
+    refs: *const cjx_package_ref_t,
+    ref_count: usize,
+    filter: *const cjx_feature_filter_t,
+    out_features: *mut *mut cjx_filtered_feature_t,
+    out_count: *mut usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let filter = NonNull::new(filter.cast_mut())
+            .ok_or_else(|| AbiError::invalid_argument("filter must not be null"))?;
+        let filter = package_filter_from_abi(unsafe { filter.as_ref() })?;
+        let refs = if ref_count == 0 {
+            &[]
+        } else {
+            let refs = NonNull::new(refs.cast_mut()).ok_or_else(|| {
+                AbiError::invalid_argument("refs must not be null when ref_count is non-zero")
+            })?;
+            unsafe { slice::from_raw_parts(refs.as_ptr(), ref_count) }
+        };
+        let features = handle.read_filtered_packages(refs, &filter)?;
+        write_ref_slice(out_features, out_count, features)
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
 /// # Safety
 ///
 /// `features` must either be null or point to `count` filtered features
-/// allocated by `cjx_index_read_filtered_features`.
+/// allocated by `cjx_legacy_read_filtered_features`.
 pub unsafe extern "C" fn cjx_filtered_features_free(
     features: *mut cjx_filtered_feature_t,
     count: usize,
