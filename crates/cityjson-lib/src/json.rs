@@ -36,7 +36,19 @@ pub mod staged {
         feature_bytes: &[u8],
         base_document_bytes: &[u8],
     ) -> Result<CityModel> {
-        from_feature_slice_with_base(feature_bytes, base_document_bytes)
+        from_feature_slice_with_base_direct(feature_bytes, base_document_bytes)
+    }
+
+    pub fn from_feature_slice_with_base_direct(
+        feature_bytes: &[u8],
+        base_document_bytes: &[u8],
+    ) -> Result<CityModel> {
+        cityjson_json::staged::from_feature_slice_with_base_direct(
+            feature_bytes,
+            base_document_bytes,
+        )
+        .map(CityModel::from)
+        .map_err(Error::from)
     }
 
     pub fn from_feature_slice_with_indexed_id_and_base(

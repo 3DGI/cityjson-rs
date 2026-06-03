@@ -14,20 +14,21 @@ use crate::v2_0::{
 
 pub mod staged {
     use std::borrow::Cow;
-    use std::collections::HashMap;
+    use std::collections::{BTreeMap, HashMap};
     use std::io::Write;
     use std::path::Path;
 
     use cityjson_types::CityModelType;
     use cityjson_types::prelude::OwnedStringStorage;
     use cityjson_types::v2_0::OwnedCityModel;
+    use serde_json::Value;
     use serde_json::value::RawValue;
 
     use crate::de::attributes::RawAttribute;
     use crate::de::build::build_model;
     use crate::de::root::{PreparedRoot, parse_root};
     use crate::errors::{Error, Result};
-    use crate::v2_0::{ReadOptions, WriteOptions, read_feature_with_base, read_model, write_model};
+    use crate::v2_0::{WriteOptions, write_model};
 
     #[derive(Debug, Clone, Copy)]
     pub struct FeatureObjectFragment<'a> {
@@ -49,8 +50,7 @@ pub mod staged {
         feature_bytes: &[u8],
         base_document_bytes: &[u8],
     ) -> Result<OwnedCityModel> {
-        let base = read_model(base_document_bytes, &ReadOptions::default())?;
-        read_feature_with_base(feature_bytes, &base, &ReadOptions::default())
+        from_feature_slice_with_base_direct(feature_bytes, base_document_bytes)
     }
 
     /// # Errors
@@ -60,7 +60,17 @@ pub mod staged {
         feature_bytes: &[u8],
         base_document_bytes: &[u8],
     ) -> Result<OwnedCityModel> {
-        from_feature_slice_with_base(feature_bytes, base_document_bytes)
+        from_feature_slice_with_base_direct(feature_bytes, base_document_bytes)
+    }
+
+    /// # Errors
+    ///
+    /// Returns an error if JSON parsing fails or the input is not a valid `CityJSONFeature`.
+    pub fn from_feature_slice_with_base_direct(
+        feature_bytes: &[u8],
+        base_document_bytes: &[u8],
+    ) -> Result<OwnedCityModel> {
+        build_feature_slice_with_base_direct(feature_bytes, None, base_document_bytes)
     }
 
     /// # Errors
@@ -81,11 +91,28 @@ pub mod staged {
         indexed_id: &str,
         base_document_bytes: &[u8],
     ) -> Result<OwnedCityModel> {
+        build_feature_slice_with_base_direct(feature_bytes, Some(indexed_id), base_document_bytes)
+    }
+
+    fn build_feature_slice_with_base_direct(
+        feature_bytes: &[u8],
+        indexed_id: Option<&str>,
+        base_document_bytes: &[u8],
+    ) -> Result<OwnedCityModel> {
         let base_input = std::str::from_utf8(base_document_bytes)?;
         let feature_input = std::str::from_utf8(feature_bytes)?;
         let base = parse_base_root(base_input)?;
-        let feature = parse_feature_root(feature_input)?;
-        let root = merge_base_and_feature_roots(base, feature, indexed_id);
+        let mut feature = parse_feature_root(feature_input)?;
+        let root_id = match indexed_id {
+            Some(id) => Cow::Borrowed(id),
+            None => feature_root_id(feature.id.take())?,
+        };
+        let adjusted_cityobjects =
+            cityobjects_raw_with_feature_root(feature.cityobjects, root_id.as_ref())?;
+        let cityobjects = adjusted_cityobjects
+            .as_deref()
+            .unwrap_or(feature.cityobjects);
+        let root = merge_base_and_feature_roots(base, feature, root_id, cityobjects);
         build_model::<OwnedStringStorage>(root)
     }
 
@@ -167,7 +194,8 @@ pub mod staged {
     fn merge_base_and_feature_roots<'a>(
         base: PreparedRoot<'a>,
         feature: PreparedRoot<'a>,
-        indexed_id: &'a str,
+        root_id: Cow<'a, str>,
+        cityobjects: &'a RawValue,
     ) -> PreparedRoot<'a> {
         let mut extra: HashMap<&'a str, RawAttribute<'a>> = base.extra;
         extra.extend(feature.extra);
@@ -178,12 +206,67 @@ pub mod staged {
             vertices: feature.vertices,
             metadata: feature.metadata.or(base.metadata),
             extensions: feature.extensions.or(base.extensions),
-            cityobjects: feature.cityobjects,
+            cityobjects,
             appearance: feature.appearance.or(base.appearance),
             geometry_templates: feature.geometry_templates.or(base.geometry_templates),
-            id: Some(RawAttribute::String(Cow::Borrowed(indexed_id))),
+            id: Some(RawAttribute::String(root_id)),
             extra,
         }
+    }
+
+    fn feature_root_id(id: Option<RawAttribute<'_>>) -> Result<Cow<'_, str>> {
+        match id {
+            Some(RawAttribute::String(value)) => Ok(value),
+            Some(_) => Err(Error::InvalidValue(
+                "CityJSONFeature root id must be a string".to_owned(),
+            )),
+            None => Err(Error::InvalidValue(
+                "CityJSONFeature root id is required".to_owned(),
+            )),
+        }
+    }
+
+    fn cityobjects_raw_with_feature_root(
+        cityobjects: &RawValue,
+        feature_id: &str,
+    ) -> Result<Option<Box<RawValue>>> {
+        let entries: BTreeMap<&str, &RawValue> = serde_json::from_str(cityobjects.get())?;
+        if entries.contains_key(feature_id) {
+            return Ok(None);
+        }
+
+        let wrapper_type = entries
+            .values()
+            .find_map(|object| cityobject_type_name(object).transpose())
+            .transpose()?
+            .unwrap_or_else(|| "Building".to_owned());
+        let children = entries.keys().copied().collect::<Vec<_>>();
+
+        let mut output = String::with_capacity(cityobjects.get().len() + feature_id.len() + 64);
+        output.push('{');
+        output.push_str(&serde_json::to_string(feature_id)?);
+        output.push_str(r#":{"type":"#);
+        output.push_str(&serde_json::to_string(&wrapper_type)?);
+        output.push_str(r#","children":"#);
+        output.push_str(&serde_json::to_string(&children)?);
+        output.push('}');
+        for (id, object) in entries {
+            output.push(',');
+            output.push_str(&serde_json::to_string(id)?);
+            output.push(':');
+            output.push_str(object.get());
+        }
+        output.push('}');
+
+        RawValue::from_string(output).map(Some).map_err(Error::from)
+    }
+
+    fn cityobject_type_name(object: &RawValue) -> Result<Option<String>> {
+        let value: Value = serde_json::from_str(object.get())?;
+        Ok(value
+            .get("type")
+            .and_then(Value::as_str)
+            .map(ToOwned::to_owned))
     }
 
     fn cityobjects_raw_from_fragments(

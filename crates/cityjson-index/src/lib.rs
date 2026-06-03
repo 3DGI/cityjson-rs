@@ -3311,36 +3311,7 @@ fn feature_slice_with_preserved_package_id(
     feature_bytes: &[u8],
     metadata_bytes: &[u8],
 ) -> Result<CityModel> {
-    let mut feature: Value = parse_json_slice(feature_bytes)?;
-    let feature_id = feature
-        .get("id")
-        .and_then(Value::as_str)
-        .ok_or_else(|| import_error("CityJSONFeature package is missing id"))?
-        .to_owned();
-    let cityobjects = feature
-        .get_mut("CityObjects")
-        .and_then(Value::as_object_mut)
-        .ok_or_else(|| import_error("CityJSONFeature package is missing CityObjects"))?;
-    if !cityobjects.contains_key(&feature_id) {
-        let children = cityobjects
-            .keys()
-            .cloned()
-            .map(Value::String)
-            .collect::<Vec<_>>();
-        let wrapper_type = cityobjects
-            .values()
-            .find_map(|object| object.get("type").and_then(Value::as_str))
-            .unwrap_or("Building");
-        cityobjects.insert(
-            feature_id.clone(),
-            serde_json::json!({
-                "type": wrapper_type,
-                "children": children,
-            }),
-        );
-    }
-    let bytes = serde_json::to_vec(&feature).map_err(|error| serde_json_error(&error))?;
-    staged::from_feature_slice_with_base(&bytes, metadata_bytes)
+    staged::from_feature_slice_with_base_direct(feature_bytes, metadata_bytes)
 }
 
 fn read_exact_range_from_file(
