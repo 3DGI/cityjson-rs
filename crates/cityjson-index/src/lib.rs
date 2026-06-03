@@ -83,6 +83,45 @@ pub struct IndexedFeature {
     pub model: CityModel,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct Bounds3D {
+    pub min_x: f64,
+    pub max_x: f64,
+    pub min_y: f64,
+    pub max_y: f64,
+    pub min_z: f64,
+    pub max_z: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PackageType {
+    CityJson,
+    CityJsonSeq,
+    FeatureFiles,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct IndexedPackageRef {
+    pub record_id: i64,
+    pub model_id: String,
+    pub package_type: PackageType,
+    pub bounds: Option<Bounds3D>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct IndexedCityObjectRef {
+    pub record_id: i64,
+    pub external_id: String,
+    pub cityobject_type: String,
+    pub bounds: Option<Bounds3D>,
+}
+
+pub struct IndexedPackage {
+    pub reference: IndexedPackageRef,
+    pub metadata: Arc<Meta>,
+    pub model: CityModel,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum LodSelection {
     #[default]
@@ -132,6 +171,141 @@ pub struct FeatureFilterSummary {
     pub missing_lods: BTreeMap<String, MissingLodSelection>,
     pub retained_feature_count: usize,
     pub ignored_feature_count: usize,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PackageFilter {
+    pub cityobject_types: Option<BTreeSet<String>>,
+    pub default_lod: LodSelection,
+    pub lods_by_type: BTreeMap<String, LodSelection>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PackageFilterReport {
+    pub available_types: BTreeSet<String>,
+    pub retained_types: BTreeSet<String>,
+    pub ignored_types: BTreeSet<String>,
+    pub available_lods: BTreeMap<String, BTreeSet<String>>,
+    pub retained_lods: BTreeMap<String, BTreeSet<String>>,
+    pub missing_lods: BTreeMap<String, MissingLodSelection>,
+    pub retained_geometry_count: usize,
+    pub retained_package_count: usize,
+    pub ignored_package_count: usize,
+}
+
+pub struct PackageFilterResult {
+    pub model: Option<CityModel>,
+    pub report: PackageFilterReport,
+}
+
+impl From<FeatureBounds> for Bounds3D {
+    fn from(bounds: FeatureBounds) -> Self {
+        Self {
+            min_x: bounds.min_x,
+            max_x: bounds.max_x,
+            min_y: bounds.min_y,
+            max_y: bounds.max_y,
+            min_z: bounds.min_z,
+            max_z: bounds.max_z,
+        }
+    }
+}
+
+impl PackageFilter {
+    pub fn apply(&self, model: &CityModel) -> Result<PackageFilterResult> {
+        let feature_filter = FeatureFilter {
+            cityobject_types: self.cityobject_types.clone(),
+            default_lod: self.default_lod.clone(),
+            lods_by_type: self.lods_by_type.clone(),
+        };
+        let filtered = feature_filter.apply(model)?;
+        let mut report = PackageFilterReport::from_diagnostics(&filtered.diagnostics);
+        if let LodSelection::Exact(requested_lod) = &self.default_lod {
+            if filtered.diagnostics.retained_geometry_count == 0 {
+                for cityobject_type in &filtered.diagnostics.available_types {
+                    report
+                        .missing_lods
+                        .entry(cityobject_type.clone())
+                        .or_insert_with(|| MissingLodSelection {
+                            cityobject_type: cityobject_type.clone(),
+                            requested_lod: requested_lod.clone(),
+                            available_lods: filtered
+                                .diagnostics
+                                .available_lods
+                                .get(cityobject_type)
+                                .cloned()
+                                .unwrap_or_default(),
+                        });
+                }
+            }
+        }
+        let model = if filtered.diagnostics.retained_geometry_count == 0 {
+            None
+        } else {
+            Some(filtered.model)
+        };
+        Ok(PackageFilterResult { model, report })
+    }
+}
+
+impl PackageFilterReport {
+    fn from_diagnostics(diagnostics: &FeatureFilterDiagnostics) -> Self {
+        let mut missing_lods = BTreeMap::new();
+        for missing in &diagnostics.missing_lods {
+            missing_lods
+                .entry(missing.cityobject_type.clone())
+                .or_insert_with(|| missing.clone());
+        }
+        Self {
+            available_types: diagnostics.available_types.clone(),
+            retained_types: diagnostics.retained_types.clone(),
+            ignored_types: diagnostics.ignored_types.clone(),
+            available_lods: diagnostics.available_lods.clone(),
+            retained_lods: diagnostics.retained_lods.clone(),
+            missing_lods,
+            retained_geometry_count: diagnostics.retained_geometry_count,
+            retained_package_count: usize::from(diagnostics.retained_geometry_count > 0),
+            ignored_package_count: usize::from(diagnostics.retained_geometry_count == 0),
+        }
+    }
+
+    pub fn merge(&mut self, other: &Self) {
+        self.available_types
+            .extend(other.available_types.iter().cloned());
+        self.retained_types
+            .extend(other.retained_types.iter().cloned());
+        self.ignored_types
+            .extend(other.ignored_types.iter().cloned());
+        merge_lod_sets(&mut self.available_lods, &other.available_lods);
+        merge_lod_sets(&mut self.retained_lods, &other.retained_lods);
+        for (cityobject_type, missing) in &other.missing_lods {
+            self.missing_lods
+                .entry(cityobject_type.clone())
+                .or_insert_with(|| missing.clone());
+        }
+        self.retained_geometry_count += other.retained_geometry_count;
+        self.retained_package_count += other.retained_package_count;
+        self.ignored_package_count += other.ignored_package_count;
+    }
+
+    pub fn ensure_requested_lods_available(&self, filter: &PackageFilter) -> Result<()> {
+        for (cityobject_type, selection) in &filter.lods_by_type {
+            let LodSelection::Exact(requested_lod) = selection else {
+                continue;
+            };
+            let available_lods = self
+                .available_lods
+                .get(cityobject_type)
+                .cloned()
+                .unwrap_or_default();
+            if !available_lods.contains(requested_lod) {
+                return Err(import_error(format!(
+                    "requested LoD {requested_lod} is not available for {cityobject_type}"
+                )));
+            }
+        }
+        Ok(())
+    }
 }
 
 impl IndexedFeatureRef {
@@ -1084,6 +1258,59 @@ pub fn resolve_dataset(
     })
 }
 
+fn clone_indexed_package(package: &IndexedPackage) -> IndexedPackage {
+    IndexedPackage {
+        reference: package.reference.clone(),
+        metadata: Arc::clone(&package.metadata),
+        model: package.model.clone(),
+    }
+}
+
+fn package_type_from_str(value: &str) -> rusqlite::Result<PackageType> {
+    match value {
+        "cityjson" => Ok(PackageType::CityJson),
+        "cityjson-seq" => Ok(PackageType::CityJsonSeq),
+        "feature-files" => Ok(PackageType::FeatureFiles),
+        _ => Err(rusqlite::Error::InvalidQuery),
+    }
+}
+
+fn optional_bounds_from_row(
+    row: &rusqlite::Row<'_>,
+    col: usize,
+) -> rusqlite::Result<Option<Bounds3D>> {
+    let min_x = row.get::<_, Option<f64>>(col)?;
+    let Some(min_x) = min_x else {
+        return Ok(None);
+    };
+    Ok(Some(Bounds3D {
+        min_x,
+        max_x: row.get::<_, f64>(col + 1)?,
+        min_y: row.get::<_, f64>(col + 2)?,
+        max_y: row.get::<_, f64>(col + 3)?,
+        min_z: row.get::<_, f64>(col + 4)?,
+        max_z: row.get::<_, f64>(col + 5)?,
+    }))
+}
+
+fn package_ref_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<IndexedPackageRef> {
+    Ok(IndexedPackageRef {
+        record_id: row.get(0)?,
+        model_id: row.get(1)?,
+        package_type: package_type_from_str(&row.get::<_, String>(2)?)?,
+        bounds: optional_bounds_from_row(row, 3)?,
+    })
+}
+
+fn cityobject_ref_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<IndexedCityObjectRef> {
+    Ok(IndexedCityObjectRef {
+        record_id: row.get(0)?,
+        external_id: row.get(1)?,
+        cityobject_type: row.get(2)?,
+        bounds: optional_bounds_from_row(row, 3)?,
+    })
+}
+
 impl CityIndex {
     /// Opens an index for the given storage layout.
     ///
@@ -1146,6 +1373,365 @@ impl CityIndex {
         let metadata = self.index.get_cached_metadata(loc.source_id)?;
         let model = self.backend.read_one(&loc, Arc::clone(&metadata.bytes))?;
         Ok(Some((metadata.value, model)))
+    }
+
+    pub fn lookup_cityobject_refs(&self, external_id: &str) -> Result<Vec<IndexedCityObjectRef>> {
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT
+                c.id,
+                c.external_id,
+                c.cityobject_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM cityobjects AS c
+            LEFT JOIN cityobject_bbox AS b ON b.cityobject_id = c.id
+            WHERE c.external_id = ?1
+            ORDER BY c.id
+            ",
+        ))?;
+        let rows = sqlite_result(stmt.query_map(params![external_id], cityobject_ref_from_row))?;
+        sqlite_result(rows.collect())
+    }
+
+    pub fn package_refs_for_cityobject(
+        &self,
+        cityobject: &IndexedCityObjectRef,
+    ) -> Result<Vec<IndexedPackageRef>> {
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT DISTINCT
+                p.id,
+                p.model_id,
+                p.package_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM package_cityobjects AS pc
+            JOIN packages AS p ON p.id = pc.package_id
+            LEFT JOIN package_bbox AS b ON b.package_id = p.id
+            WHERE pc.cityobject_id = ?1
+            ORDER BY p.id
+            ",
+        ))?;
+        let rows =
+            sqlite_result(stmt.query_map(params![cityobject.record_id], package_ref_from_row))?;
+        sqlite_result(rows.collect())
+    }
+
+    pub fn get_packages(&self, external_id: &str) -> Result<Vec<CityModel>> {
+        self.get_packages_with_metadata(external_id)
+            .map(|items| items.into_iter().map(|(_, model)| model).collect())
+    }
+
+    pub fn get_packages_with_metadata(
+        &self,
+        external_id: &str,
+    ) -> Result<Vec<(Arc<Meta>, CityModel)>> {
+        let cityobjects = self.lookup_cityobject_refs(external_id)?;
+        let mut seen = BTreeSet::new();
+        let mut packages = Vec::new();
+        for cityobject in &cityobjects {
+            for package in self.package_refs_for_cityobject(cityobject)? {
+                if seen.insert(package.record_id) {
+                    packages.push(package);
+                }
+            }
+        }
+        packages.sort_by_key(|package| package.record_id);
+        self.read_packages(&packages).map(|items| {
+            items
+                .into_iter()
+                .map(|item| (item.metadata, item.model))
+                .collect()
+        })
+    }
+
+    pub fn read_cityobject_packages(
+        &self,
+        cityobject: &IndexedCityObjectRef,
+    ) -> Result<Vec<IndexedPackage>> {
+        let packages = self.package_refs_for_cityobject(cityobject)?;
+        self.read_packages(&packages)
+    }
+
+    pub fn package_ref_page(&self, offset: usize, limit: usize) -> Result<Vec<IndexedPackageRef>> {
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT
+                p.id,
+                p.model_id,
+                p.package_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM packages AS p
+            LEFT JOIN package_bbox AS b ON b.package_id = p.id
+            ORDER BY p.id
+            LIMIT ?2 OFFSET ?1
+            ",
+        ))?;
+        let rows = sqlite_result(stmt.query_map(params![offset, limit], package_ref_from_row))?;
+        sqlite_result(rows.collect())
+    }
+
+    pub fn query_package_refs(&self, bbox: &BBox) -> Result<Vec<IndexedPackageRef>> {
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT DISTINCT
+                p.id,
+                p.model_id,
+                p.package_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM package_bbox AS b
+            JOIN packages AS p ON p.id = b.package_id
+            WHERE b.min_x <= ?2
+              AND b.max_x >= ?1
+              AND b.min_y <= ?4
+              AND b.max_y >= ?3
+            ORDER BY p.id
+            ",
+        ))?;
+        let rows = sqlite_result(stmt.query_map(
+            params![bbox.min_x, bbox.max_x, bbox.min_y, bbox.max_y],
+            package_ref_from_row,
+        ))?;
+        sqlite_result(rows.collect())
+    }
+
+    pub fn query_cityobject_refs(&self, bbox: &BBox) -> Result<Vec<IndexedCityObjectRef>> {
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT
+                c.id,
+                c.external_id,
+                c.cityobject_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM cityobject_bbox AS b
+            JOIN cityobjects AS c ON c.id = b.cityobject_id
+            WHERE b.min_x <= ?2
+              AND b.max_x >= ?1
+              AND b.min_y <= ?4
+              AND b.max_y >= ?3
+            ORDER BY c.id
+            ",
+        ))?;
+        let rows = sqlite_result(stmt.query_map(
+            params![bbox.min_x, bbox.max_x, bbox.min_y, bbox.max_y],
+            cityobject_ref_from_row,
+        ))?;
+        sqlite_result(rows.collect())
+    }
+
+    pub fn descendant_cityobject_refs(
+        &self,
+        cityobject: &IndexedCityObjectRef,
+    ) -> Result<Vec<IndexedCityObjectRef>> {
+        let mut descendants = Vec::new();
+        let mut seen = BTreeSet::new();
+        let mut frontier = vec![cityobject.record_id];
+        while !frontier.is_empty() {
+            let mut next = Vec::new();
+            for parent_id in frontier {
+                let mut stmt = sqlite_result(self.index.conn.prepare(
+                    r"
+                    SELECT
+                        c.id,
+                        c.external_id,
+                        c.cityobject_type,
+                        b.min_x,
+                        b.max_x,
+                        b.min_y,
+                        b.max_y,
+                        b.min_z,
+                        b.max_z
+                    FROM cityobject_relationships AS r
+                    JOIN cityobjects AS c ON c.id = r.child_cityobject_id
+                    LEFT JOIN cityobject_bbox AS b ON b.cityobject_id = c.id
+                    WHERE r.parent_cityobject_id = ?1
+                    ORDER BY r.child_cityobject_id
+                    ",
+                ))?;
+                let rows =
+                    sqlite_result(stmt.query_map(params![parent_id], cityobject_ref_from_row))?;
+                for row in rows {
+                    let child = sqlite_result(row)?;
+                    if seen.insert(child.record_id) {
+                        next.push(child.record_id);
+                        descendants.push(child);
+                    }
+                }
+            }
+            frontier = next;
+        }
+        Ok(descendants)
+    }
+
+    pub fn read_package(&self, package: &IndexedPackageRef) -> Result<CityModel> {
+        self.read_indexed_package(package)
+            .map(|package| package.model)
+    }
+
+    pub fn read_packages(&self, packages: &[IndexedPackageRef]) -> Result<Vec<IndexedPackage>> {
+        let mut decoded = BTreeMap::new();
+        for package in packages {
+            if let std::collections::btree_map::Entry::Vacant(entry) =
+                decoded.entry(package.record_id)
+            {
+                entry.insert(self.read_indexed_package(package)?);
+            }
+        }
+        packages
+            .iter()
+            .map(|package| {
+                decoded
+                    .get(&package.record_id)
+                    .map(clone_indexed_package)
+                    .ok_or_else(|| {
+                        import_error(format!("package {} was not decoded", package.record_id))
+                    })
+            })
+            .collect()
+    }
+
+    pub fn read_filtered_packages(
+        &self,
+        packages: &[IndexedPackageRef],
+        filter: &PackageFilter,
+    ) -> Result<Vec<PackageFilterResult>> {
+        self.read_packages(packages)?
+            .into_iter()
+            .map(|package| filter.apply(&package.model))
+            .collect()
+    }
+
+    pub fn lookup_package_ref_by_record_id(
+        &self,
+        record_id: i64,
+    ) -> Result<Option<IndexedPackageRef>> {
+        self.package_location(record_id)
+            .map(|maybe| maybe.map(|location| location.reference))
+    }
+
+    pub fn read_package_by_record_id(&self, record_id: i64) -> Result<Option<IndexedPackage>> {
+        let Some(reference) = self.lookup_package_ref_by_record_id(record_id)? else {
+            return Ok(None);
+        };
+        self.read_indexed_package(&reference).map(Some)
+    }
+
+    fn read_indexed_package(&self, package: &IndexedPackageRef) -> Result<IndexedPackage> {
+        let location = self.package_location(package.record_id)?.ok_or_else(|| {
+            import_error(format!(
+                "package record {} was not found",
+                package.record_id
+            ))
+        })?;
+        let metadata = self.index.get_cached_metadata(location.source_id)?;
+        let model = match location.reference.package_type {
+            PackageType::CityJson => {
+                self.read_cityjson_package(&location, Arc::clone(&metadata.bytes))?
+            }
+            PackageType::CityJsonSeq | PackageType::FeatureFiles => {
+                let offset = location
+                    .offset
+                    .ok_or_else(|| import_error("package offset is missing"))?;
+                let length = location
+                    .length
+                    .ok_or_else(|| import_error("package length is missing"))?;
+                let bytes = read_exact_range(&location.path, offset, length)?;
+                feature_slice_with_preserved_package_id(&bytes, metadata.bytes.as_ref())?
+            }
+        };
+        Ok(IndexedPackage {
+            reference: location.reference,
+            metadata: metadata.value,
+            model,
+        })
+    }
+
+    fn read_cityjson_package(
+        &self,
+        location: &PackageLocation,
+        metadata_bytes: Arc<[u8]>,
+    ) -> Result<CityModel> {
+        let feature = self
+            .index
+            .lookup_feature_refs(&location.reference.model_id)?
+            .into_iter()
+            .find(|feature| feature.source_id == location.source_id)
+            .ok_or_else(|| {
+                import_error(format!(
+                    "CityJSON package {} no longer has a feature reference",
+                    location.reference.record_id
+                ))
+            })?;
+        self.backend
+            .read_one(&feature.to_location(), metadata_bytes)
+    }
+
+    fn package_location(&self, record_id: i64) -> Result<Option<PackageLocation>> {
+        sqlite_result(
+            self.index
+                .conn
+                .query_row(
+                    r"
+                    SELECT
+                        p.id,
+                        p.model_id,
+                        p.package_type,
+                        b.min_x,
+                        b.max_x,
+                        b.min_y,
+                        b.max_y,
+                        b.min_z,
+                        b.max_z,
+                        p.source_id,
+                        p.path,
+                        p.offset,
+                        p.length
+                    FROM packages AS p
+                    LEFT JOIN package_bbox AS b ON b.package_id = p.id
+                    WHERE p.id = ?1
+                    ",
+                    params![record_id],
+                    |row| {
+                        let reference = package_ref_from_row(row)?;
+                        let source_id = row.get::<_, i64>(9)?;
+                        let path = PathBuf::from(row.get::<_, String>(10)?);
+                        let offset = row.get::<_, Option<i64>>(11)?.map(i64_to_u64).transpose()?;
+                        let length = row.get::<_, Option<i64>>(12)?.map(i64_to_u64).transpose()?;
+                        Ok(PackageLocation {
+                            reference,
+                            source_id,
+                            path,
+                            offset,
+                            length,
+                        })
+                    },
+                )
+                .optional(),
+        )
     }
 
     /// Returns a lightweight feature reference for a feature id.
@@ -1631,6 +2217,14 @@ struct FeatureLocation {
     vertices_offset: Option<u64>,
     vertices_length: Option<u64>,
     member_ranges_json: Option<String>,
+}
+
+struct PackageLocation {
+    reference: IndexedPackageRef,
+    source_id: i64,
+    path: PathBuf,
+    offset: Option<u64>,
+    length: Option<u64>,
 }
 
 struct IndexedFeatureLocation {
@@ -2935,6 +3529,7 @@ impl Index {
             {
                 continue;
             }
+            let model_id = normalized_package_model_id(entry, package_type)?;
             let file_size = sqlite_result(u64_to_i64(entry.file_size))?;
             let file_mtime_ns = entry.file_mtime_ns;
             let (package_offset, package_length) = if package_type == "cityjson" {
@@ -2962,7 +3557,7 @@ impl Index {
                 params![
                     entry.source_id,
                     package_type,
-                    &entry.id,
+                    &model_id,
                     entry.path.to_string_lossy(),
                     package_offset,
                     package_length,
@@ -3152,6 +3747,24 @@ fn normalized_package_type(entry: &FeatureIndexEntry) -> &'static str {
     } else {
         "cityjson-seq"
     }
+}
+
+fn normalized_package_model_id(entry: &FeatureIndexEntry, package_type: &str) -> Result<String> {
+    if package_type == "cityjson" {
+        return Ok(entry.id.clone());
+    }
+    let bytes = read_exact_range(&entry.path, entry.offset, entry.length)?;
+    let feature: Value = parse_json_slice(&bytes)?;
+    feature
+        .get("id")
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned)
+        .ok_or_else(|| {
+            import_error(format!(
+                "package {} is missing CityJSONFeature id",
+                entry.path.display()
+            ))
+        })
 }
 
 fn normalized_cityobjects_for_entry(
@@ -3791,7 +4404,8 @@ fn discover_feature_file_sources(
 
 fn scan_feature_file(item: &FeatureFileScanItem<'_>) -> Result<(usize, Vec<ScannedFeature>)> {
     let feature: Value = read_json(item.path)?;
-    let (ids, bounds, cityobject_count) = parse_feature_file_bounds(&feature, item.metadata)?;
+    let (ids, bounds, spatial, cityobject_count) =
+        parse_feature_file_bounds(&feature, item.metadata)?;
     let (file_size, file_mtime_ns) = file_status(item.path)?;
     let features = ids
         .into_iter()
@@ -3803,7 +4417,7 @@ fn scan_feature_file(item: &FeatureFileScanItem<'_>) -> Result<(usize, Vec<Scann
             offset: 0,
             length: file_size,
             bounds,
-            spatial: true,
+            spatial,
             cityobject_count,
             member_ranges: None,
         })
@@ -3832,7 +4446,7 @@ fn resolve_feature_metadata_path(
 fn parse_feature_file_bounds(
     feature: &Value,
     metadata: &Meta,
-) -> Result<(Vec<String>, FeatureBounds, u64)> {
+) -> Result<(Vec<String>, FeatureBounds, bool, u64)> {
     let ids = feature_cityobject_keys(feature, "feature file")?;
     let vertices = feature
         .get("vertices")
@@ -3842,9 +4456,16 @@ fn parse_feature_file_bounds(
 
     let referenced_vertices = collect_feature_vertex_indices(feature, vertices.len())?;
     let (scale, translate) = parse_ndjson_transform(metadata)?;
-    let bounds = feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?;
+    let (bounds, spatial) = if referenced_vertices.is_empty() {
+        (empty_feature_bounds(), false)
+    } else {
+        (
+            feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?,
+            true,
+        )
+    };
     let cityobject_count = feature_cityobject_count(feature, "feature file")?;
-    Ok((ids, bounds, cityobject_count))
+    Ok((ids, bounds, spatial, cityobject_count))
 }
 
 fn trim_fragment_delimiters(bytes: &[u8]) -> &[u8] {
@@ -4185,6 +4806,42 @@ fn read_exact_range(path: &Path, offset: u64, length: u64) -> Result<Vec<u8>> {
     read_exact_range_from_file(&mut file, path, offset, length)
 }
 
+fn feature_slice_with_preserved_package_id(
+    feature_bytes: &[u8],
+    metadata_bytes: &[u8],
+) -> Result<CityModel> {
+    let mut feature: Value = parse_json_slice(feature_bytes)?;
+    let feature_id = feature
+        .get("id")
+        .and_then(Value::as_str)
+        .ok_or_else(|| import_error("CityJSONFeature package is missing id"))?
+        .to_owned();
+    let cityobjects = feature
+        .get_mut("CityObjects")
+        .and_then(Value::as_object_mut)
+        .ok_or_else(|| import_error("CityJSONFeature package is missing CityObjects"))?;
+    if !cityobjects.contains_key(&feature_id) {
+        let children = cityobjects
+            .keys()
+            .cloned()
+            .map(Value::String)
+            .collect::<Vec<_>>();
+        let wrapper_type = cityobjects
+            .values()
+            .find_map(|object| object.get("type").and_then(Value::as_str))
+            .unwrap_or("Building");
+        cityobjects.insert(
+            feature_id.clone(),
+            serde_json::json!({
+                "type": wrapper_type,
+                "children": children,
+            }),
+        );
+    }
+    let bytes = serde_json::to_vec(&feature).map_err(|error| serde_json_error(&error))?;
+    staged::from_feature_slice_with_base(&bytes, metadata_bytes)
+}
+
 fn read_feature_slices_with_base(
     locations: &[&FeatureLocation],
     metadata_bytes: &[u8],
@@ -4337,7 +4994,7 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
         }
 
         let feature: Value = parse_json_slice(line_bytes)?;
-        let (ids, bounds) = parse_ndjson_feature_bounds(&feature, scale, translate)?;
+        let (ids, bounds, spatial) = parse_ndjson_feature_bounds(&feature, scale, translate)?;
         let cityobject_count = feature_cityobject_count(&feature, "ndjson feature")?;
         let length = u64::try_from(line_bytes.len())
             .map_err(|_| import_error("NDJSON feature line length does not fit in u64"))?;
@@ -4349,7 +5006,7 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
             offset,
             length,
             bounds,
-            spatial: true,
+            spatial,
             cityobject_count,
             member_ranges: None,
         }));
@@ -4883,15 +5540,22 @@ fn parse_ndjson_feature_bounds(
     feature: &Value,
     scale: [f64; 3],
     translate: [f64; 3],
-) -> Result<(Vec<String>, FeatureBounds)> {
+) -> Result<(Vec<String>, FeatureBounds, bool)> {
     let ids = feature_cityobject_keys(feature, "NDJSON feature")?;
     let vertices = feature
         .get("vertices")
         .ok_or_else(|| import_error("NDJSON feature is missing vertices"))?;
     let vertices: Vec<[i64; 3]> = parse_json_value(vertices.clone())?;
     let referenced_vertices = collect_feature_vertex_indices(feature, vertices.len())?;
-    let bounds = feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?;
-    Ok((ids, bounds))
+    let (bounds, spatial) = if referenced_vertices.is_empty() {
+        (empty_feature_bounds(), false)
+    } else {
+        (
+            feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?,
+            true,
+        )
+    };
+    Ok((ids, bounds, spatial))
 }
 
 #[allow(clippy::cast_precision_loss)]
