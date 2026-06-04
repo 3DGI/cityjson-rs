@@ -63,6 +63,40 @@ fn explicit_json_module_rejects_malformed_feature_packages() {
 }
 
 #[test]
+fn staged_indexed_feature_slice_adds_missing_root_cityobject() -> cityjson_lib::Result<()> {
+    let base = br#"{
+        "type":"CityJSON",
+        "version":"2.0",
+        "metadata":{"title":"base-root"},
+        "CityObjects":{},
+        "vertices":[]
+    }"#;
+    let feature = br#"{
+        "type":"CityJSONFeature",
+        "id":"feature-root",
+        "CityObjects":{
+            "child-a":{"type":"BuildingPart"},
+            "child-b":{"type":"BuildingPart"}
+        },
+        "vertices":[]
+    }"#;
+
+    let model =
+        json::staged::from_feature_slice_with_indexed_id_and_base(feature, "feature-root", base)?;
+    let output: serde_json::Value = serde_json::from_str(&json::to_feature_string(&model)?)
+        .expect("direct feature output should parse");
+
+    assert_eq!(output["id"], "feature-root");
+    assert_eq!(output["metadata"]["title"], "base-root");
+    assert_eq!(
+        output["CityObjects"]["feature-root"]["children"],
+        serde_json::json!(["child-a", "child-b"]),
+    );
+
+    Ok(())
+}
+
+#[test]
 fn explicit_json_module_can_write_strict_cityjsonseq_with_explicit_transform()
 -> cityjson_lib::Result<()> {
     let base_bytes = br#"{

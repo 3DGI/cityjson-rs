@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR-008](008-normalized-package-cityobject-indexing-supersedes-006.md).
 
 ## Date
 

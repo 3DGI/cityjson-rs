@@ -43,12 +43,12 @@ test:
     cargo test -p cityjson-index --lib --bin cjindex --tests --target-dir target
 
 # Run the benchmark harness with human-readable output.
-bench-index:
-    cargo run -p cityjson-index --bin bench-index --target-dir target --
+bench-index *args:
+    cargo run --release -p cityjson-index --bin bench-index --target-dir target -- {{args}}
 
 # Run the benchmark harness with JSON output.
-bench-index-json:
-    cargo run -p cityjson-index --bin bench-index --target-dir target -- --json
+bench-index-json *args:
+    cargo run --release -p cityjson-index --bin bench-index --target-dir target -- --json {{args}}
 
 # Build the shared library and run the Python install smoke tests through tox and tox-uv.
 test-python:

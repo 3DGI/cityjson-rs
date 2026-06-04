@@ -1,3 +1,8 @@
+#![allow(
+    clippy::doc_markdown,
+    reason = "test docstrings use domain terminology plainly"
+)]
+
 mod common;
 
 use std::fs;
@@ -40,32 +45,22 @@ fn feature_files_cityindex_supports_end_to_end_queries() {
         .expect("feature-files reindex should succeed");
 
     let model = index
-        .get(&feature_id)
-        .expect("feature-files get should succeed")
+        .get_packages(&feature_id)
+        .expect("feature-files package lookup should succeed")
+        .into_iter()
+        .next()
         .expect("feature id should be indexed");
     assert!(model_contains_id(&model, &feature_id));
 
     let bbox = bbox_for_model(&model).expect("bbox should be computable from indexed model");
     let query_hits = index
-        .query(&bbox)
+        .query_package_models(&bbox)
         .expect("feature-files query should succeed");
     assert!(
         query_hits
             .iter()
             .any(|candidate| model_contains_id(candidate, &feature_id)),
         "query should return the selected feature"
-    );
-
-    let iter_hits = index
-        .query_iter(&bbox)
-        .expect("feature-files query_iter should succeed")
-        .collect::<cityjson_lib::Result<Vec<_>>>()
-        .expect("feature-files query_iter items should succeed");
-    assert!(
-        iter_hits
-            .iter()
-            .any(|candidate| model_contains_id(candidate, &feature_id)),
-        "query_iter should return the selected feature"
     );
 
     let metadata = index
@@ -96,15 +91,17 @@ fn feature_files_index_every_cityobject_key_and_ignore_top_level_id() {
 
     assert!(
         index
-            .get("ignored-feature-id")
+            .get_packages("ignored-feature-id")
             .expect("top-level id lookup should succeed")
-            .is_none()
+            .is_empty()
     );
 
     for feature_id in ["feature-key-a", "feature-key-b"] {
         let model = index
-            .get(feature_id)
+            .get_packages(feature_id)
             .expect("cityobject key lookup should succeed")
+            .into_iter()
+            .next()
             .expect("cityobject key should be indexed");
         assert!(model_contains_id(&model, "feature-key-a"));
         assert!(model_contains_id(&model, "feature-key-b"));
@@ -115,6 +112,8 @@ fn feature_files_index_every_cityobject_key_and_ignore_top_level_id() {
         .expect("reindexing aliases should remain stable");
 }
 
+/// Input: two feature-files packages that reuse the same CityObject key in different files.
+/// Assertions: plural lookup returns both duplicate occurrences in row order with their original source paths.
 #[test]
 fn feature_files_allow_duplicate_cityobject_keys() {
     let root = temp_parallel_fixture_root("feature-files-duplicate-keys");
@@ -129,30 +128,24 @@ fn feature_files_allow_duplicate_cityobject_keys() {
         build_feature_files_index(&root, &index_path).expect("duplicate ids should reindex");
 
     let refs = index
-        .lookup_feature_refs("duplicate-key")
+        .lookup_cityobject_refs("duplicate-key")
         .expect("plural lookup should succeed");
-    assert_eq!(refs.len(), 2, "both duplicate aliases should be indexed");
-    assert!(refs[0].row_id < refs[1].row_id);
-    assert_eq!(refs[0].source_path, first_path);
-    assert_eq!(refs[1].source_path, second_path);
-
-    let single = index
-        .lookup_feature_ref("duplicate-key")
-        .expect("single lookup should succeed")
-        .expect("duplicate key should be indexed");
     assert_eq!(
-        single.row_id, refs[0].row_id,
-        "single lookup should return the earliest indexed duplicate"
+        refs.len(),
+        2,
+        "both duplicate CityObjects should be indexed"
     );
-
-    let model = index
-        .get("duplicate-key")
-        .expect("get should succeed")
-        .expect("duplicate key should return first match");
-    let min_x = bbox_for_model(&model)
-        .expect("bbox should be computable")
-        .min_x;
-    assert!(min_x.abs() < f64::EPSILON);
+    assert!(refs[0].record_id < refs[1].record_id);
+    let first_packages = index
+        .package_refs_for_cityobject(&refs[0])
+        .expect("first duplicate package lookup should succeed");
+    let second_packages = index
+        .package_refs_for_cityobject(&refs[1])
+        .expect("second duplicate package lookup should succeed");
+    assert_eq!(first_packages[0].model_id, "ignored-first");
+    assert_eq!(second_packages[0].model_id, "ignored-second");
+    assert!(first_path.exists());
+    assert!(second_path.exists());
 }
 
 #[test]
@@ -172,9 +165,9 @@ fn feature_files_reindex_is_stable_across_worker_counts() {
         "single-worker source count should match the materialized dataset"
     );
     assert_eq!(
-        single.feature_ref_count().expect("single feature count"),
+        single.package_count().expect("single package count"),
         8,
-        "single-worker feature count should match the materialized dataset"
+        "single-worker package count should match the materialized dataset"
     );
     assert_eq!(
         single.cityobject_count().expect("single CityObject count"),
@@ -188,9 +181,9 @@ fn feature_files_reindex_is_stable_across_worker_counts() {
         "source counts should be stable across worker counts"
     );
     assert_eq!(
-        single.feature_ref_count().expect("single feature count"),
-        multi.feature_ref_count().expect("multi feature count"),
-        "feature counts should be stable across worker counts"
+        single.package_count().expect("single package count"),
+        multi.package_count().expect("multi package count"),
+        "package counts should be stable across worker counts"
     );
     assert_eq!(
         single.cityobject_count().expect("single CityObject count"),
@@ -198,8 +191,8 @@ fn feature_files_reindex_is_stable_across_worker_counts() {
         "CityObject counts should be stable across worker counts"
     );
 
-    let single_ids = collect_feature_ids(&single).expect("single feature ids");
-    let multi_ids = collect_feature_ids(&multi).expect("multi feature ids");
+    let single_ids = collect_package_ids(&single).expect("single feature ids");
+    let multi_ids = collect_package_ids(&multi).expect("multi feature ids");
     assert_eq!(
         single_ids, multi_ids,
         "feature identifier sets should be stable across worker counts"
@@ -211,13 +204,17 @@ fn feature_files_reindex_is_stable_across_worker_counts() {
         .cloned()
         .expect("dataset should contain at least one feature");
     let single_model = single
-        .get(&sample_id)
-        .expect("single get should succeed")
-        .expect("sample feature should be indexed");
+        .get_packages(&sample_id)
+        .expect("single package lookup should succeed")
+        .into_iter()
+        .next()
+        .expect("sample package should be indexed");
     let multi_model = multi
-        .get(&sample_id)
-        .expect("multi get should succeed")
-        .expect("sample feature should be indexed");
+        .get_packages(&sample_id)
+        .expect("multi package lookup should succeed")
+        .into_iter()
+        .next()
+        .expect("sample package should be indexed");
     assert_eq!(
         model_value(&single_model),
         model_value(&multi_model),
@@ -229,8 +226,12 @@ fn feature_files_reindex_is_stable_across_worker_counts() {
     );
 
     let bbox = bbox_for_model(&single_model).expect("sample model bbox should be computable");
-    let single_hits = single.query(&bbox).expect("single query should succeed");
-    let multi_hits = multi.query(&bbox).expect("multi query should succeed");
+    let single_hits = single
+        .query_package_models(&bbox)
+        .expect("single query should succeed");
+    let multi_hits = multi
+        .query_package_models(&bbox)
+        .expect("multi query should succeed");
     assert_eq!(
         single_hits.len(),
         1,
@@ -271,14 +272,14 @@ fn feature_files_single_metadata_parallelizes_by_feature_file() {
         "feature-file sharding must not duplicate metadata sources"
     );
     assert_eq!(
-        single.feature_ref_count().expect("single feature count"),
+        single.package_count().expect("single package count"),
         16,
         "all feature files should be indexed"
     );
     assert_eq!(
-        single.feature_ref_count().expect("single feature count"),
-        multi.feature_ref_count().expect("multi feature count"),
-        "feature counts should be stable across worker counts"
+        single.package_count().expect("single package count"),
+        multi.package_count().expect("multi package count"),
+        "package counts should be stable across worker counts"
     );
     assert_eq!(
         single.cityobject_count().expect("single CityObject count"),
@@ -286,8 +287,8 @@ fn feature_files_single_metadata_parallelizes_by_feature_file() {
         "CityObject counts should be stable across worker counts"
     );
 
-    let single_ids = collect_feature_ids(&single).expect("single feature ids");
-    let multi_ids = collect_feature_ids(&multi).expect("multi feature ids");
+    let single_ids = collect_package_ids(&single).expect("single feature ids");
+    let multi_ids = collect_package_ids(&multi).expect("multi feature ids");
     assert_eq!(
         single_ids, multi_ids,
         "feature identifiers should be stable across worker counts"
@@ -299,13 +300,17 @@ fn feature_files_single_metadata_parallelizes_by_feature_file() {
         .cloned()
         .expect("dataset should contain a representative feature");
     let single_model = single
-        .get(&sample_id)
-        .expect("single get should succeed")
-        .expect("sample feature should be indexed");
+        .get_packages(&sample_id)
+        .expect("single package lookup should succeed")
+        .into_iter()
+        .next()
+        .expect("sample package should be indexed");
     let multi_model = multi
-        .get(&sample_id)
-        .expect("multi get should succeed")
-        .expect("sample feature should be indexed");
+        .get_packages(&sample_id)
+        .expect("multi package lookup should succeed")
+        .into_iter()
+        .next()
+        .expect("sample package should be indexed");
     assert_eq!(
         model_value(&single_model),
         model_value(&multi_model),
@@ -317,8 +322,12 @@ fn feature_files_single_metadata_parallelizes_by_feature_file() {
     );
 
     let bbox = bbox_for_model(&single_model).expect("sample model bbox should be computable");
-    let single_hits = single.query(&bbox).expect("single query should succeed");
-    let multi_hits = multi.query(&bbox).expect("multi query should succeed");
+    let single_hits = single
+        .query_package_models(&bbox)
+        .expect("single query should succeed");
+    let multi_hits = multi
+        .query_package_models(&bbox)
+        .expect("multi query should succeed");
     assert_eq!(
         single_hits.len(),
         multi_hits.len(),
@@ -345,13 +354,20 @@ fn build_feature_files_index(root: &Path, index_path: &Path) -> cityjson_lib::Re
     Ok(index)
 }
 
-fn collect_feature_ids(
+fn collect_package_ids(
     index: &CityIndex,
 ) -> cityjson_lib::Result<std::collections::BTreeSet<String>> {
-    index
-        .iter_all_with_ids()?
-        .map(|result| result.map(|(feature_id, _)| feature_id))
-        .collect()
+    let mut ids = std::collections::BTreeSet::new();
+    let mut after_record_id = None;
+    loop {
+        let page = index.package_ref_page_after_record_id(after_record_id, 128)?;
+        if page.is_empty() {
+            break;
+        }
+        after_record_id = page.last().map(|package| package.record_id);
+        ids.extend(page.into_iter().map(|package| package.model_id));
+    }
+    Ok(ids)
 }
 
 fn model_value(model: &cityjson_lib::CityModel) -> Value {

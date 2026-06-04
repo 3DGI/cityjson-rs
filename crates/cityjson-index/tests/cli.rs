@@ -1,4 +1,8 @@
 #![allow(
+    clippy::doc_markdown,
+    reason = "test docstrings use domain terminology plainly"
+)]
+#![allow(
     clippy::let_and_return,
     clippy::redundant_closure_for_method_calls,
     clippy::similar_names,
@@ -13,8 +17,9 @@ use std::process::Command;
 
 use cityjson_index::{CityIndex, StorageLayout};
 use common::{
-    bbox_for_model, cityjson_root, feature_files_root, find_first, materialize_subset, ndjson_root,
-    temp_index_path,
+    bbox_for_model, cityjson_feature, cityjson_root, cityjsonseq_root, feature_files_root,
+    find_first, hierarchy_vertices, materialize_subset, shared_child_cityobjects, temp_index_path,
+    triangle_geometry, write_cityjson_fixture,
 };
 use serde_json::Value;
 use walkdir::WalkDir;
@@ -234,12 +239,16 @@ fn cli_query_rejects_incompatible_metadata_roots() {
     )
     .expect("index should open");
     let model_a = index
-        .get(&feature_a_id)
+        .get_packages(&feature_a_id)
         .expect("feature A should load")
+        .into_iter()
+        .next()
         .expect("feature A should be indexed");
     let model_b = index
-        .get(&feature_b_id)
+        .get_packages(&feature_b_id)
         .expect("feature B should load")
+        .into_iter()
+        .next()
         .expect("feature B should be indexed");
     let bbox_a = bbox_for_model(&model_a).expect("feature A bbox should compute");
     let bbox_b = bbox_for_model(&model_b).expect("feature B bbox should compute");
@@ -335,11 +344,13 @@ fn cli_dataset_mode_get_query_and_metadata_work() {
     );
 }
 
+/// Input: fixture roots for feature-files, CityJSONSeq, and CityJSON layouts.
+/// Assertions: inspect auto-detects each layout using ecosystem names and reports the canonical dataset root.
 #[test]
 fn cli_inspect_autodetects_all_supported_layouts() {
     for (root, expected_layout) in [
         (feature_files_root(), "feature-files"),
-        (ndjson_root(), "ndjson"),
+        (cityjsonseq_root(), "cityjson-seq"),
         (cityjson_root(), "cityjson"),
     ] {
         let output = run_cli([
@@ -430,8 +441,10 @@ fn load_model(root: &Path, index_path: &Path, feature_id: &str) -> cityjson_lib:
     )
     .expect("index should open");
     let model = index
-        .get(feature_id)
+        .get_packages(feature_id)
         .expect("get should succeed")
+        .into_iter()
+        .next()
         .expect("feature should be indexed");
     model
 }
@@ -529,4 +542,224 @@ fn first_two_feature_files(root: &Path) -> Vec<PathBuf> {
     }
     assert_eq!(features.len(), 2, "expected at least two feature files");
     features
+}
+
+/// Input: an explicit cjindex index command using --layout cityjson-seq and a .city.jsonl source path.
+/// Assertions: the command succeeds, proving cityjson-seq is an accepted user-facing layout value.
+#[test]
+fn cli_layout_cityjson_seq_is_accepted() {
+    let source = find_first(&cityjsonseq_root(), "city.jsonl", true);
+    let index_path = temp_index_path("cli-layout-cityjson-seq");
+    let output = run_cli_output([
+        "index",
+        "--layout",
+        "cityjson-seq",
+        "--paths",
+        source.to_str().expect("source path must be utf-8"),
+        "--index",
+        index_path.to_str().expect("index path must be utf-8"),
+    ]);
+
+    assert!(
+        output.status.success(),
+        "cityjson-seq layout should be accepted: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+/// Input: an explicit cjindex index command using the removed --layout ndjson alias.
+/// Assertions: the command fails instead of accepting legacy NDJSON terminology.
+#[test]
+fn cli_layout_ndjson_is_rejected() {
+    let source = find_first(&cityjsonseq_root(), "city.jsonl", true);
+    let index_path = temp_index_path("cli-layout-ndjson-rejected");
+    let output = run_cli_output([
+        "index",
+        "--layout",
+        "ndjson",
+        "--paths",
+        source.to_str().expect("source path must be utf-8"),
+        "--index",
+        index_path.to_str().expect("index path must be utf-8"),
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "removed ndjson alias should be rejected"
+    );
+}
+
+/// Input: a CityJSON document with two root Buildings that share one BuildingPart child.
+/// Assertions: cjindex get by child id emits one header plus both distinct containing packages in stable order.
+#[test]
+fn cli_get_child_id_emits_all_valid_containing_packages() {
+    let root = write_cityjson_fixture(
+        "cli-shared-child",
+        shared_child_cityobjects(),
+        hierarchy_vertices(),
+    );
+    let index_path = temp_index_path("cli-shared-child");
+    run_cli([
+        "index",
+        "--layout",
+        "cityjson",
+        "--paths",
+        root.to_str().expect("root path must be utf-8"),
+        "--index",
+        index_path.to_str().expect("index path must be utf-8"),
+    ]);
+
+    let lines = parse_json_lines(&run_cli([
+        "get",
+        "--layout",
+        "cityjson",
+        "--paths",
+        root.to_str().expect("root path must be utf-8"),
+        "--index",
+        index_path.to_str().expect("index path must be utf-8"),
+        "--id",
+        "shared-part",
+    ]));
+    assert_eq!(
+        lines.len(),
+        3,
+        "header plus both containing packages should be emitted"
+    );
+    assert!(lines[1]["CityObjects"].get("building-a").is_some());
+    assert!(lines[2]["CityObjects"].get("building-b").is_some());
+}
+
+/// Input: feature-files data with duplicate CityObject ids under two incompatible metadata roots.
+/// Assertions: cjindex get fails explicitly instead of emitting a mixed-header CityJSONSeq stream.
+#[test]
+fn cli_get_rejects_incompatible_metadata_roots() {
+    let root = temp_fixture_root("cli-get-metadata-mismatch");
+    fs::create_dir_all(root.join("features")).expect("feature root should be creatable");
+    fs::create_dir_all(root.join("alt")).expect("alternate feature root should be creatable");
+    let metadata: Value = serde_json::from_slice(
+        &fs::read(feature_files_root().join("metadata.json")).expect("metadata fixture"),
+    )
+    .expect("metadata fixture should parse");
+    fs::write(
+        root.join("metadata.json"),
+        serde_json::to_vec(&metadata).expect("metadata should serialize"),
+    )
+    .expect("metadata should be writable");
+    let mut alt_metadata = metadata;
+    alt_metadata["metadata"]["title"] = Value::String("incompatible".to_owned());
+    fs::write(
+        root.join("alt/metadata.json"),
+        serde_json::to_vec(&alt_metadata).expect("alt metadata should serialize"),
+    )
+    .expect("alt metadata should be writable");
+    write_cli_feature_file(&root.join("features/first.city.jsonl"), "first", 0);
+    write_cli_feature_file(&root.join("alt/second.city.jsonl"), "second", 10);
+    let index_path = temp_index_path("cli-get-metadata-mismatch");
+    run_cli([
+        "index",
+        "--layout",
+        "feature-files",
+        "--root",
+        root.to_str().expect("root path must be utf-8"),
+        "--index",
+        index_path.to_str().expect("index path must be utf-8"),
+    ]);
+
+    let output = run_cli_output([
+        "get",
+        "--layout",
+        "feature-files",
+        "--root",
+        root.to_str().expect("root path must be utf-8"),
+        "--index",
+        index_path.to_str().expect("index path must be utf-8"),
+        "--id",
+        "duplicate",
+    ]);
+    assert!(
+        !output.status.success(),
+        "get should reject incompatible metadata roots"
+    );
+    assert!(String::from_utf8_lossy(&output.stderr).contains("incompatible metadata roots"));
+}
+
+/// Input: a CityJSON hierarchy where one bbox query intersects both root and child objects in the same package.
+/// Assertions: cjindex query emits one header and one package, without duplicating the containing package.
+#[test]
+fn cli_query_emits_each_matching_package_once() {
+    let root = write_cityjson_fixture(
+        "cli-query-package-dedup",
+        common::hierarchy_cityobjects(),
+        hierarchy_vertices(),
+    );
+    let index_path = temp_index_path("cli-query-package-dedup");
+    run_cli([
+        "index",
+        "--layout",
+        "cityjson",
+        "--paths",
+        root.to_str().expect("root path"),
+        "--index",
+        index_path.to_str().expect("index path"),
+    ]);
+
+    let lines = parse_json_lines(&run_cli([
+        "query",
+        "--layout",
+        "cityjson",
+        "--paths",
+        root.to_str().expect("root path"),
+        "--index",
+        index_path.to_str().expect("index path"),
+        "--min-x",
+        "0",
+        "--max-x",
+        "100",
+        "--min-y",
+        "0",
+        "--max-y",
+        "100",
+    ]));
+    assert_eq!(
+        lines.len(),
+        2,
+        "header plus one containing package should be emitted"
+    );
+}
+
+/// Input: an indexed CityJSON root-child hierarchy.
+/// Assertions: inspect JSON reports schema version and normalized source, package, CityObject, and relationship counts.
+#[test]
+fn cli_inspect_reports_normalized_counts_and_schema() {
+    let root = write_cityjson_fixture(
+        "cli-inspect-normalized",
+        common::hierarchy_cityobjects(),
+        hierarchy_vertices(),
+    );
+    run_cli(["index", root.to_str().expect("root path must be utf-8")]);
+
+    let report: Value = serde_json::from_str(&run_cli([
+        "inspect",
+        root.to_str().expect("root path must be utf-8"),
+        "--json",
+    ]))
+    .expect("inspect output should parse");
+    assert_eq!(report["index"]["schema_version"], 2);
+    assert_eq!(report["index"]["indexed_source_count"], 1);
+    assert_eq!(report["index"]["indexed_package_count"], 1);
+    assert_eq!(report["index"]["indexed_cityobject_count"], 2);
+    assert_eq!(report["index"]["indexed_cityobject_relationship_count"], 1);
+}
+
+fn write_cli_feature_file(path: &Path, id: &str, base: i64) {
+    let feature = cityjson_feature(
+        id,
+        serde_json::json!({"duplicate": {"type": "Building", "geometry": [triangle_geometry(0, "1.0")]}}),
+        serde_json::json!([[base, 0, 0], [base + 1, 0, 1], [base, 1, 2]]),
+    );
+    fs::write(
+        path,
+        serde_json::to_vec(&feature).expect("feature should serialize"),
+    )
+    .expect("feature should be writable");
 }

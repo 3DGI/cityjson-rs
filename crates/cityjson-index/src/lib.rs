@@ -3,8 +3,9 @@ pub mod profile;
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fs;
-use std::io::{ErrorKind, Read, Seek, SeekFrom};
+use std::io::{BufRead, BufReader, ErrorKind, Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
+use std::sync::mpsc::{SyncSender, sync_channel};
 use std::sync::{Arc, Mutex};
 use std::time::UNIX_EPOCH;
 
@@ -13,7 +14,7 @@ use cityjson_lib::{CityModel, Error, Result};
 use globset::GlobMatcher;
 use ignore::WalkBuilder;
 use lru::LruCache;
-use rusqlite::{OptionalExtension, params};
+use rusqlite::{OptionalExtension, params, params_from_iter};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::value::RawValue;
@@ -37,12 +38,6 @@ pub struct FeatureBounds {
     pub max_z: f64,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub struct FeatureBoundsSummary {
-    pub bounds: FeatureBounds,
-    pub feature_count: usize,
-}
-
 impl FeatureBounds {
     #[must_use]
     pub fn bbox_2d(self) -> BBox {
@@ -62,23 +57,46 @@ pub struct CityIndex {
 
 pub const WORKER_COUNT_ENV: &str = "CITYJSON_INDEX_WORKERS";
 const DEFAULT_SCAN_PAGE_SIZE: usize = 512;
+const REBUILD_FEATURE_BATCH_SIZE: usize = 512;
+const SCHEMA_VERSION: i64 = 2;
+const SQLITE_PARAM_CHUNK_SIZE: usize = 900;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct IndexedFeatureRef {
-    pub row_id: i64,
-    pub feature_id: String,
-    pub source_id: i64,
-    pub source_path: PathBuf,
-    pub offset: u64,
-    pub length: u64,
-    pub vertices_offset: Option<u64>,
-    pub vertices_length: Option<u64>,
-    pub member_ranges_json: Option<String>,
-    pub bounds: FeatureBounds,
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct Bounds3D {
+    pub min_x: f64,
+    pub max_x: f64,
+    pub min_y: f64,
+    pub max_y: f64,
+    pub min_z: f64,
+    pub max_z: f64,
 }
 
-pub struct IndexedFeature {
-    pub reference: IndexedFeatureRef,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PackageType {
+    CityJson,
+    CityJsonSeq,
+    FeatureFiles,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct IndexedPackageRef {
+    pub record_id: i64,
+    pub model_id: String,
+    pub package_type: PackageType,
+    pub bounds: Option<Bounds3D>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct IndexedCityObjectRef {
+    pub record_id: i64,
+    pub external_id: String,
+    pub cityobject_type: String,
+    pub bounds: Option<Bounds3D>,
+}
+
+pub struct IndexedPackage {
+    pub reference: IndexedPackageRef,
+    pub metadata: Arc<Meta>,
     pub model: CityModel,
 }
 
@@ -90,13 +108,6 @@ pub enum LodSelection {
     Exact(String),
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct FeatureFilter {
-    pub cityobject_types: Option<BTreeSet<String>>,
-    pub default_lod: LodSelection,
-    pub lods_by_type: BTreeMap<String, LodSelection>,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MissingLodSelection {
     pub cityobject_type: String,
@@ -105,7 +116,7 @@ pub struct MissingLodSelection {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct FeatureFilterDiagnostics {
+struct PackageFilterDiagnostics {
     pub available_types: BTreeSet<String>,
     pub retained_types: BTreeSet<String>,
     pub ignored_types: BTreeSet<String>,
@@ -115,40 +126,55 @@ pub struct FeatureFilterDiagnostics {
     pub retained_geometry_count: usize,
 }
 
-#[derive(Debug, Clone)]
-pub struct FilteredFeature {
-    pub model: CityModel,
-    pub diagnostics: FeatureFilterDiagnostics,
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PackageFilter {
+    pub cityobject_types: Option<BTreeSet<String>>,
+    pub default_lod: LodSelection,
+    pub lods_by_type: BTreeMap<String, LodSelection>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct FeatureFilterSummary {
+pub struct PackageFilterReport {
     pub available_types: BTreeSet<String>,
     pub retained_types: BTreeSet<String>,
     pub ignored_types: BTreeSet<String>,
     pub available_lods: BTreeMap<String, BTreeSet<String>>,
     pub retained_lods: BTreeMap<String, BTreeSet<String>>,
     pub missing_lods: BTreeMap<String, MissingLodSelection>,
-    pub retained_feature_count: usize,
-    pub ignored_feature_count: usize,
+    pub retained_geometry_count: usize,
+    pub retained_package_count: usize,
+    pub ignored_package_count: usize,
 }
 
-impl IndexedFeatureRef {
-    fn to_location(&self) -> FeatureLocation {
-        FeatureLocation {
-            feature_id: self.feature_id.clone(),
-            source_id: self.source_id,
-            source_path: self.source_path.clone(),
-            offset: self.offset,
-            length: self.length,
-            vertices_offset: self.vertices_offset,
-            vertices_length: self.vertices_length,
-            member_ranges_json: self.member_ranges_json.clone(),
+pub struct PackageFilterResult {
+    pub model: Option<CityModel>,
+    pub report: PackageFilterReport,
+}
+
+impl From<FeatureBounds> for Bounds3D {
+    fn from(bounds: FeatureBounds) -> Self {
+        Self {
+            min_x: bounds.min_x,
+            max_x: bounds.max_x,
+            min_y: bounds.min_y,
+            max_y: bounds.max_y,
+            min_z: bounds.min_z,
+            max_z: bounds.max_z,
         }
     }
 }
 
-impl FeatureFilter {
+impl PackageType {
+    const fn as_storage_str(self) -> &'static str {
+        match self {
+            Self::CityJson => "cityjson",
+            Self::CityJsonSeq => "cityjson-seq",
+            Self::FeatureFiles => "feature-files",
+        }
+    }
+}
+
+impl PackageFilter {
     #[must_use]
     pub fn is_active(&self) -> bool {
         self.cityobject_types.is_some()
@@ -159,148 +185,131 @@ impl FeatureFilter {
                 .any(|selection| *selection != LodSelection::All)
     }
 
-    /// Applies this filter to a single decoded `CityJSON` feature.
+    /// Applies this package filter to one `CityJSONFeature` package.
     ///
     /// Object-type selection keeps descendants of selected `CityObjects`. This
-    /// preserves common `CityJSON` features where a selected parent object, such
-    /// as `Building`, carries its renderable geometry on child objects.
+    /// preserves common packages where a selected parent object, such as
+    /// `Building`, carries its renderable geometry on child objects.
     ///
     /// # Errors
     ///
-    /// Returns an error if the source model contains invalid references or
-    /// `cityjson-lib` extraction fails.
-    pub fn apply(&self, model: &CityModel) -> Result<FilteredFeature> {
+    /// Returns an error if the underlying `CityObject` or `LoD` selection fails.
+    pub fn apply(&self, model: &CityModel) -> Result<PackageFilterResult> {
         let retained_handles = retained_cityobject_handles(model, self)?;
         let diagnostics = filter_diagnostics(model, &retained_handles, self);
-
-        if !self.is_active() {
-            return Ok(FilteredFeature {
-                model: model.clone(),
-                diagnostics,
-            });
-        }
-
-        let type_selection = self
-            .cityobject_types
-            .as_ref()
-            .map(|_| {
-                cityjson_lib::ops::select_cityobjects(model, |ctx| {
-                    retained_handles.contains(&ctx.handle())
+        let filtered_model = if self.is_active() {
+            let type_selection = self
+                .cityobject_types
+                .as_ref()
+                .map(|_| {
+                    cityjson_lib::ops::select_cityobjects(model, |ctx| {
+                        retained_handles.contains(&ctx.handle())
+                    })
                 })
-            })
-            .transpose()?;
+                .transpose()?;
 
-        let lod_selection = lod_selection(model, &retained_handles, self)?;
-        let selection = match (type_selection, lod_selection) {
-            (Some(types), Some(lods)) => types.intersection(&lods),
-            (Some(types), None) => types,
-            (None, Some(lods)) => lods,
-            (None, None) => {
-                return Ok(FilteredFeature {
-                    model: model.clone(),
-                    diagnostics,
-                });
-            }
+            let lod_selection = lod_selection(model, &retained_handles, self)?;
+            let selection = match (type_selection, lod_selection) {
+                (Some(types), Some(lods)) => types.intersection(&lods),
+                (Some(types), None) => types,
+                (None, Some(lods)) => lods,
+                (None, None) => model_selection_all(model)?,
+            };
+            extract_or_empty_package(model, &selection)?
+        } else {
+            model.clone()
         };
 
-        let filtered = extract_or_empty_feature(model, &selection)?;
-        Ok(FilteredFeature {
-            model: filtered,
-            diagnostics,
-        })
+        let mut report = PackageFilterReport::from_diagnostics(&diagnostics);
+        if let LodSelection::Exact(requested_lod) = &self.default_lod
+            && diagnostics.retained_geometry_count == 0
+        {
+            for cityobject_type in &diagnostics.available_types {
+                report
+                    .missing_lods
+                    .entry(cityobject_type.clone())
+                    .or_insert_with(|| MissingLodSelection {
+                        cityobject_type: cityobject_type.clone(),
+                        requested_lod: requested_lod.clone(),
+                        available_lods: diagnostics
+                            .available_lods
+                            .get(cityobject_type)
+                            .cloned()
+                            .unwrap_or_default(),
+                    });
+            }
+        }
+        let model = if diagnostics.retained_geometry_count == 0 {
+            None
+        } else {
+            Some(filtered_model)
+        };
+        Ok(PackageFilterResult { model, report })
     }
 }
 
-impl FeatureFilterSummary {
-    pub fn add(&mut self, diagnostics: &FeatureFilterDiagnostics) {
-        self.available_types
-            .extend(diagnostics.available_types.iter().cloned());
-        self.retained_types
-            .extend(diagnostics.retained_types.iter().cloned());
-        self.ignored_types
-            .extend(diagnostics.ignored_types.iter().cloned());
-        merge_lod_sets(&mut self.available_lods, &diagnostics.available_lods);
-        merge_lod_sets(&mut self.retained_lods, &diagnostics.retained_lods);
+impl PackageFilterReport {
+    fn from_diagnostics(diagnostics: &PackageFilterDiagnostics) -> Self {
+        let mut missing_lods = BTreeMap::new();
         for missing in &diagnostics.missing_lods {
-            self.missing_lods
+            missing_lods
                 .entry(missing.cityobject_type.clone())
                 .or_insert_with(|| missing.clone());
         }
-        if diagnostics.retained_geometry_count == 0 {
-            self.ignored_feature_count += 1;
-        } else {
-            self.retained_feature_count += 1;
+        Self {
+            available_types: diagnostics.available_types.clone(),
+            retained_types: diagnostics.retained_types.clone(),
+            ignored_types: diagnostics.ignored_types.clone(),
+            available_lods: diagnostics.available_lods.clone(),
+            retained_lods: diagnostics.retained_lods.clone(),
+            missing_lods,
+            retained_geometry_count: diagnostics.retained_geometry_count,
+            retained_package_count: usize::from(diagnostics.retained_geometry_count > 0),
+            ignored_package_count: usize::from(diagnostics.retained_geometry_count == 0),
         }
     }
 
-    #[must_use]
-    pub fn requested_lod_failures(&self, filter: &FeatureFilter) -> Vec<MissingLodSelection> {
-        filter
-            .lods_by_type
-            .iter()
-            .filter_map(|(cityobject_type, selection)| {
-                let LodSelection::Exact(requested_lod) = selection else {
-                    return None;
-                };
-                let eligible = self.available_lods.contains_key(cityobject_type)
-                    || self.retained_types.contains(cityobject_type)
-                    || filter
-                        .cityobject_types
-                        .as_ref()
-                        .is_none_or(|types| types.contains(cityobject_type));
-                if !eligible {
-                    return None;
-                }
-                let available_lods = self
-                    .available_lods
-                    .get(cityobject_type)
-                    .cloned()
-                    .unwrap_or_default();
-                if available_lods.contains(requested_lod) {
-                    return None;
-                }
-                Some(MissingLodSelection {
-                    cityobject_type: cityobject_type.clone(),
-                    requested_lod: requested_lod.clone(),
-                    available_lods,
-                })
-            })
-            .collect()
+    pub fn merge(&mut self, other: &Self) {
+        self.available_types
+            .extend(other.available_types.iter().cloned());
+        self.retained_types
+            .extend(other.retained_types.iter().cloned());
+        self.ignored_types
+            .extend(other.ignored_types.iter().cloned());
+        merge_lod_sets(&mut self.available_lods, &other.available_lods);
+        merge_lod_sets(&mut self.retained_lods, &other.retained_lods);
+        for (cityobject_type, missing) in &other.missing_lods {
+            self.missing_lods
+                .entry(cityobject_type.clone())
+                .or_insert_with(|| missing.clone());
+        }
+        self.retained_geometry_count += other.retained_geometry_count;
+        self.retained_package_count += other.retained_package_count;
+        self.ignored_package_count += other.ignored_package_count;
     }
 
+    /// Ensures every exact `LoD` requested by `filter` was available in the merged report.
+    ///
     /// # Errors
     ///
-    /// Returns an error when any explicit `LoD` selector did not match the
-    /// scanned filtered dataset.
-    pub fn ensure_requested_lods_available(&self, filter: &FeatureFilter) -> Result<()> {
-        let failures = self.requested_lod_failures(filter);
-        if failures.is_empty() {
-            return Ok(());
+    /// Returns an error when a requested exact `LoD` is absent for a requested `CityObject` type.
+    pub fn ensure_requested_lods_available(&self, filter: &PackageFilter) -> Result<()> {
+        for (cityobject_type, selection) in &filter.lods_by_type {
+            let LodSelection::Exact(requested_lod) = selection else {
+                continue;
+            };
+            let available_lods = self
+                .available_lods
+                .get(cityobject_type)
+                .cloned()
+                .unwrap_or_default();
+            if !available_lods.contains(requested_lod) {
+                return Err(import_error(format!(
+                    "requested LoD {requested_lod} is not available for {cityobject_type}"
+                )));
+            }
         }
-
-        let details = failures
-            .iter()
-            .map(|missing| {
-                let available = if missing.available_lods.is_empty() {
-                    "none".to_owned()
-                } else {
-                    missing
-                        .available_lods
-                        .iter()
-                        .cloned()
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                };
-                format!(
-                    "{} requested LoD '{}' but available LoDs are: {}",
-                    missing.cityobject_type, missing.requested_lod, available
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("; ");
-        Err(import_error(format!(
-            "requested LoD selector matched no geometry: {details}"
-        )))
+        Ok(())
     }
 }
 
@@ -321,7 +330,7 @@ type GeometryHandle = cityjson_types::prelude::GeometryHandle;
 
 fn retained_cityobject_handles(
     model: &CityModel,
-    filter: &FeatureFilter,
+    filter: &PackageFilter,
 ) -> Result<BTreeSet<CityObjectHandle>> {
     let Some(selected_types) = filter.cityobject_types.as_ref() else {
         return Ok(model
@@ -364,7 +373,7 @@ fn collect_cityobject_descendants(
 fn lod_selection(
     model: &CityModel,
     retained_handles: &BTreeSet<CityObjectHandle>,
-    filter: &FeatureFilter,
+    filter: &PackageFilter,
 ) -> Result<Option<cityjson_lib::ops::ModelSelection>> {
     if filter.default_lod == LodSelection::All
         && filter
@@ -450,10 +459,10 @@ fn compare_lod_strings(lhs: &str, rhs: &str) -> std::cmp::Ordering {
 fn filter_diagnostics(
     model: &CityModel,
     retained_handles: &BTreeSet<CityObjectHandle>,
-    filter: &FeatureFilter,
-) -> FeatureFilterDiagnostics {
+    filter: &PackageFilter,
+) -> PackageFilterDiagnostics {
     let highest_lods = highest_lods_by_cityobject(model, retained_handles);
-    let mut diagnostics = FeatureFilterDiagnostics::default();
+    let mut diagnostics = PackageFilterDiagnostics::default();
 
     for (handle, cityobject) in model.cityobjects().iter() {
         let cityobject_type = cityobject.type_cityobject().to_string();
@@ -524,7 +533,11 @@ fn filter_diagnostics(
     diagnostics
 }
 
-fn extract_or_empty_feature(
+fn model_selection_all(model: &CityModel) -> Result<cityjson_lib::ops::ModelSelection> {
+    cityjson_lib::ops::select_cityobjects(model, |_| true)
+}
+
+fn extract_or_empty_package(
     model: &CityModel,
     selection: &cityjson_lib::ops::ModelSelection,
 ) -> Result<CityModel> {
@@ -540,7 +553,7 @@ fn extract_or_empty_feature(
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DatasetLayoutKind {
-    #[serde(rename = "ndjson")]
+    #[serde(rename = "cityjson-seq")]
     Ndjson,
     #[serde(rename = "cityjson")]
     CityJson,
@@ -552,7 +565,7 @@ impl DatasetLayoutKind {
     #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
-            Self::Ndjson => "ndjson",
+            Self::Ndjson => "cityjson-seq",
             Self::CityJson => "cityjson",
             Self::FeatureFiles => "feature-files",
         }
@@ -583,9 +596,12 @@ pub struct IndexStatus {
     pub path: PathBuf,
     pub exists: bool,
     pub index_mtime_ns: Option<i64>,
+    pub schema_version: Option<i64>,
     pub indexed_source_count: Option<usize>,
     pub indexed_feature_count: Option<usize>,
+    pub indexed_package_count: Option<usize>,
     pub indexed_cityobject_count: Option<usize>,
+    pub indexed_cityobject_relationship_count: Option<usize>,
     pub fresh: Option<bool>,
     pub covered: Option<bool>,
     pub needs_reindex: bool,
@@ -683,9 +699,12 @@ fn inspect_resolved_dataset(resolved: &ResolvedDataset) -> Result<DatasetInspect
         path: resolved.index_path.clone(),
         exists: resolved.index_path.exists(),
         index_mtime_ns: None,
+        schema_version: None,
         indexed_source_count: None,
         indexed_feature_count: None,
+        indexed_package_count: None,
         indexed_cityobject_count: None,
+        indexed_cityobject_relationship_count: None,
         fresh: None,
         covered: None,
         needs_reindex: false,
@@ -703,16 +722,12 @@ fn inspect_resolved_dataset(resolved: &ResolvedDataset) -> Result<DatasetInspect
         status.index_mtime_ns = Some(mtime_ns);
 
         let index = Index::open(&resolved.index_path)?;
+        status.schema_version = Some(index.current_schema_version()?);
         status.indexed_source_count = Some(index.source_count()?);
         status.indexed_feature_count = Some(index.feature_count()?);
-        status.indexed_cityobject_count = Some(index.cityobject_count()?);
-        if !index.feature_bounds_complete()? {
-            status.needs_reindex = true;
-            status
-                .issues
-                .push("index is missing persisted z bounds; run cjindex reindex".to_owned());
-        }
-
+        status.indexed_package_count = Some(index.package_count()?);
+        status.indexed_cityobject_count = Some(index.normalized_cityobject_count()?);
+        status.indexed_cityobject_relationship_count = Some(index.cityobject_relationship_count()?);
         let indexed_sources = index.indexed_sources()?;
         let current_sources = collect_current_file_statuses(&resolved.source_paths)?;
         compare_path_statuses(
@@ -1032,7 +1047,7 @@ pub fn resolve_dataset(
 
     if matches.is_empty() {
         return Err(import_error(format!(
-            "dataset directory {} does not match ndjson, cityjson, or feature-files layouts",
+            "dataset directory {} does not match cityjson-seq, cityjson, or feature-files layouts",
             dataset_root.display()
         )));
     }
@@ -1083,6 +1098,65 @@ pub fn resolve_dataset(
     })
 }
 
+fn clone_indexed_package(package: &IndexedPackage) -> IndexedPackage {
+    IndexedPackage {
+        reference: package.reference.clone(),
+        metadata: Arc::clone(&package.metadata),
+        model: package.model.clone(),
+    }
+}
+
+fn package_type_from_str(value: &str) -> rusqlite::Result<PackageType> {
+    match value {
+        "cityjson" => Ok(PackageType::CityJson),
+        "cityjson-seq" => Ok(PackageType::CityJsonSeq),
+        "feature-files" => Ok(PackageType::FeatureFiles),
+        _ => Err(rusqlite::Error::InvalidQuery),
+    }
+}
+
+fn optional_bounds_from_row(
+    row: &rusqlite::Row<'_>,
+    col: usize,
+) -> rusqlite::Result<Option<Bounds3D>> {
+    let min_x = row.get::<_, Option<f64>>(col)?;
+    let Some(min_x) = min_x else {
+        return Ok(None);
+    };
+    Ok(Some(Bounds3D {
+        min_x,
+        max_x: row.get::<_, f64>(col + 1)?,
+        min_y: row.get::<_, f64>(col + 2)?,
+        max_y: row.get::<_, f64>(col + 3)?,
+        min_z: row.get::<_, f64>(col + 4)?,
+        max_z: row.get::<_, f64>(col + 5)?,
+    }))
+}
+
+fn package_ref_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<IndexedPackageRef> {
+    Ok(IndexedPackageRef {
+        record_id: row.get(0)?,
+        model_id: row.get(1)?,
+        package_type: package_type_from_str(&row.get::<_, String>(2)?)?,
+        bounds: optional_bounds_from_row(row, 3)?,
+    })
+}
+
+fn cityobject_ref_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<IndexedCityObjectRef> {
+    Ok(IndexedCityObjectRef {
+        record_id: row.get(0)?,
+        external_id: row.get(1)?,
+        cityobject_type: row.get(2)?,
+        bounds: optional_bounds_from_row(row, 3)?,
+    })
+}
+
+fn sql_placeholders(count: usize) -> String {
+    std::iter::repeat_n("?", count)
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
 impl CityIndex {
     /// Opens an index for the given storage layout.
     ///
@@ -1118,402 +1192,866 @@ impl CityIndex {
     /// Returns an error if backend scanning or index population fails.
     pub fn reindex(&mut self) -> Result<()> {
         let worker_count = configured_worker_count()?;
-        let scans = self.backend.scan(worker_count)?;
-        self.index.rebuild(&scans)
-    }
-
-    /// Returns a `CityJSON` feature by id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if lookup fails.
-    pub fn get(&self, id: &str) -> Result<Option<CityModel>> {
-        self.get_with_metadata(id)
-            .map(|maybe| maybe.map(|(_, model)| model))
-    }
-
-    /// Returns a `CityJSON` feature by id together with the source metadata
-    /// used to reconstruct it.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if lookup fails.
-    pub fn get_with_metadata(&self, id: &str) -> Result<Option<(Arc<Meta>, CityModel)>> {
-        let Some(loc) = self.index.lookup_id(id)? else {
-            return Ok(None);
-        };
-        let metadata = self.index.get_cached_metadata(loc.source_id)?;
-        let model = self.backend.read_one(&loc, Arc::clone(&metadata.bytes))?;
-        Ok(Some((metadata.value, model)))
-    }
-
-    /// Returns a lightweight feature reference for a feature id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the lookup fails.
-    pub fn lookup_feature_ref(&self, id: &str) -> Result<Option<IndexedFeatureRef>> {
-        self.index.lookup_feature_ref(id)
-    }
-
-    /// Returns all lightweight feature references for a feature id.
-    ///
-    /// Results are ordered by the internal feature row id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the lookup fails.
-    pub fn lookup_feature_refs(&self, id: &str) -> Result<Vec<IndexedFeatureRef>> {
-        self.index.lookup_feature_refs(id)
-    }
-
-    /// Returns a lightweight feature reference for a feature row id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the lookup fails.
-    pub fn lookup_feature_ref_by_rowid(&self, row_id: i64) -> Result<Option<IndexedFeatureRef>> {
-        self.index.lookup_feature_ref_by_rowid(row_id)
-    }
-
-    /// Returns cached metadata for a source id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the metadata lookup fails.
-    pub fn metadata_for_source(&self, source_id: i64) -> Result<Arc<Meta>> {
         self.index
-            .get_cached_metadata(source_id)
-            .map(|metadata| metadata.value)
+            .rebuild_from_backend(self.backend.as_ref(), worker_count)
     }
 
-    /// Returns every feature intersecting the given bounding box.
+    /// Returns every indexed `CityObject` occurrence with the given external id.
     ///
     /// # Errors
     ///
-    /// Returns an error if the query fails.
-    pub fn query(&self, bbox: &BBox) -> Result<Vec<CityModel>> {
-        self.query_iter(bbox)?
-            .collect::<std::result::Result<Vec<_>, _>>()
+    /// Returns an error if the `SQLite` lookup fails.
+    pub fn lookup_cityobject_refs(&self, external_id: &str) -> Result<Vec<IndexedCityObjectRef>> {
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT
+                c.id,
+                c.external_id,
+                c.cityobject_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM cityobjects AS c
+            LEFT JOIN cityobject_bbox AS b ON b.cityobject_id = c.id
+            WHERE c.external_id = ?1
+            ORDER BY c.id
+            ",
+        ))?;
+        let rows = sqlite_result(stmt.query_map(params![external_id], cityobject_ref_from_row))?;
+        sqlite_result(rows.collect())
     }
 
-    /// Returns every feature intersecting the given bounding box together with
-    /// the source metadata used to reconstruct it.
+    /// Returns every indexed `CityObject` occurrence matching any external id.
+    ///
+    /// Duplicate input ids are ignored. Results include all physical
+    /// occurrences ordered by `SQLite` `CityObject` record id.
     ///
     /// # Errors
     ///
-    /// Returns an error if the query fails.
-    pub fn query_with_metadata(&self, bbox: &BBox) -> Result<Vec<(Arc<Meta>, CityModel)>> {
-        self.query_iter_with_metadata(bbox)?
-            .collect::<std::result::Result<Vec<_>, _>>()
-    }
-
-    /// Returns an iterator over features intersecting the given bounding box.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the iterator cannot be constructed.
-    pub fn query_iter(&self, bbox: &BBox) -> Result<impl Iterator<Item = Result<CityModel>> + '_> {
-        let iter = self.query_iter_with_metadata(bbox)?;
-        Ok(iter.map(|item| item.map(|(_, model)| model)))
-    }
-
-    /// Returns an iterator over features intersecting the given bounding box
-    /// together with their feature identifiers.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the iterator cannot be constructed.
-    pub fn query_iter_with_ids(
+    /// Returns an error if the `SQLite` lookup fails.
+    pub fn lookup_cityobject_refs_for_ids<S: AsRef<str>>(
         &self,
-        bbox: &BBox,
-    ) -> Result<impl Iterator<Item = Result<(String, CityModel)>> + '_> {
-        let locations = self.index.lookup_bbox_iter(*bbox);
-        Ok(locations.map(move |loc| {
-            let loc = loc?;
-            let feature_id = loc.feature_id.clone();
-            let metadata = self.index.get_cached_metadata(loc.source_id)?;
-            let model = self.backend.read_one(&loc, Arc::clone(&metadata.bytes))?;
-            Ok((feature_id, model))
-        }))
+        external_ids: &[S],
+    ) -> Result<Vec<IndexedCityObjectRef>> {
+        let unique_ids = external_ids
+            .iter()
+            .map(std::convert::AsRef::as_ref)
+            .collect::<BTreeSet<_>>();
+        let unique_ids = unique_ids.into_iter().collect::<Vec<_>>();
+        if unique_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut refs = Vec::new();
+        for chunk in unique_ids.chunks(SQLITE_PARAM_CHUNK_SIZE) {
+            let placeholders = sql_placeholders(chunk.len());
+            let sql = format!(
+                r"
+                SELECT
+                    c.id,
+                    c.external_id,
+                    c.cityobject_type,
+                    b.min_x,
+                    b.max_x,
+                    b.min_y,
+                    b.max_y,
+                    b.min_z,
+                    b.max_z
+                FROM cityobjects AS c
+                LEFT JOIN cityobject_bbox AS b ON b.cityobject_id = c.id
+                WHERE c.external_id IN ({placeholders})
+                ORDER BY c.id
+                "
+            );
+            let mut stmt = sqlite_result(self.index.conn.prepare(&sql))?;
+            let rows = sqlite_result(
+                stmt.query_map(params_from_iter(chunk.iter()), cityobject_ref_from_row),
+            )?;
+            refs.extend(sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())?);
+        }
+        refs.sort_by_key(|cityobject| cityobject.record_id);
+        Ok(refs)
     }
 
-    /// Returns an iterator over features intersecting the given bounding box
-    /// together with the source metadata used to reconstruct them.
+    /// Returns package refs containing the given `CityObject` occurrence.
     ///
     /// # Errors
     ///
-    /// Returns an error if the iterator cannot be constructed.
-    pub fn query_iter_with_metadata(
+    /// Returns an error if the `SQLite` lookup fails.
+    pub fn package_refs_for_cityobject(
         &self,
-        bbox: &BBox,
-    ) -> Result<impl Iterator<Item = Result<(Arc<Meta>, CityModel)>> + '_> {
-        let locations = self.index.lookup_bbox_iter(*bbox);
-        Ok(locations.map(move |loc| {
-            let loc = loc?;
-            let metadata = self.index.get_cached_metadata(loc.source_id)?;
-            let model = self.backend.read_one(&loc, Arc::clone(&metadata.bytes))?;
-            Ok((metadata.value, model))
-        }))
+        cityobject: &IndexedCityObjectRef,
+    ) -> Result<Vec<IndexedPackageRef>> {
+        self.package_refs_for_cityobjects(std::slice::from_ref(cityobject))
     }
 
-    /// Returns every feature in the index.
+    /// Returns every distinct package containing a `CityObject` with `external_id`.
     ///
     /// # Errors
     ///
-    /// Returns an error if the iterator cannot be constructed.
-    pub fn iter_all(&self) -> Result<impl Iterator<Item = Result<CityModel>> + '_> {
-        let iter = self.iter_all_with_metadata()?;
-        Ok(iter.map(|item| item.map(|(_, model)| model)))
+    /// Returns an error if lookup or package reconstruction fails.
+    pub fn get_packages(&self, external_id: &str) -> Result<Vec<CityModel>> {
+        self.get_packages_with_metadata(external_id)
+            .map(|items| items.into_iter().map(|(_, model)| model).collect())
     }
 
-    /// Returns every feature in the index together with its feature identifier.
+    /// Returns every distinct package containing `external_id` with its source metadata.
     ///
     /// # Errors
     ///
-    /// Returns an error if the iterator cannot be constructed.
-    pub fn iter_all_with_ids(
+    /// Returns an error if lookup, metadata loading, or package reconstruction fails.
+    pub fn get_packages_with_metadata(
         &self,
-    ) -> Result<impl Iterator<Item = Result<(String, CityModel)>> + '_> {
-        let iter = self.index.lookup_all_iter();
-        Ok(iter.map(move |loc| {
-            let loc = loc?;
-            let feature_id = loc.location.feature_id.clone();
-            let metadata = self.index.get_cached_metadata(loc.location.source_id)?;
-            let model = self
-                .backend
-                .read_one(&loc.location, Arc::clone(&metadata.bytes))?;
-            Ok((feature_id, model))
-        }))
-    }
-
-    /// Returns every feature in the index together with the source metadata used
-    /// to reconstruct it.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the iterator cannot be constructed.
-    pub fn iter_all_with_metadata(
-        &self,
-    ) -> Result<impl Iterator<Item = Result<(Arc<Meta>, CityModel)>> + '_> {
-        let iter = self.index.lookup_all_iter();
-        Ok(iter.map(move |loc| {
-            let loc = loc?;
-            let metadata = self.index.get_cached_metadata(loc.location.source_id)?;
-            let model = self
-                .backend
-                .read_one(&loc.location, Arc::clone(&metadata.bytes))?;
-            Ok((metadata.value, model))
-        }))
-    }
-
-    /// Returns every indexed feature as a page of lightweight references.
-    ///
-    /// Each page is ordered by the internal feature row id and can be used for
-    /// caller-managed parallel decoding.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the iterator cannot be constructed or `page_size`
-    /// is zero.
-    pub fn iter_all_feature_ref_pages(
-        &self,
-        page_size: usize,
-    ) -> Result<impl Iterator<Item = Result<Vec<IndexedFeatureRef>>> + '_> {
-        self.index.lookup_all_ref_page_iter(page_size)
-    }
-
-    /// Returns every indexed feature as a page of lightweight references.
-    ///
-    /// This is a semantic alias of [`CityIndex::iter_all_feature_ref_pages`]
-    /// for callers that care primarily about bbox-oriented processing.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the iterator cannot be constructed or `page_size`
-    /// is zero.
-    pub fn iter_all_bbox_pages(
-        &self,
-        page_size: usize,
-    ) -> Result<impl Iterator<Item = Result<Vec<IndexedFeatureRef>>> + '_> {
-        self.index.lookup_all_ref_page_iter(page_size)
-    }
-
-    /// Returns every indexed feature together with its decoded payload in
-    /// ascending feature row id order.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the iterator cannot be constructed.
-    pub fn scan_features(&self) -> Result<impl Iterator<Item = Result<IndexedFeature>> + '_> {
-        let ref_pages = self
-            .index
-            .lookup_all_ref_page_iter(DEFAULT_SCAN_PAGE_SIZE)?;
-        Ok(AllIndexedFeatureIter::new(AllIndexedFeaturePageIter {
-            city_index: self,
-            ref_pages,
-        }))
-    }
-
-    /// Returns every indexed feature as decoded pages in ascending feature row
-    /// id order.
-    ///
-    /// Each page preserves the row order from
-    /// [`CityIndex::iter_all_feature_ref_pages`] and reconstructs its payloads
-    /// with the grouped batch path.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the iterator cannot be constructed or `page_size`
-    /// is zero.
-    pub fn scan_feature_pages(
-        &self,
-        page_size: usize,
-    ) -> Result<impl Iterator<Item = Result<Vec<IndexedFeature>>> + '_> {
-        let ref_pages = self.index.lookup_all_ref_page_iter(page_size)?;
-        Ok(AllIndexedFeaturePageIter {
-            city_index: self,
-            ref_pages,
+        external_id: &str,
+    ) -> Result<Vec<(Arc<Meta>, CityModel)>> {
+        let packages = self.package_refs_for_cityobject_external_id(external_id)?;
+        self.read_packages(&packages).map(|items| {
+            items
+                .into_iter()
+                .map(|item| (item.metadata, item.model))
+                .collect()
         })
     }
 
-    /// Returns aggregate bounds and feature count for the whole index.
-    ///
-    /// Returns `Ok(None)` when the index contains no features.
+    /// Reads every package containing the given `CityObject` occurrence.
     ///
     /// # Errors
     ///
-    /// Returns an error if the aggregate query fails.
-    pub fn feature_bounds_summary(&self) -> Result<Option<FeatureBoundsSummary>> {
-        self.index.feature_bounds_summary()
-    }
-
-    /// Reconstructs a single indexed feature from a lightweight reference.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the feature cannot be reconstructed.
-    pub fn read_feature(&self, feature: &IndexedFeatureRef) -> Result<CityModel> {
-        let metadata = self.index.get_cached_metadata(feature.source_id)?;
-        self.backend
-            .read_one(&feature.to_location(), Arc::clone(&metadata.bytes))
-    }
-
-    /// Reconstructs multiple indexed features from lightweight references.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if any feature cannot be reconstructed.
-    pub fn read_features(&self, features: &[IndexedFeatureRef]) -> Result<Vec<CityModel>> {
-        self.read_feature_models(features)
-    }
-
-    /// Reconstructs and filters multiple indexed features while preserving the
-    /// input order.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if any feature cannot be reconstructed or filtered.
-    pub fn read_filtered_features(
+    /// Returns an error if lookup or package reconstruction fails.
+    pub fn read_cityobject_packages(
         &self,
-        features: &[IndexedFeatureRef],
-        filter: &FeatureFilter,
-    ) -> Result<Vec<FilteredFeature>> {
-        self.read_feature_models(features)?
-            .iter()
-            .map(|model| filter.apply(model))
-            .collect()
+        cityobject: &IndexedCityObjectRef,
+    ) -> Result<Vec<IndexedPackage>> {
+        let packages = self.package_refs_for_cityobject(cityobject)?;
+        self.read_packages(&packages)
     }
 
-    /// Reconstructs multiple indexed features with their references.
+    /// Returns a page of package refs ordered by package record id.
     ///
-    /// The returned features preserve the input order.
+    /// Passing `None` starts from the first package. Results use keyset
+    /// pagination and are stable for large scans.
     ///
     /// # Errors
     ///
-    /// Returns an error if any feature cannot be reconstructed.
-    pub fn read_indexed_features(
+    /// Returns an error if the `SQLite` lookup fails or `limit` is zero.
+    pub fn package_ref_page_after_record_id(
         &self,
-        features: &[IndexedFeatureRef],
-    ) -> Result<Vec<IndexedFeature>> {
-        let models = self.read_feature_models(features)?;
-        Ok(features
-            .iter()
-            .cloned()
-            .zip(models)
-            .map(|(reference, model)| IndexedFeature { reference, model })
-            .collect())
-    }
-
-    /// Reconstructs a feature by row id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if lookup or reconstruction fails.
-    pub fn read_feature_by_rowid(&self, row_id: i64) -> Result<Option<IndexedFeature>> {
-        let Some(reference) = self.lookup_feature_ref_by_rowid(row_id)? else {
-            return Ok(None);
-        };
-        let model = self.read_feature(&reference)?;
-        Ok(Some(IndexedFeature { reference, model }))
-    }
-
-    /// Reconstructs features by row id while preserving the input order.
-    ///
-    /// Missing row ids are returned as `None`.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if lookup or reconstruction fails.
-    pub fn read_features_by_rowids(&self, row_ids: &[i64]) -> Result<Vec<Option<IndexedFeature>>> {
-        let references = self.index.lookup_feature_refs_by_rowids(row_ids)?;
-        let present_references = references.iter().flatten().cloned().collect::<Vec<_>>();
-        let mut present_features = self.read_indexed_features(&present_references)?.into_iter();
-        let mut features = Vec::with_capacity(row_ids.len());
-        for reference in references {
-            if reference.is_some() {
-                let feature = present_features.next().ok_or_else(|| {
-                    import_error("feature reconstruction returned fewer models than references")
-                })?;
-                features.push(Some(feature));
-            } else {
-                features.push(None);
-            }
-        }
-        Ok(features)
-    }
-
-    /// Reconstructs a page of features after a row id.
-    ///
-    /// Passing `None` starts from the first row. Results are ordered by row id.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if lookup or reconstruction fails, or `limit` is zero.
-    pub fn read_feature_range_after_rowid(
-        &self,
-        after_row_id: Option<i64>,
+        after_record_id: Option<i64>,
         limit: usize,
-    ) -> Result<Vec<IndexedFeature>> {
+    ) -> Result<Vec<IndexedPackageRef>> {
         if limit == 0 {
             return Err(import_error("limit must be greater than zero"));
         }
-        let refs = self
-            .index
-            .lookup_all_ref_page(after_row_id, limit)?
-            .into_iter()
-            .map(|record| record.feature)
-            .collect::<Vec<_>>();
-        self.read_indexed_features(&refs)
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT
+                p.id,
+                p.model_id,
+                p.package_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM packages AS p
+            LEFT JOIN package_bbox AS b ON b.package_id = p.id
+            WHERE (?1 IS NULL OR p.id > ?1)
+            ORDER BY p.id
+            LIMIT ?2
+            ",
+        ))?;
+        let rows =
+            sqlite_result(stmt.query_map(params![after_record_id, limit], package_ref_from_row))?;
+        sqlite_result(rows.collect())
     }
 
-    /// Returns the total number of indexed feature references.
+    /// Returns a page of `CityObject` refs ordered by `CityObject` record id.
+    ///
+    /// Passing `None` starts from the first `CityObject`. Results use keyset
+    /// pagination and are stable for large scans.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` lookup fails or `limit` is zero.
+    pub fn cityobject_ref_page_after_record_id(
+        &self,
+        after_record_id: Option<i64>,
+        limit: usize,
+    ) -> Result<Vec<IndexedCityObjectRef>> {
+        if limit == 0 {
+            return Err(import_error("limit must be greater than zero"));
+        }
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT
+                c.id,
+                c.external_id,
+                c.cityobject_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM cityobjects AS c
+            LEFT JOIN cityobject_bbox AS b ON b.cityobject_id = c.id
+            WHERE (?1 IS NULL OR c.id > ?1)
+            ORDER BY c.id
+            LIMIT ?2
+            ",
+        ))?;
+        let rows = sqlite_result(
+            stmt.query_map(params![after_record_id, limit], cityobject_ref_from_row),
+        )?;
+        sqlite_result(rows.collect())
+    }
+
+    /// Returns a page of package refs whose package bbox intersects `bbox`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` query fails or `limit` is zero.
+    pub fn query_package_refs_page(
+        &self,
+        bbox: &BBox,
+        after_package_id: Option<i64>,
+        limit: usize,
+    ) -> Result<Vec<IndexedPackageRef>> {
+        if limit == 0 {
+            return Err(import_error("limit must be greater than zero"));
+        }
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT DISTINCT
+                p.id,
+                p.model_id,
+                p.package_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM package_bbox AS b
+            JOIN packages AS p ON p.id = b.package_id
+            WHERE b.min_x <= ?2
+              AND b.max_x >= ?1
+              AND b.min_y <= ?4
+              AND b.max_y >= ?3
+              AND (?5 IS NULL OR p.id > ?5)
+            ORDER BY p.id
+            LIMIT ?6
+            ",
+        ))?;
+        let rows = sqlite_result(stmt.query_map(
+            params![
+                bbox.min_x,
+                bbox.max_x,
+                bbox.min_y,
+                bbox.max_y,
+                after_package_id,
+                limit
+            ],
+            package_ref_from_row,
+        ))?;
+        sqlite_result(rows.collect())
+    }
+
+    /// Returns package refs whose package bbox intersects `bbox`.
+    ///
+    /// This eager convenience method is implemented on top of paged keyset
+    /// queries. Prefer [`CityIndex::query_package_refs_page`] for large result
+    /// sets.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` query fails.
+    pub fn query_package_refs(&self, bbox: &BBox) -> Result<Vec<IndexedPackageRef>> {
+        let mut refs = Vec::new();
+        let mut after_package_id = None;
+        loop {
+            let page =
+                self.query_package_refs_page(bbox, after_package_id, DEFAULT_SCAN_PAGE_SIZE)?;
+            if page.is_empty() {
+                break;
+            }
+            after_package_id = page.last().map(|package| package.record_id);
+            refs.extend(page);
+        }
+        Ok(refs)
+    }
+
+    /// Returns `CityObject` refs whose `CityObject` bbox intersects `bbox`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` query fails.
+    pub fn query_cityobject_refs(&self, bbox: &BBox) -> Result<Vec<IndexedCityObjectRef>> {
+        let mut refs = Vec::new();
+        let mut after_record_id = None;
+        loop {
+            let page =
+                self.query_cityobject_refs_page(bbox, after_record_id, DEFAULT_SCAN_PAGE_SIZE)?;
+            if page.is_empty() {
+                break;
+            }
+            after_record_id = page.last().map(|cityobject| cityobject.record_id);
+            refs.extend(page);
+        }
+        Ok(refs)
+    }
+
+    /// Returns a page of `CityObject` refs whose `CityObject` bbox intersects `bbox`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` query fails or `limit` is zero.
+    pub fn query_cityobject_refs_page(
+        &self,
+        bbox: &BBox,
+        after_record_id: Option<i64>,
+        limit: usize,
+    ) -> Result<Vec<IndexedCityObjectRef>> {
+        if limit == 0 {
+            return Err(import_error("limit must be greater than zero"));
+        }
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT
+                c.id,
+                c.external_id,
+                c.cityobject_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM cityobject_bbox AS b
+            JOIN cityobjects AS c ON c.id = b.cityobject_id
+            WHERE b.min_x <= ?2
+              AND b.max_x >= ?1
+              AND b.min_y <= ?4
+              AND b.max_y >= ?3
+              AND (?5 IS NULL OR c.id > ?5)
+            ORDER BY c.id
+            LIMIT ?6
+            ",
+        ))?;
+        let rows = sqlite_result(stmt.query_map(
+            params![
+                bbox.min_x,
+                bbox.max_x,
+                bbox.min_y,
+                bbox.max_y,
+                after_record_id,
+                limit
+            ],
+            cityobject_ref_from_row,
+        ))?;
+        sqlite_result(rows.collect())
+    }
+
+    /// Returns descendants of the given `CityObject` occurrence in deterministic order.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if relationship traversal queries fail.
+    pub fn descendant_cityobject_refs(
+        &self,
+        cityobject: &IndexedCityObjectRef,
+    ) -> Result<Vec<IndexedCityObjectRef>> {
+        let mut descendants = Vec::new();
+        let mut seen = BTreeSet::new();
+        let mut frontier = vec![cityobject.record_id];
+        while !frontier.is_empty() {
+            let mut next = Vec::new();
+            for parent_id in frontier {
+                let mut stmt = sqlite_result(self.index.conn.prepare(
+                    r"
+                    SELECT
+                        c.id,
+                        c.external_id,
+                        c.cityobject_type,
+                        b.min_x,
+                        b.max_x,
+                        b.min_y,
+                        b.max_y,
+                        b.min_z,
+                        b.max_z
+                    FROM cityobject_relationships AS r
+                    JOIN cityobjects AS c ON c.id = r.child_cityobject_id
+                    LEFT JOIN cityobject_bbox AS b ON b.cityobject_id = c.id
+                    WHERE r.parent_cityobject_id = ?1
+                    ORDER BY r.child_cityobject_id
+                    ",
+                ))?;
+                let rows =
+                    sqlite_result(stmt.query_map(params![parent_id], cityobject_ref_from_row))?;
+                for row in rows {
+                    let child = sqlite_result(row)?;
+                    if seen.insert(child.record_id) {
+                        next.push(child.record_id);
+                        descendants.push(child);
+                    }
+                }
+            }
+            frontier = next;
+        }
+        Ok(descendants)
+    }
+
+    /// Returns decoded package models whose package bbox intersects `bbox`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if package lookup or reconstruction fails.
+    pub fn query_package_models(&self, bbox: &BBox) -> Result<Vec<CityModel>> {
+        self.query_packages(bbox)
+            .map(|packages| packages.into_iter().map(|package| package.model).collect())
+    }
+
+    /// Returns decoded packages whose package bbox intersects `bbox`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if package lookup or reconstruction fails.
+    pub fn query_packages(&self, bbox: &BBox) -> Result<Vec<IndexedPackage>> {
+        let refs = self.query_package_refs(bbox)?;
+        self.read_packages(&refs)
+    }
+
+    /// Reads one package as a valid `CityJSONFeature` model.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the package cannot be found, read, or reconstructed.
+    pub fn read_package(&self, package: &IndexedPackageRef) -> Result<CityModel> {
+        self.read_indexed_package(package)
+            .map(|package| package.model)
+    }
+
+    /// Reads packages while preserving input order and duplicate refs.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any package cannot be found, read, or reconstructed.
+    pub fn read_packages(&self, packages: &[IndexedPackageRef]) -> Result<Vec<IndexedPackage>> {
+        if packages.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let record_ids = packages
+            .iter()
+            .map(|package| package.record_id)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let locations = self.package_locations_for_record_ids(&record_ids)?;
+        let cityjson_package_ids = locations
+            .values()
+            .filter(|location| location.reference.package_type == PackageType::CityJson)
+            .map(|location| location.reference.record_id)
+            .collect::<Vec<_>>();
+        let cityjson_members = self
+            .index
+            .package_members_for_package_ids(&cityjson_package_ids)?;
+        let mut source_files = HashMap::new();
+        let mut decoded = BTreeMap::new();
+
+        for record_id in record_ids {
+            let location = locations
+                .get(&record_id)
+                .ok_or_else(|| import_error(format!("package record {record_id} was not found")))?;
+            let indexed = self.read_located_package(
+                location,
+                cityjson_members.get(&record_id).map(Vec::as_slice),
+                &mut source_files,
+            )?;
+            decoded.insert(record_id, indexed);
+        }
+
+        packages
+            .iter()
+            .map(|package| {
+                decoded
+                    .get(&package.record_id)
+                    .map(clone_indexed_package)
+                    .ok_or_else(|| {
+                        import_error(format!("package {} was not decoded", package.record_id))
+                    })
+            })
+            .collect()
+    }
+
+    /// Reads and filters packages while preserving input order.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if package reconstruction or filtering fails.
+    pub fn read_filtered_packages(
+        &self,
+        packages: &[IndexedPackageRef],
+        filter: &PackageFilter,
+    ) -> Result<Vec<PackageFilterResult>> {
+        self.read_packages(packages)?
+            .into_iter()
+            .map(|package| filter.apply(&package.model))
+            .collect()
+    }
+
+    /// Looks up a package ref by its `SQLite` package record id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` lookup fails.
+    pub fn lookup_package_ref_by_record_id(
+        &self,
+        record_id: i64,
+    ) -> Result<Option<IndexedPackageRef>> {
+        self.package_location(record_id)
+            .map(|maybe| maybe.map(|location| location.reference))
+    }
+
+    /// Reads a package by its `SQLite` package record id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if lookup or package reconstruction fails.
+    pub fn read_package_by_record_id(&self, record_id: i64) -> Result<Option<IndexedPackage>> {
+        let Some(reference) = self.lookup_package_ref_by_record_id(record_id)? else {
+            return Ok(None);
+        };
+        self.read_indexed_package(&reference).map(Some)
+    }
+
+    fn read_indexed_package(&self, package: &IndexedPackageRef) -> Result<IndexedPackage> {
+        let location = self.package_location_for_ref(package)?.ok_or_else(|| {
+            import_error(format!(
+                "package record {} was not found",
+                package.record_id
+            ))
+        })?;
+        self.read_located_package(&location, None, &mut HashMap::new())
+    }
+
+    fn read_located_package(
+        &self,
+        location: &PackageLocation,
+        prefetched_members: Option<&[PackageMemberLocation]>,
+        source_files: &mut HashMap<PathBuf, fs::File>,
+    ) -> Result<IndexedPackage> {
+        let metadata = self.index.get_cached_metadata(location.source_id)?;
+        self.read_located_package_with_metadata(
+            location,
+            prefetched_members,
+            source_files,
+            &metadata,
+        )
+    }
+
+    fn read_located_package_with_metadata(
+        &self,
+        location: &PackageLocation,
+        prefetched_members: Option<&[PackageMemberLocation]>,
+        source_files: &mut HashMap<PathBuf, fs::File>,
+        metadata: &CachedMetadata,
+    ) -> Result<IndexedPackage> {
+        let model = match location.reference.package_type {
+            PackageType::CityJson => {
+                self.read_cityjson_package(location, prefetched_members, source_files, metadata)?
+            }
+            PackageType::CityJsonSeq | PackageType::FeatureFiles => {
+                let offset = location
+                    .offset
+                    .ok_or_else(|| import_error("package offset is missing"))?;
+                let length = location
+                    .length
+                    .ok_or_else(|| import_error("package length is missing"))?;
+                if !source_files.contains_key(&location.path) {
+                    let file = fs::File::open(&location.path).map_err(|error| {
+                        import_error(format!(
+                            "failed to open {}: {error}",
+                            location.path.display()
+                        ))
+                    })?;
+                    source_files.insert(location.path.clone(), file);
+                }
+                let file = source_files.get_mut(&location.path).ok_or_else(|| {
+                    import_error(format!(
+                        "source file {} was not opened",
+                        location.path.display()
+                    ))
+                })?;
+                let bytes = read_exact_range_from_file(file, &location.path, offset, length)?;
+                feature_slice_with_preserved_package_id(
+                    &bytes,
+                    &location.reference.model_id,
+                    metadata.bytes.as_ref(),
+                )?
+            }
+        };
+        Ok(IndexedPackage {
+            reference: location.reference.clone(),
+            metadata: Arc::clone(&metadata.value),
+            model,
+        })
+    }
+
+    fn read_cityjson_package(
+        &self,
+        location: &PackageLocation,
+        prefetched_members: Option<&[PackageMemberLocation]>,
+        source_files: &mut HashMap<PathBuf, fs::File>,
+        metadata: &CachedMetadata,
+    ) -> Result<CityModel> {
+        let fallback_members;
+        let members = if let Some(members) = prefetched_members {
+            members
+        } else {
+            fallback_members = self.index.package_members(location.reference.record_id)?;
+            &fallback_members
+        };
+        let backend = self.backend.as_cityjson().ok_or_else(|| {
+            import_error("regular CityJSON package read requires CityJSON backend")
+        })?;
+        if !source_files.contains_key(&location.path) {
+            let file = fs::File::open(&location.path).map_err(|error| {
+                import_error(format!(
+                    "failed to open {}: {error}",
+                    location.path.display()
+                ))
+            })?;
+            source_files.insert(location.path.clone(), file);
+        }
+        let source_file = source_files.get_mut(&location.path).ok_or_else(|| {
+            import_error(format!(
+                "source file {} was not opened",
+                location.path.display()
+            ))
+        })?;
+        backend.read_package_members_from_file(
+            &location.reference.model_id,
+            &location.path,
+            source_file,
+            members,
+            metadata.bytes.as_ref(),
+        )
+    }
+
+    fn package_location_for_ref(
+        &self,
+        reference: &IndexedPackageRef,
+    ) -> Result<Option<PackageLocation>> {
+        sqlite_result(
+            self.index
+                .conn
+                .query_row(
+                    r"
+                    SELECT source_id, path, offset, length
+                    FROM packages
+                    WHERE id = ?1
+                    ",
+                    params![reference.record_id],
+                    |row| {
+                        let source_id = row.get::<_, i64>(0)?;
+                        let path = PathBuf::from(row.get::<_, String>(1)?);
+                        let offset = row.get::<_, Option<i64>>(2)?.map(i64_to_u64).transpose()?;
+                        let length = row.get::<_, Option<i64>>(3)?.map(i64_to_u64).transpose()?;
+                        Ok(PackageLocation {
+                            reference: reference.clone(),
+                            source_id,
+                            path,
+                            offset,
+                            length,
+                        })
+                    },
+                )
+                .optional(),
+        )
+    }
+
+    fn package_location(&self, record_id: i64) -> Result<Option<PackageLocation>> {
+        sqlite_result(
+            self.index
+                .conn
+                .query_row(
+                    r"
+                    SELECT
+                        p.id,
+                        p.model_id,
+                        p.package_type,
+                        b.min_x,
+                        b.max_x,
+                        b.min_y,
+                        b.max_y,
+                        b.min_z,
+                        b.max_z,
+                        p.source_id,
+                        p.path,
+                        p.offset,
+                        p.length
+                    FROM packages AS p
+                    LEFT JOIN package_bbox AS b ON b.package_id = p.id
+                    WHERE p.id = ?1
+                    ",
+                    params![record_id],
+                    |row| {
+                        let reference = package_ref_from_row(row)?;
+                        let source_id = row.get::<_, i64>(9)?;
+                        let path = PathBuf::from(row.get::<_, String>(10)?);
+                        let offset = row.get::<_, Option<i64>>(11)?.map(i64_to_u64).transpose()?;
+                        let length = row.get::<_, Option<i64>>(12)?.map(i64_to_u64).transpose()?;
+                        Ok(PackageLocation {
+                            reference,
+                            source_id,
+                            path,
+                            offset,
+                            length,
+                        })
+                    },
+                )
+                .optional(),
+        )
+    }
+
+    fn package_locations_for_record_ids(
+        &self,
+        record_ids: &[i64],
+    ) -> Result<BTreeMap<i64, PackageLocation>> {
+        let mut locations = BTreeMap::new();
+        for chunk in record_ids.chunks(SQLITE_PARAM_CHUNK_SIZE) {
+            let placeholders = sql_placeholders(chunk.len());
+            let sql = format!(
+                r"
+                SELECT
+                    p.id,
+                    p.model_id,
+                    p.package_type,
+                    b.min_x,
+                    b.max_x,
+                    b.min_y,
+                    b.max_y,
+                    b.min_z,
+                    b.max_z,
+                    p.source_id,
+                    p.path,
+                    p.offset,
+                    p.length
+                FROM packages AS p
+                LEFT JOIN package_bbox AS b ON b.package_id = p.id
+                WHERE p.id IN ({placeholders})
+                ORDER BY p.id
+                "
+            );
+            let mut stmt = sqlite_result(self.index.conn.prepare(&sql))?;
+            let rows = sqlite_result(stmt.query_map(params_from_iter(chunk.iter()), |row| {
+                let reference = package_ref_from_row(row)?;
+                let source_id = row.get::<_, i64>(9)?;
+                let path = PathBuf::from(row.get::<_, String>(10)?);
+                let offset = row.get::<_, Option<i64>>(11)?.map(i64_to_u64).transpose()?;
+                let length = row.get::<_, Option<i64>>(12)?.map(i64_to_u64).transpose()?;
+                Ok(PackageLocation {
+                    reference,
+                    source_id,
+                    path,
+                    offset,
+                    length,
+                })
+            }))?;
+            for location in sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())? {
+                locations.insert(location.reference.record_id, location);
+            }
+        }
+        Ok(locations)
+    }
+
+    fn package_refs_for_cityobjects(
+        &self,
+        cityobjects: &[IndexedCityObjectRef],
+    ) -> Result<Vec<IndexedPackageRef>> {
+        let cityobject_ids = cityobjects
+            .iter()
+            .map(|cityobject| cityobject.record_id)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        if cityobject_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut refs = BTreeMap::new();
+        for chunk in cityobject_ids.chunks(SQLITE_PARAM_CHUNK_SIZE) {
+            let placeholders = sql_placeholders(chunk.len());
+            let sql = format!(
+                r"
+                SELECT DISTINCT
+                    p.id,
+                    p.model_id,
+                    p.package_type,
+                    b.min_x,
+                    b.max_x,
+                    b.min_y,
+                    b.max_y,
+                    b.min_z,
+                    b.max_z
+                FROM package_cityobjects AS pc
+                JOIN packages AS p ON p.id = pc.package_id
+                LEFT JOIN package_bbox AS b ON b.package_id = p.id
+                WHERE pc.cityobject_id IN ({placeholders})
+                ORDER BY p.id
+                "
+            );
+            let mut stmt = sqlite_result(self.index.conn.prepare(&sql))?;
+            let rows = sqlite_result(
+                stmt.query_map(params_from_iter(chunk.iter()), package_ref_from_row),
+            )?;
+            for reference in sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())? {
+                refs.insert(reference.record_id, reference);
+            }
+        }
+        Ok(refs.into_values().collect())
+    }
+
+    fn package_refs_for_cityobject_external_id(
+        &self,
+        external_id: &str,
+    ) -> Result<Vec<IndexedPackageRef>> {
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT DISTINCT
+                p.id,
+                p.model_id,
+                p.package_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM cityobjects AS c
+            JOIN package_cityobjects AS pc ON pc.cityobject_id = c.id
+            JOIN packages AS p ON p.id = pc.package_id
+            LEFT JOIN package_bbox AS b ON b.package_id = p.id
+            WHERE c.external_id = ?1
+            ORDER BY p.id
+            ",
+        ))?;
+        let rows = sqlite_result(stmt.query_map(params![external_id], package_ref_from_row))?;
+        sqlite_result(rows.collect())
+    }
+
+    /// Returns the total number of indexed packages.
     ///
     /// # Errors
     ///
     /// Returns an error if the count cannot be read from the index.
-    pub fn feature_ref_count(&self) -> Result<usize> {
-        self.index.feature_count()
+    pub fn package_count(&self) -> Result<usize> {
+        self.index.package_count()
     }
 
     /// Returns the total number of indexed sources.
@@ -1534,38 +2072,6 @@ impl CityIndex {
         self.index.cityobject_count()
     }
 
-    /// Returns a contiguous page of indexed feature references.
-    ///
-    /// The page is ordered by the underlying feature row identifier.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the page cannot be read from the index.
-    pub fn feature_ref_page(&self, offset: usize, limit: usize) -> Result<Vec<IndexedFeatureRef>> {
-        self.index.lookup_all_ref_page_window(offset, limit)
-    }
-
-    /// Returns the raw indexed feature bytes for the given feature identifier.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the index lookup or byte-range read fails.
-    pub fn get_bytes(&self, id: &str) -> Result<Option<Vec<u8>>> {
-        let Some(loc) = self.index.lookup_id(id)? else {
-            return Ok(None);
-        };
-        read_exact_range(&loc.source_path, loc.offset, loc.length).map(Some)
-    }
-
-    /// Returns the raw bytes for a feature reference.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the feature bytes cannot be read from disk.
-    pub fn read_feature_bytes(&self, feature: &IndexedFeatureRef) -> Result<Vec<u8>> {
-        read_exact_range(&feature.source_path, feature.offset, feature.length)
-    }
-
     /// Returns cached metadata entries.
     ///
     /// # Errors
@@ -1573,38 +2079,6 @@ impl CityIndex {
     /// Returns an error if metadata lookup fails.
     pub fn metadata(&self) -> Result<Vec<Arc<Meta>>> {
         self.index.metadata()
-    }
-
-    fn read_feature_models(&self, features: &[IndexedFeatureRef]) -> Result<Vec<CityModel>> {
-        let mut features_by_source: BTreeMap<i64, Vec<(usize, FeatureLocation)>> = BTreeMap::new();
-        for (index, feature) in features.iter().enumerate() {
-            features_by_source
-                .entry(feature.source_id)
-                .or_default()
-                .push((index, feature.to_location()));
-        }
-
-        let mut models = std::iter::repeat_with(|| None)
-            .take(features.len())
-            .collect::<Vec<Option<CityModel>>>();
-        for (source_id, indexed_locations) in features_by_source {
-            let metadata = self.index.get_cached_metadata(source_id)?;
-            let locations = indexed_locations
-                .iter()
-                .map(|(_, location)| location)
-                .collect::<Vec<_>>();
-            let source_models = self
-                .backend
-                .read_many(&locations, Arc::clone(&metadata.bytes))?;
-            for ((index, _), model) in indexed_locations.into_iter().zip(source_models) {
-                models[index] = Some(model);
-            }
-        }
-
-        Ok(models
-            .into_iter()
-            .map(|model| model.expect("every input feature should have a decoded model"))
-            .collect())
     }
 }
 
@@ -1621,38 +2095,22 @@ struct Index {
     metadata_cache: Mutex<HashMap<i64, CachedMetadata>>,
 }
 
-struct FeatureLocation {
-    feature_id: String,
+struct PackageLocation {
+    reference: IndexedPackageRef,
+    source_id: i64,
+    path: PathBuf,
+    offset: Option<u64>,
+    length: Option<u64>,
+}
+
+struct PackageMemberLocation {
+    external_id: String,
     source_id: i64,
     source_path: PathBuf,
     offset: u64,
     length: u64,
     vertices_offset: Option<u64>,
     vertices_length: Option<u64>,
-    member_ranges_json: Option<String>,
-}
-
-struct IndexedFeatureLocation {
-    row_id: i64,
-    location: FeatureLocation,
-}
-
-struct IndexedFeatureRefLocation {
-    row_id: i64,
-    feature: IndexedFeatureRef,
-}
-
-struct FeatureIndexEntry {
-    id: String,
-    source_id: i64,
-    path: PathBuf,
-    file_size: u64,
-    file_mtime_ns: i64,
-    offset: u64,
-    length: u64,
-    bounds: FeatureBounds,
-    cityobject_count: u64,
-    member_ranges_json: Option<String>,
 }
 
 struct IndexedSourceRecord {
@@ -1667,251 +2125,6 @@ struct IndexedFeaturePathRecord {
     file_mtime_ns: Option<i64>,
 }
 
-struct BBoxLocationIter<'a> {
-    index: &'a Index,
-    bbox: BBox,
-    last_row_id: Option<i64>,
-    page: std::vec::IntoIter<IndexedFeatureLocation>,
-    finished: bool,
-}
-
-struct AllLocationIter<'a> {
-    index: &'a Index,
-    last_row_id: Option<i64>,
-    page: std::vec::IntoIter<IndexedFeatureLocation>,
-    finished: bool,
-}
-
-struct AllFeatureRefPageIter<'a> {
-    index: &'a Index,
-    page_size: usize,
-    last_row_id: Option<i64>,
-    finished: bool,
-}
-
-struct AllIndexedFeaturePageIter<'a> {
-    city_index: &'a CityIndex,
-    ref_pages: AllFeatureRefPageIter<'a>,
-}
-
-struct AllIndexedFeatureIter<'a> {
-    pages: AllIndexedFeaturePageIter<'a>,
-    page: std::vec::IntoIter<IndexedFeature>,
-    finished: bool,
-}
-
-impl<'a> BBoxLocationIter<'a> {
-    const PAGE_SIZE: usize = 512;
-
-    fn new(index: &'a Index, bbox: BBox) -> Self {
-        Self {
-            index,
-            bbox,
-            last_row_id: None,
-            page: Vec::new().into_iter(),
-            finished: false,
-        }
-    }
-
-    fn next_location(&mut self) -> Result<Option<FeatureLocation>> {
-        if self.finished {
-            return Ok(None);
-        }
-
-        if let Some(feature) = self.page.next() {
-            self.last_row_id = Some(feature.row_id);
-            return Ok(Some(feature.location));
-        }
-
-        let page = self
-            .index
-            .lookup_bbox_page(&self.bbox, self.last_row_id, Self::PAGE_SIZE)?;
-        if page.is_empty() {
-            self.finished = true;
-            return Ok(None);
-        }
-
-        self.page = page.into_iter();
-        let feature = self
-            .page
-            .next()
-            .expect("non-empty page should yield at least one feature");
-        self.last_row_id = Some(feature.row_id);
-        Ok(Some(feature.location))
-    }
-}
-
-impl<'a> AllLocationIter<'a> {
-    const PAGE_SIZE: usize = 512;
-
-    fn new(index: &'a Index) -> Self {
-        Self {
-            index,
-            last_row_id: None,
-            page: Vec::new().into_iter(),
-            finished: false,
-        }
-    }
-
-    fn next_location(&mut self) -> Result<Option<IndexedFeatureLocation>> {
-        if self.finished {
-            return Ok(None);
-        }
-
-        if let Some(feature) = self.page.next() {
-            self.last_row_id = Some(feature.row_id);
-            return Ok(Some(feature));
-        }
-
-        let page = self
-            .index
-            .lookup_all_page(self.last_row_id, Self::PAGE_SIZE)?;
-        if page.is_empty() {
-            self.finished = true;
-            return Ok(None);
-        }
-
-        self.page = page.into_iter();
-        let feature = self
-            .page
-            .next()
-            .expect("non-empty page should yield at least one feature");
-        self.last_row_id = Some(feature.row_id);
-        Ok(Some(feature))
-    }
-}
-
-impl<'a> AllFeatureRefPageIter<'a> {
-    fn new(index: &'a Index, page_size: usize) -> Result<Self> {
-        if page_size == 0 {
-            return Err(import_error("page_size must be greater than zero"));
-        }
-        Ok(Self {
-            index,
-            page_size,
-            last_row_id: None,
-            finished: false,
-        })
-    }
-
-    fn next_page(&mut self) -> Result<Option<Vec<IndexedFeatureRef>>> {
-        if self.finished {
-            return Ok(None);
-        }
-
-        let page = self
-            .index
-            .lookup_all_ref_page(self.last_row_id, self.page_size)?;
-        if page.is_empty() {
-            self.finished = true;
-            return Ok(None);
-        }
-
-        self.last_row_id = Some(
-            page.last()
-                .expect("non-empty page should yield at least one feature")
-                .row_id,
-        );
-        Ok(Some(
-            page.into_iter().map(|record| record.feature).collect(),
-        ))
-    }
-}
-
-impl Iterator for BBoxLocationIter<'_> {
-    type Item = Result<FeatureLocation>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.next_location() {
-            Ok(Some(feature)) => Some(Ok(feature)),
-            Ok(None) => None,
-            Err(error) => {
-                self.finished = true;
-                Some(Err(error))
-            }
-        }
-    }
-}
-
-impl Iterator for AllLocationIter<'_> {
-    type Item = Result<IndexedFeatureLocation>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.next_location() {
-            Ok(Some(feature)) => Some(Ok(feature)),
-            Ok(None) => None,
-            Err(error) => {
-                self.finished = true;
-                Some(Err(error))
-            }
-        }
-    }
-}
-
-impl Iterator for AllFeatureRefPageIter<'_> {
-    type Item = Result<Vec<IndexedFeatureRef>>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.next_page() {
-            Ok(Some(page)) => Some(Ok(page)),
-            Ok(None) => None,
-            Err(error) => {
-                self.finished = true;
-                Some(Err(error))
-            }
-        }
-    }
-}
-
-impl Iterator for AllIndexedFeaturePageIter<'_> {
-    type Item = Result<Vec<IndexedFeature>>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.ref_pages
-            .next()
-            .map(|page| page.and_then(|refs| self.city_index.read_indexed_features(&refs)))
-    }
-}
-
-impl<'a> AllIndexedFeatureIter<'a> {
-    fn new(pages: AllIndexedFeaturePageIter<'a>) -> Self {
-        Self {
-            pages,
-            page: Vec::new().into_iter(),
-            finished: false,
-        }
-    }
-}
-
-impl Iterator for AllIndexedFeatureIter<'_> {
-    type Item = Result<IndexedFeature>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.finished {
-            return None;
-        }
-
-        loop {
-            if let Some(feature) = self.page.next() {
-                return Some(Ok(feature));
-            }
-            match self.pages.next() {
-                Some(Ok(page)) => {
-                    self.page = page.into_iter();
-                }
-                Some(Err(error)) => {
-                    self.finished = true;
-                    return Some(Err(error));
-                }
-                None => {
-                    self.finished = true;
-                    return None;
-                }
-            }
-        }
-    }
-}
-
 impl Index {
     fn open(path: &Path) -> Result<Self> {
         if let Some(parent) = path
@@ -1922,55 +2135,29 @@ impl Index {
         }
 
         let conn = sqlite_result(rusqlite::Connection::open(path))?;
-        sqlite_result(conn.execute_batch(
-            r"
-            PRAGMA foreign_keys = ON;
+        sqlite_result(conn.execute_batch("PRAGMA foreign_keys = ON;"))?;
 
-            CREATE TABLE IF NOT EXISTS sources (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                path TEXT NOT NULL UNIQUE,
-                metadata TEXT NOT NULL,
-                vertices_offset INTEGER,
-                vertices_length INTEGER,
-                source_size INTEGER,
-                source_mtime_ns INTEGER
-            );
+        let has_schema_state = Self::table_exists(&conn, "schema_state")?;
+        let has_legacy_features = Self::table_exists(&conn, "features")?;
+        let existing_schema_version = if has_schema_state {
+            Some(Self::schema_version(&conn)?)
+        } else {
+            None
+        };
+        if let Some(schema_version) = existing_schema_version
+            && schema_version > SCHEMA_VERSION
+        {
+            return Err(import_error(format!(
+                "unsupported cityjson-index schema version {schema_version}; rebuild with a newer cjindex"
+            )));
+        }
 
-            CREATE TABLE IF NOT EXISTS features (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                feature_id TEXT NOT NULL,
-                source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
-                path TEXT NOT NULL,
-                file_size INTEGER,
-                file_mtime_ns INTEGER,
-                offset INTEGER NOT NULL,
-                length INTEGER NOT NULL,
-                min_z REAL,
-                max_z REAL,
-                cityobject_count INTEGER,
-                member_ranges TEXT
-            );
-
-            CREATE VIRTUAL TABLE IF NOT EXISTS feature_bbox
-            USING rtree(
-                feature_rowid,
-                min_x,
-                max_x,
-                min_y,
-                max_y
-            );
-
-            CREATE TABLE IF NOT EXISTS bbox_map (
-                feature_rowid INTEGER PRIMARY KEY,
-                feature_id TEXT NOT NULL
-            );
-            ",
-        ))?;
-        Self::ensure_duplicate_feature_ids_allowed(&conn)?;
-        Self::ensure_member_ranges_column(&conn)?;
-        Self::ensure_source_status_columns(&conn)?;
-        Self::ensure_feature_status_columns(&conn)?;
-        Self::ensure_feature_bounds_columns(&conn)?;
+        Self::create_schema(&conn)?;
+        let needs_reindex = i64::from(
+            existing_schema_version.is_some_and(|version| version < SCHEMA_VERSION)
+                || (!has_schema_state && has_legacy_features),
+        );
+        Self::ensure_schema_state(&conn, needs_reindex)?;
 
         Ok(Self {
             conn,
@@ -1978,41 +2165,148 @@ impl Index {
         })
     }
 
-    fn rebuild(&mut self, scans: &[SourceScan]) -> Result<()> {
+    fn create_schema(conn: &rusqlite::Connection) -> Result<()> {
+        sqlite_result(conn.execute_batch(
+            r"
+            PRAGMA foreign_keys = ON;
+
+            CREATE TABLE IF NOT EXISTS schema_state (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                schema_version INTEGER NOT NULL,
+                needs_reindex INTEGER NOT NULL CHECK (needs_reindex IN (0, 1))
+            );
+
+            CREATE TABLE IF NOT EXISTS sources (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                path TEXT NOT NULL UNIQUE,
+                metadata TEXT NOT NULL,
+                vertices_offset INTEGER,
+                vertices_length INTEGER,
+                source_size INTEGER NOT NULL DEFAULT 0,
+                source_mtime_ns INTEGER NOT NULL DEFAULT 0,
+                CHECK ((vertices_offset IS NULL) = (vertices_length IS NULL))
+            );
+
+            CREATE TABLE IF NOT EXISTS packages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+                package_type TEXT NOT NULL CHECK (package_type IN ('cityjson', 'cityjson-seq', 'feature-files')),
+                model_id TEXT NOT NULL,
+                path TEXT NOT NULL,
+                offset INTEGER,
+                length INTEGER,
+                file_size INTEGER NOT NULL,
+                file_mtime_ns INTEGER NOT NULL,
+                CHECK ((offset IS NULL) = (length IS NULL))
+            );
+
+            CREATE TABLE IF NOT EXISTS cityobjects (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+                external_id TEXT NOT NULL,
+                cityobject_type TEXT NOT NULL,
+                path TEXT NOT NULL,
+                offset INTEGER NOT NULL,
+                length INTEGER NOT NULL,
+                CHECK (offset >= 0),
+                CHECK (length > 0),
+                UNIQUE (path, offset, length)
+            );
+
+            CREATE TABLE IF NOT EXISTS package_cityobjects (
+                package_id INTEGER NOT NULL REFERENCES packages(id) ON DELETE CASCADE,
+                cityobject_id INTEGER NOT NULL REFERENCES cityobjects(id) ON DELETE CASCADE,
+                ordinal INTEGER NOT NULL,
+                is_root INTEGER NOT NULL CHECK (is_root IN (0, 1)),
+                PRIMARY KEY (package_id, cityobject_id),
+                UNIQUE (package_id, ordinal)
+            );
+
+            CREATE TABLE IF NOT EXISTS cityobject_relationships (
+                parent_cityobject_id INTEGER NOT NULL REFERENCES cityobjects(id) ON DELETE CASCADE,
+                child_cityobject_id INTEGER NOT NULL REFERENCES cityobjects(id) ON DELETE CASCADE,
+                PRIMARY KEY (parent_cityobject_id, child_cityobject_id),
+                CHECK (parent_cityobject_id <> child_cityobject_id)
+            );
+
+            CREATE VIRTUAL TABLE IF NOT EXISTS package_bbox USING rtree(
+                package_id, min_x, max_x, min_y, max_y, min_z, max_z
+            );
+
+            CREATE VIRTUAL TABLE IF NOT EXISTS cityobject_bbox USING rtree(
+                cityobject_id, min_x, max_x, min_y, max_y, min_z, max_z
+            );
+
+            CREATE INDEX IF NOT EXISTS packages_source_id_idx ON packages(source_id);
+            CREATE INDEX IF NOT EXISTS packages_model_id_idx ON packages(model_id);
+            CREATE INDEX IF NOT EXISTS cityobjects_external_id_idx ON cityobjects(external_id);
+            CREATE INDEX IF NOT EXISTS cityobjects_type_idx ON cityobjects(cityobject_type);
+            CREATE INDEX IF NOT EXISTS cityobjects_source_id_idx ON cityobjects(source_id);
+            CREATE INDEX IF NOT EXISTS package_cityobjects_package_order_idx
+                ON package_cityobjects(package_id, ordinal, cityobject_id);
+            CREATE INDEX IF NOT EXISTS package_cityobjects_cityobject_id_idx
+                ON package_cityobjects(cityobject_id, package_id);
+            CREATE INDEX IF NOT EXISTS cityobject_relationships_child_idx
+                ON cityobject_relationships(child_cityobject_id);
+            ",
+        ))?;
+        Ok(())
+    }
+
+    fn table_exists(conn: &rusqlite::Connection, table: &str) -> Result<bool> {
+        let exists = sqlite_result(conn.query_row(
+            "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type IN ('table', 'view') AND name = ?1)",
+            params![table],
+            |row| row.get::<_, i64>(0),
+        ))?;
+        Ok(exists != 0)
+    }
+
+    fn schema_version(conn: &rusqlite::Connection) -> Result<i64> {
+        sqlite_result(conn.query_row(
+            "SELECT schema_version FROM schema_state WHERE id = 1",
+            [],
+            |row| row.get::<_, i64>(0),
+        ))
+    }
+
+    fn ensure_schema_state(conn: &rusqlite::Connection, needs_reindex: i64) -> Result<()> {
+        sqlite_result(conn.execute(
+            r"
+            INSERT INTO schema_state (id, schema_version, needs_reindex)
+            VALUES (1, ?1, ?2)
+            ON CONFLICT(id) DO UPDATE SET
+                schema_version = excluded.schema_version,
+                needs_reindex = CASE
+                    WHEN schema_state.needs_reindex = 1 THEN 1
+                    ELSE excluded.needs_reindex
+                END
+            ",
+            params![SCHEMA_VERSION, needs_reindex],
+        ))?;
+        Ok(())
+    }
+
+    fn rebuild_from_backend(
+        &mut self,
+        backend: &dyn StorageBackend,
+        worker_count: usize,
+    ) -> Result<()> {
         let tx = sqlite_result(self.conn.transaction())?;
         Self::clear_tables(&tx)?;
+        Self::drop_rebuild_indexes(&tx)?;
 
-        let mut feature_entries = Vec::new();
-        for scan in scans {
-            let source_id = Self::insert_source_in_tx(
-                &tx,
-                scan.path.as_path(),
-                &scan.metadata,
-                scan.vertices_offset,
-                scan.vertices_length,
-                scan.source_size,
-                scan.source_mtime_ns,
-            )?;
-            for feature in &scan.features {
-                feature_entries.push(FeatureIndexEntry {
-                    id: feature.id.clone(),
-                    source_id,
-                    path: feature.path.clone(),
-                    file_size: feature.file_size,
-                    file_mtime_ns: feature.file_mtime_ns,
-                    offset: feature.offset,
-                    length: feature.length,
-                    bounds: feature.bounds,
-                    cityobject_count: feature.cityobject_count,
-                    member_ranges_json: feature
-                        .member_ranges
-                        .as_ref()
-                        .map(json_string)
-                        .transpose()?,
-                });
-            }
+        {
+            let mut inserter = NormalizedFeatureInserter::new(&tx)?;
+            let mut sink = RebuildSink::new(&tx, &mut inserter);
+            backend.scan_into(worker_count, &mut sink)?;
         }
-        Self::insert_features_in_tx(&tx, &feature_entries)?;
+
+        Self::create_rebuild_indexes(&tx)?;
+        sqlite_result(tx.execute(
+            "UPDATE schema_state SET schema_version = ?1, needs_reindex = 0 WHERE id = 1",
+            params![SCHEMA_VERSION],
+        ))?;
         sqlite_result(tx.commit())?;
 
         self.metadata_cache
@@ -2022,365 +2316,90 @@ impl Index {
         Ok(())
     }
 
-    fn lookup_id(&self, id: &str) -> Result<Option<FeatureLocation>> {
-        sqlite_result(
-            self.conn
-                .query_row(
-                    r"
-                SELECT
-                    f.feature_id,
-                    s.id,
-                    f.path,
-                    f.offset,
-                    f.length,
-                    s.vertices_offset,
-                    s.vertices_length,
-                    f.member_ranges
-                FROM features AS f
-                JOIN sources AS s ON s.id = f.source_id
-                WHERE f.feature_id = ?1
-                ORDER BY f.id
-                LIMIT 1
-                ",
-                    params![id],
-                    Self::feature_location_from_row,
-                )
-                .optional(),
-        )
-    }
-
-    fn lookup_feature_ref(&self, id: &str) -> Result<Option<IndexedFeatureRef>> {
-        sqlite_result(
-            self.conn
-                .query_row(
-                    r"
-                SELECT
-                    f.id,
-                    f.feature_id,
-                    s.id,
-                    f.path,
-                    f.offset,
-                    f.length,
-                    s.vertices_offset,
-                    s.vertices_length,
-                    f.member_ranges,
-                    fb.min_x,
-                    fb.max_x,
-                    fb.min_y,
-                    fb.max_y,
-                    f.min_z,
-                    f.max_z
-                FROM features AS f
-                JOIN sources AS s ON s.id = f.source_id
-                JOIN feature_bbox AS fb ON fb.feature_rowid = f.id
-                WHERE f.feature_id = ?1
-                ORDER BY f.id
-                LIMIT 1
-                ",
-                    params![id],
-                    Self::indexed_feature_ref_location_from_row,
-                )
-                .optional()
-                .map(|maybe| maybe.map(|record| record.feature)),
-        )
-    }
-
-    fn lookup_feature_refs(&self, id: &str) -> Result<Vec<IndexedFeatureRef>> {
+    fn package_members(&self, package_id: i64) -> Result<Vec<PackageMemberLocation>> {
         let mut stmt = sqlite_result(self.conn.prepare(
             r"
             SELECT
-                f.id,
-                f.feature_id,
-                s.id,
-                f.path,
-                f.offset,
-                f.length,
+                c.external_id,
+                c.source_id,
+                c.path,
+                c.offset,
+                c.length,
                 s.vertices_offset,
-                s.vertices_length,
-                f.member_ranges,
-                fb.min_x,
-                fb.max_x,
-                fb.min_y,
-                fb.max_y,
-                f.min_z,
-                f.max_z
-            FROM features AS f
-            JOIN sources AS s ON s.id = f.source_id
-            JOIN feature_bbox AS fb ON fb.feature_rowid = f.id
-            WHERE f.feature_id = ?1
-            ORDER BY f.id
+                s.vertices_length
+            FROM package_cityobjects AS pc
+            JOIN cityobjects AS c ON c.id = pc.cityobject_id
+            JOIN sources AS s ON s.id = c.source_id
+            WHERE pc.package_id = ?1
+            ORDER BY pc.ordinal
             ",
         ))?;
-        let rows = sqlite_result(
-            stmt.query_map(params![id], Self::indexed_feature_ref_location_from_row),
-        )?;
-        sqlite_result(rows.map(|row| row.map(|record| record.feature)).collect())
-    }
-
-    fn lookup_feature_ref_by_rowid(&self, row_id: i64) -> Result<Option<IndexedFeatureRef>> {
-        sqlite_result(
-            self.conn
-                .query_row(
-                    r"
-                SELECT
-                    f.id,
-                    f.feature_id,
-                    s.id,
-                    f.path,
-                    f.offset,
-                    f.length,
-                    s.vertices_offset,
-                    s.vertices_length,
-                    f.member_ranges,
-                    fb.min_x,
-                    fb.max_x,
-                    fb.min_y,
-                    fb.max_y,
-                    f.min_z,
-                    f.max_z
-                FROM features AS f
-                JOIN sources AS s ON s.id = f.source_id
-                JOIN feature_bbox AS fb ON fb.feature_rowid = f.id
-                WHERE f.id = ?1
-                ",
-                    params![row_id],
-                    Self::indexed_feature_ref_location_from_row,
-                )
-                .optional()
-                .map(|maybe| maybe.map(|record| record.feature)),
-        )
-    }
-
-    fn lookup_feature_refs_by_rowids(
-        &self,
-        row_ids: &[i64],
-    ) -> Result<Vec<Option<IndexedFeatureRef>>> {
-        row_ids
-            .iter()
-            .map(|row_id| self.lookup_feature_ref_by_rowid(*row_id))
-            .collect()
-    }
-
-    fn lookup_bbox_iter(&self, bbox: BBox) -> BBoxLocationIter<'_> {
-        BBoxLocationIter::new(self, bbox)
-    }
-
-    fn lookup_all_iter(&self) -> AllLocationIter<'_> {
-        AllLocationIter::new(self)
-    }
-
-    fn lookup_all_ref_page_iter(&self, page_size: usize) -> Result<AllFeatureRefPageIter<'_>> {
-        AllFeatureRefPageIter::new(self, page_size)
-    }
-
-    fn lookup_all_ref_page_window(
-        &self,
-        offset: usize,
-        limit: usize,
-    ) -> Result<Vec<IndexedFeatureRef>> {
-        let mut stmt = sqlite_result(self.conn.prepare(
-            r"
-            SELECT
-                f.id,
-                f.feature_id,
-                s.id,
-                f.path,
-                f.offset,
-                f.length,
-                s.vertices_offset,
-                s.vertices_length,
-                f.member_ranges,
-                fb.min_x,
-                fb.max_x,
-                fb.min_y,
-                fb.max_y,
-                f.min_z,
-                f.max_z
-            FROM features AS f
-            JOIN sources AS s ON s.id = f.source_id
-            JOIN feature_bbox AS fb ON fb.feature_rowid = f.id
-            ORDER BY f.id
-            LIMIT ?2 OFFSET ?1
-            ",
-        ))?;
-        let rows = sqlite_result(stmt.query_map(
-            params![offset, limit],
-            Self::indexed_feature_ref_location_from_row,
-        ))?;
-        sqlite_result(rows.map(|row| row.map(|record| record.feature)).collect())
-    }
-
-    fn lookup_bbox_page(
-        &self,
-        bbox: &BBox,
-        after_row_id: Option<i64>,
-        limit: usize,
-    ) -> Result<Vec<IndexedFeatureLocation>> {
-        let mut stmt = sqlite_result(self.conn.prepare(
-            r"
-            SELECT
-                f.id,
-                f.feature_id,
-                s.id,
-                f.path,
-                f.offset,
-                f.length,
-                s.vertices_offset,
-                s.vertices_length,
-                f.member_ranges
-            FROM feature_bbox AS fb
-            JOIN bbox_map AS bm ON bm.feature_rowid = fb.feature_rowid
-            JOIN features AS f ON f.id = bm.feature_rowid
-            JOIN sources AS s ON s.id = f.source_id
-            WHERE fb.min_x <= ?2
-              AND fb.max_x >= ?1
-              AND fb.min_y <= ?4
-              AND fb.max_y >= ?3
-              AND (?5 IS NULL OR f.id > ?5)
-            ORDER BY f.id
-            LIMIT ?6
-            ",
-        ))?;
-        let rows = sqlite_result(stmt.query_map(
-            params![
-                bbox.min_x,
-                bbox.max_x,
-                bbox.min_y,
-                bbox.max_y,
-                after_row_id,
-                limit
-            ],
-            Self::indexed_feature_location_from_row,
-        ))?;
+        let rows = sqlite_result(stmt.query_map(params![package_id], |row| {
+            Ok(PackageMemberLocation {
+                external_id: row.get(0)?,
+                source_id: row.get(1)?,
+                source_path: PathBuf::from(row.get::<_, String>(2)?),
+                offset: i64_to_u64(row.get::<_, i64>(3)?)?,
+                length: i64_to_u64(row.get::<_, i64>(4)?)?,
+                vertices_offset: row.get::<_, Option<i64>>(5)?.map(i64_to_u64).transpose()?,
+                vertices_length: row.get::<_, Option<i64>>(6)?.map(i64_to_u64).transpose()?,
+            })
+        }))?;
         sqlite_result(rows.collect())
     }
 
-    fn lookup_all_page(
+    fn package_members_for_package_ids(
         &self,
-        after_row_id: Option<i64>,
-        limit: usize,
-    ) -> Result<Vec<IndexedFeatureLocation>> {
-        let sql = match after_row_id {
-            Some(_) => {
+        package_ids: &[i64],
+    ) -> Result<BTreeMap<i64, Vec<PackageMemberLocation>>> {
+        let mut members = BTreeMap::<i64, Vec<PackageMemberLocation>>::new();
+        for chunk in package_ids.chunks(SQLITE_PARAM_CHUNK_SIZE) {
+            let placeholders = sql_placeholders(chunk.len());
+            let sql = format!(
                 r"
                 SELECT
-                    f.id,
-                    f.feature_id,
-                    s.id,
-                    f.path,
-                    f.offset,
-                    f.length,
+                    pc.package_id,
+                    c.external_id,
+                    c.source_id,
+                    c.path,
+                    c.offset,
+                    c.length,
                     s.vertices_offset,
-                    s.vertices_length,
-                    f.member_ranges
-                FROM features AS f
-                JOIN sources AS s ON s.id = f.source_id
-                WHERE f.id > ?1
-                ORDER BY f.id
-                LIMIT ?2
+                    s.vertices_length
+                FROM package_cityobjects AS pc
+                JOIN cityobjects AS c ON c.id = pc.cityobject_id
+                JOIN sources AS s ON s.id = c.source_id
+                WHERE pc.package_id IN ({placeholders})
+                ORDER BY pc.package_id, pc.ordinal
                 "
+            );
+            let mut stmt = sqlite_result(self.conn.prepare(&sql))?;
+            let rows = sqlite_result(stmt.query_map(params_from_iter(chunk.iter()), |row| {
+                Ok((
+                    row.get::<_, i64>(0)?,
+                    PackageMemberLocation {
+                        external_id: row.get(1)?,
+                        source_id: row.get(2)?,
+                        source_path: PathBuf::from(row.get::<_, String>(3)?),
+                        offset: i64_to_u64(row.get::<_, i64>(4)?)?,
+                        length: i64_to_u64(row.get::<_, i64>(5)?)?,
+                        vertices_offset: row
+                            .get::<_, Option<i64>>(6)?
+                            .map(i64_to_u64)
+                            .transpose()?,
+                        vertices_length: row
+                            .get::<_, Option<i64>>(7)?
+                            .map(i64_to_u64)
+                            .transpose()?,
+                    },
+                ))
+            }))?;
+            for row in sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())? {
+                let (package_id, member) = row;
+                members.entry(package_id).or_default().push(member);
             }
-            None => {
-                r"
-                SELECT
-                    f.id,
-                    f.feature_id,
-                    s.id,
-                    f.path,
-                    f.offset,
-                    f.length,
-                    s.vertices_offset,
-                    s.vertices_length,
-                    f.member_ranges
-                FROM features AS f
-                JOIN sources AS s ON s.id = f.source_id
-                ORDER BY f.id
-                LIMIT ?1
-                "
-            }
-        };
-        let mut stmt = sqlite_result(self.conn.prepare(sql))?;
-        let rows = if let Some(after_row_id) = after_row_id {
-            sqlite_result(stmt.query_map(
-                params![after_row_id, limit],
-                Self::indexed_feature_location_from_row,
-            ))?
-        } else {
-            sqlite_result(stmt.query_map(params![limit], Self::indexed_feature_location_from_row))?
-        };
-        sqlite_result(rows.collect())
-    }
-
-    fn lookup_all_ref_page(
-        &self,
-        after_row_id: Option<i64>,
-        limit: usize,
-    ) -> Result<Vec<IndexedFeatureRefLocation>> {
-        let sql = match after_row_id {
-            Some(_) => {
-                r"
-                SELECT
-                    f.id,
-                    f.feature_id,
-                    s.id,
-                    f.path,
-                    f.offset,
-                    f.length,
-                    s.vertices_offset,
-                    s.vertices_length,
-                    f.member_ranges,
-                    fb.min_x,
-                    fb.max_x,
-                    fb.min_y,
-                    fb.max_y,
-                    f.min_z,
-                    f.max_z
-                FROM features AS f
-                JOIN sources AS s ON s.id = f.source_id
-                JOIN feature_bbox AS fb ON fb.feature_rowid = f.id
-                WHERE f.id > ?1
-                ORDER BY f.id
-                LIMIT ?2
-                "
-            }
-            None => {
-                r"
-                SELECT
-                    f.id,
-                    f.feature_id,
-                    s.id,
-                    f.path,
-                    f.offset,
-                    f.length,
-                    s.vertices_offset,
-                    s.vertices_length,
-                    f.member_ranges,
-                    fb.min_x,
-                    fb.max_x,
-                    fb.min_y,
-                    fb.max_y,
-                    f.min_z,
-                    f.max_z
-                FROM features AS f
-                JOIN sources AS s ON s.id = f.source_id
-                JOIN feature_bbox AS fb ON fb.feature_rowid = f.id
-                ORDER BY f.id
-                LIMIT ?1
-                "
-            }
-        };
-        let mut stmt = sqlite_result(self.conn.prepare(sql))?;
-        let rows = if let Some(after_row_id) = after_row_id {
-            sqlite_result(stmt.query_map(
-                params![after_row_id, limit],
-                Self::indexed_feature_ref_location_from_row,
-            ))?
-        } else {
-            sqlite_result(
-                stmt.query_map(params![limit], Self::indexed_feature_ref_location_from_row),
-            )?
-        };
-        sqlite_result(rows.collect())
+        }
+        Ok(members)
     }
 
     fn get_cached_metadata(&self, source_id: i64) -> Result<CachedMetadata> {
@@ -2433,65 +2452,32 @@ impl Index {
     }
 
     fn feature_count(&self) -> Result<usize> {
-        self.query_count("SELECT COUNT(*) FROM features")
+        self.package_count()
     }
 
     fn cityobject_count(&self) -> Result<usize> {
-        let total = sqlite_result(self.conn.query_row(
-            "SELECT COALESCE(SUM(cityobject_count), 0) FROM features",
-            [],
-            |row| row.get::<_, i64>(0),
-        ))?;
-        usize::try_from(total)
-            .map_err(|_| import_error("indexed CityObject count does not fit in usize"))
+        self.normalized_cityobject_count()
+    }
+
+    fn current_schema_version(&self) -> Result<i64> {
+        Self::schema_version(&self.conn)
+    }
+
+    fn package_count(&self) -> Result<usize> {
+        self.query_count("SELECT COUNT(*) FROM packages")
+    }
+
+    fn normalized_cityobject_count(&self) -> Result<usize> {
+        self.query_count("SELECT COUNT(*) FROM cityobjects")
+    }
+
+    fn cityobject_relationship_count(&self) -> Result<usize> {
+        self.query_count("SELECT COUNT(*) FROM cityobject_relationships")
     }
 
     fn query_count(&self, sql: &str) -> Result<usize> {
         let count = sqlite_result(self.conn.query_row(sql, [], |row| row.get::<_, i64>(0)))?;
         usize::try_from(count).map_err(|_| import_error("count does not fit in usize"))
-    }
-
-    fn feature_bounds_summary(&self) -> Result<Option<FeatureBoundsSummary>> {
-        let summary = sqlite_result(self.conn.query_row(
-            r"
-            SELECT
-                COUNT(*),
-                MIN(fb.min_x),
-                MAX(fb.max_x),
-                MIN(fb.min_y),
-                MAX(fb.max_y),
-                MIN(f.min_z),
-                MAX(f.max_z)
-            FROM features AS f
-            JOIN feature_bbox AS fb ON fb.feature_rowid = f.id
-            ",
-            [],
-            |row| {
-                let count = row.get::<_, i64>(0)?;
-                if count == 0 {
-                    return Ok(None);
-                }
-                let feature_count = usize::try_from(count).map_err(|error| {
-                    rusqlite::Error::FromSqlConversionFailure(
-                        0,
-                        rusqlite::types::Type::Integer,
-                        Box::new(error),
-                    )
-                })?;
-                Ok(Some(FeatureBoundsSummary {
-                    bounds: FeatureBounds {
-                        min_x: row.get::<_, f64>(1)?,
-                        max_x: row.get::<_, f64>(2)?,
-                        min_y: row.get::<_, f64>(3)?,
-                        max_y: row.get::<_, f64>(4)?,
-                        min_z: row.get::<_, f64>(5)?,
-                        max_z: row.get::<_, f64>(6)?,
-                    },
-                    feature_count,
-                }))
-            },
-        ))?;
-        Ok(summary)
     }
 
     fn indexed_sources(&self) -> Result<Vec<IndexedSourceRecord>> {
@@ -2516,7 +2502,8 @@ impl Index {
         let mut stmt = sqlite_result(self.conn.prepare(
             r"
             SELECT DISTINCT path, file_size, file_mtime_ns
-            FROM features
+            FROM packages
+            WHERE package_type = 'feature-files'
             ORDER BY path
             ",
         ))?;
@@ -2530,152 +2517,54 @@ impl Index {
         sqlite_result(rows.collect())
     }
 
-    fn ensure_member_ranges_column(conn: &rusqlite::Connection) -> Result<()> {
-        let mut stmt = sqlite_result(conn.prepare("PRAGMA table_info(features)"))?;
-        let rows = sqlite_result(stmt.query_map([], |row| row.get::<_, String>(1)))?;
-        let columns = sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())?;
-        if !columns.iter().any(|column| column == "member_ranges") {
-            sqlite_result(conn.execute("ALTER TABLE features ADD COLUMN member_ranges TEXT", []))?;
-        }
-        Ok(())
-    }
-
-    fn ensure_source_status_columns(conn: &rusqlite::Connection) -> Result<()> {
-        let mut stmt = sqlite_result(conn.prepare("PRAGMA table_info(sources)"))?;
-        let rows = sqlite_result(stmt.query_map([], |row| row.get::<_, String>(1)))?;
-        let columns = sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())?;
-        if !columns.iter().any(|column| column == "source_size") {
-            sqlite_result(conn.execute("ALTER TABLE sources ADD COLUMN source_size INTEGER", []))?;
-        }
-        if !columns.iter().any(|column| column == "source_mtime_ns") {
-            sqlite_result(
-                conn.execute("ALTER TABLE sources ADD COLUMN source_mtime_ns INTEGER", []),
-            )?;
-        }
-        Ok(())
-    }
-
-    fn ensure_feature_status_columns(conn: &rusqlite::Connection) -> Result<()> {
-        let mut stmt = sqlite_result(conn.prepare("PRAGMA table_info(features)"))?;
-        let rows = sqlite_result(stmt.query_map([], |row| row.get::<_, String>(1)))?;
-        let columns = sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())?;
-        if !columns.iter().any(|column| column == "file_size") {
-            sqlite_result(conn.execute("ALTER TABLE features ADD COLUMN file_size INTEGER", []))?;
-        }
-        if !columns.iter().any(|column| column == "file_mtime_ns") {
-            sqlite_result(
-                conn.execute("ALTER TABLE features ADD COLUMN file_mtime_ns INTEGER", []),
-            )?;
-        }
-        if !columns.iter().any(|column| column == "cityobject_count") {
-            sqlite_result(conn.execute(
-                "ALTER TABLE features ADD COLUMN cityobject_count INTEGER",
-                [],
-            ))?;
-        }
-        Ok(())
-    }
-
-    fn ensure_feature_bounds_columns(conn: &rusqlite::Connection) -> Result<()> {
-        let mut stmt = sqlite_result(conn.prepare("PRAGMA table_info(features)"))?;
-        let rows = sqlite_result(stmt.query_map([], |row| row.get::<_, String>(1)))?;
-        let columns = sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())?;
-        if !columns.iter().any(|column| column == "min_z") {
-            sqlite_result(conn.execute("ALTER TABLE features ADD COLUMN min_z REAL", []))?;
-        }
-        if !columns.iter().any(|column| column == "max_z") {
-            sqlite_result(conn.execute("ALTER TABLE features ADD COLUMN max_z REAL", []))?;
-        }
-        Ok(())
-    }
-
-    fn feature_bounds_complete(&self) -> Result<bool> {
-        let missing = sqlite_result(self.conn.query_row(
-            "SELECT COUNT(*) FROM features WHERE min_z IS NULL OR max_z IS NULL",
-            [],
-            |row| row.get::<_, i64>(0),
+    fn drop_rebuild_indexes(tx: &rusqlite::Transaction<'_>) -> Result<()> {
+        sqlite_result(tx.execute_batch(
+            r"
+            DROP INDEX IF EXISTS packages_source_id_idx;
+            DROP INDEX IF EXISTS packages_model_id_idx;
+            DROP INDEX IF EXISTS cityobjects_external_id_idx;
+            DROP INDEX IF EXISTS cityobjects_type_idx;
+            DROP INDEX IF EXISTS cityobjects_source_id_idx;
+            DROP INDEX IF EXISTS package_cityobjects_package_order_idx;
+            DROP INDEX IF EXISTS package_cityobjects_cityobject_id_idx;
+            DROP INDEX IF EXISTS cityobject_relationships_child_idx;
+            ",
         ))?;
-        Ok(missing == 0)
+        Ok(())
     }
 
-    fn ensure_duplicate_feature_ids_allowed(conn: &rusqlite::Connection) -> Result<()> {
-        if table_sql_contains(conn, "features", "feature_id TEXT NOT NULL UNIQUE")?
-            || table_sql_contains(conn, "bbox_map", "feature_id TEXT NOT NULL UNIQUE")?
-        {
-            sqlite_result(conn.execute_batch(
-                r"
-                PRAGMA foreign_keys = OFF;
-
-                DROP TABLE IF EXISTS bbox_map_new;
-                CREATE TABLE bbox_map_new (
-                    feature_rowid INTEGER PRIMARY KEY,
-                    feature_id TEXT NOT NULL
-                );
-                INSERT INTO bbox_map_new (feature_rowid, feature_id)
-                SELECT feature_rowid, feature_id FROM bbox_map;
-                DROP TABLE bbox_map;
-                ALTER TABLE bbox_map_new RENAME TO bbox_map;
-
-                DROP TABLE IF EXISTS features_new;
-                CREATE TABLE features_new (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    feature_id TEXT NOT NULL,
-                    source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
-                    path TEXT NOT NULL,
-                    file_size INTEGER,
-                    file_mtime_ns INTEGER,
-                    offset INTEGER NOT NULL,
-                    length INTEGER NOT NULL,
-                    min_z REAL,
-                    max_z REAL,
-                    cityobject_count INTEGER,
-                    member_ranges TEXT
-                );
-                INSERT INTO features_new (
-                    id,
-                    feature_id,
-                    source_id,
-                    path,
-                    file_size,
-                    file_mtime_ns,
-                    offset,
-                    length,
-                    min_z,
-                    max_z,
-                    cityobject_count,
-                    member_ranges
-                )
-                SELECT
-                    id,
-                    feature_id,
-                    source_id,
-                    path,
-                    file_size,
-                    file_mtime_ns,
-                    offset,
-                    length,
-                    min_z,
-                    max_z,
-                    cityobject_count,
-                    member_ranges
-                FROM features;
-                DROP TABLE features;
-                ALTER TABLE features_new RENAME TO features;
-
-                PRAGMA foreign_keys = ON;
-                ",
-            ))?;
-        }
+    fn create_rebuild_indexes(tx: &rusqlite::Transaction<'_>) -> Result<()> {
+        sqlite_result(tx.execute_batch(
+            r"
+            CREATE INDEX IF NOT EXISTS packages_source_id_idx ON packages(source_id);
+            CREATE INDEX IF NOT EXISTS packages_model_id_idx ON packages(model_id);
+            CREATE INDEX IF NOT EXISTS cityobjects_external_id_idx ON cityobjects(external_id);
+            CREATE INDEX IF NOT EXISTS cityobjects_type_idx ON cityobjects(cityobject_type);
+            CREATE INDEX IF NOT EXISTS cityobjects_source_id_idx ON cityobjects(source_id);
+            CREATE INDEX IF NOT EXISTS package_cityobjects_package_order_idx
+                ON package_cityobjects(package_id, ordinal, cityobject_id);
+            CREATE INDEX IF NOT EXISTS package_cityobjects_cityobject_id_idx
+                ON package_cityobjects(cityobject_id, package_id);
+            CREATE INDEX IF NOT EXISTS cityobject_relationships_child_idx
+                ON cityobject_relationships(child_cityobject_id);
+            ",
+        ))?;
         Ok(())
     }
 
     fn clear_tables(tx: &rusqlite::Transaction<'_>) -> Result<()> {
         sqlite_result(tx.execute_batch(
             r"
-            DELETE FROM bbox_map;
-            DELETE FROM feature_bbox;
-            DELETE FROM features;
+            DELETE FROM cityobject_relationships;
+            DELETE FROM package_cityobjects;
+            DELETE FROM cityobject_bbox;
+            DELETE FROM package_bbox;
+            DELETE FROM cityobjects;
+            DELETE FROM packages;
             DELETE FROM sources;
+            DROP TABLE IF EXISTS bbox_map;
+            DROP TABLE IF EXISTS feature_bbox;
+            DROP TABLE IF EXISTS features;
             ",
         ))?;
         Ok(())
@@ -2717,174 +2606,440 @@ impl Index {
         ))?;
         Ok(tx.last_insert_rowid())
     }
+}
 
-    fn insert_features_in_tx(
-        tx: &rusqlite::Transaction<'_>,
-        entries: &[FeatureIndexEntry],
-    ) -> Result<()> {
-        let mut feature_stmt = sqlite_result(tx.prepare(
-            r"
-            INSERT INTO features (
-                feature_id,
+struct NormalizedFeatureInserter<'tx, 'conn> {
+    tx: &'tx rusqlite::Transaction<'conn>,
+    inserted_physical_packages: BTreeSet<(PathBuf, u64, u64)>,
+    cityobject_ids_by_range: HashMap<(PathBuf, u64, u64), i64>,
+    insert_package: rusqlite::Statement<'tx>,
+    insert_package_bbox: rusqlite::Statement<'tx>,
+    insert_cityobject: rusqlite::Statement<'tx>,
+    lookup_cityobject: rusqlite::Statement<'tx>,
+    insert_package_cityobject: rusqlite::Statement<'tx>,
+    insert_cityobject_bbox: rusqlite::Statement<'tx>,
+    insert_relationship: rusqlite::Statement<'tx>,
+}
+
+impl<'tx, 'conn> NormalizedFeatureInserter<'tx, 'conn> {
+    fn new(tx: &'tx rusqlite::Transaction<'conn>) -> Result<Self> {
+        Ok(Self {
+            tx,
+            inserted_physical_packages: BTreeSet::new(),
+            cityobject_ids_by_range: HashMap::new(),
+            insert_package: sqlite_result(tx.prepare(
+                r"
+                INSERT INTO packages (
+                    source_id,
+                    package_type,
+                    model_id,
+                    path,
+                    offset,
+                    length,
+                    file_size,
+                    file_mtime_ns
+                )
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+                ",
+            ))?,
+            insert_package_bbox: sqlite_result(tx.prepare(
+                r"
+                INSERT OR REPLACE INTO package_bbox (
+                    package_id, min_x, max_x, min_y, max_y, min_z, max_z
+                )
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+                ",
+            ))?,
+            insert_cityobject: sqlite_result(tx.prepare(
+                r"
+                INSERT OR IGNORE INTO cityobjects (
+                    source_id,
+                    external_id,
+                    cityobject_type,
+                    path,
+                    offset,
+                    length
+                )
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+                ",
+            ))?,
+            lookup_cityobject: sqlite_result(tx.prepare(
+                "SELECT id FROM cityobjects WHERE path = ?1 AND offset = ?2 AND length = ?3",
+            ))?,
+            insert_package_cityobject: sqlite_result(tx.prepare(
+                r"
+                INSERT OR IGNORE INTO package_cityobjects (
+                    package_id,
+                    cityobject_id,
+                    ordinal,
+                    is_root
+                )
+                VALUES (?1, ?2, ?3, ?4)
+                ",
+            ))?,
+            insert_cityobject_bbox: sqlite_result(tx.prepare(
+                r"
+                INSERT OR REPLACE INTO cityobject_bbox (
+                    cityobject_id, min_x, max_x, min_y, max_y, min_z, max_z
+                )
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+                ",
+            ))?,
+            insert_relationship: sqlite_result(tx.prepare(
+                r"
+                INSERT OR IGNORE INTO cityobject_relationships (
+                    parent_cityobject_id,
+                    child_cityobject_id
+                )
+                VALUES (?1, ?2)
+                ",
+            ))?,
+        })
+    }
+
+    #[allow(
+        clippy::too_many_lines,
+        reason = "transactional normalized schema writes are kept together"
+    )]
+    fn insert_features(&mut self, source_id: i64, entries: &[ScannedFeature]) -> Result<()> {
+        for entry in entries {
+            let package_type = entry.package_type.as_storage_str();
+            if entry.package_type != PackageType::CityJson
+                && !self.inserted_physical_packages.insert((
+                    entry.path.clone(),
+                    entry.offset,
+                    entry.length,
+                ))
+            {
+                continue;
+            }
+            let file_size = sqlite_result(u64_to_i64(entry.file_size))?;
+            let file_mtime_ns = entry.file_mtime_ns;
+            let (package_offset, package_length) = if entry.package_type == PackageType::CityJson {
+                (None, None)
+            } else {
+                (
+                    Some(sqlite_result(u64_to_i64(entry.offset))?),
+                    Some(sqlite_result(u64_to_i64(entry.length))?),
+                )
+            };
+            sqlite_result(self.insert_package.execute(params![
                 source_id,
-                path,
+                package_type,
+                &entry.model_id,
+                entry.path.to_string_lossy(),
+                package_offset,
+                package_length,
                 file_size,
                 file_mtime_ns,
-                offset,
-                length,
-                min_z,
-                max_z,
-                cityobject_count,
-                member_ranges
-            )
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
-            ",
-        ))?;
-        let mut bbox_stmt = sqlite_result(tx.prepare(
-            r"
-            INSERT INTO feature_bbox (feature_rowid, min_x, max_x, min_y, max_y)
-            VALUES (?1, ?2, ?3, ?4, ?5)
-            ",
-        ))?;
-        let mut map_stmt = sqlite_result(tx.prepare(
-            r"
-            INSERT INTO bbox_map (feature_rowid, feature_id)
-            VALUES (?1, ?2)
-            ",
-        ))?;
-        for entry in entries {
-            let file_size = sqlite_result(u64_to_i64(entry.file_size))?;
-            let offset = sqlite_result(u64_to_i64(entry.offset))?;
-            let length = sqlite_result(u64_to_i64(entry.length))?;
-            let cityobject_count = sqlite_result(u64_to_i64(entry.cityobject_count))?;
-            sqlite_result(feature_stmt.execute(params![
-                &entry.id,
-                entry.source_id,
-                entry.path.to_string_lossy(),
-                file_size,
-                entry.file_mtime_ns,
-                offset,
-                length,
-                entry.bounds.min_z,
-                entry.bounds.max_z,
-                cityobject_count,
-                &entry.member_ranges_json,
             ]))?;
-            let feature_rowid = tx.last_insert_rowid();
-            sqlite_result(bbox_stmt.execute(params![
-                feature_rowid,
-                entry.bounds.min_x,
-                entry.bounds.max_x,
-                entry.bounds.min_y,
-                entry.bounds.max_y,
-            ]))?;
-            sqlite_result(map_stmt.execute(params![feature_rowid, &entry.id]))?;
+            let package_id = self.tx.last_insert_rowid();
+            if entry.spatial {
+                insert_package_bbox_with_stmt(
+                    &mut self.insert_package_bbox,
+                    package_id,
+                    entry.bounds,
+                )?;
+            }
+
+            validate_normalized_relationships(&entry.cityobjects)?;
+            let mut object_ids_by_external_id = BTreeMap::new();
+
+            for (ordinal, object) in entry.cityobjects.iter().enumerate() {
+                let cityobject_id = insert_or_lookup_cityobject(
+                    &mut self.insert_cityobject,
+                    &mut self.lookup_cityobject,
+                    &mut self.cityobject_ids_by_range,
+                    source_id,
+                    object,
+                )?;
+                object_ids_by_external_id.insert(object.external_id.clone(), cityobject_id);
+                sqlite_result(self.insert_package_cityobject.execute(params![
+                    package_id,
+                    cityobject_id,
+                    i64::try_from(ordinal).map_err(|_| {
+                        import_error("package CityObject ordinal does not fit in i64")
+                    })?,
+                    i64::from(object.external_id == entry.root_id),
+                ]))?;
+                if entry.spatial {
+                    insert_cityobject_bbox_with_stmt(
+                        &mut self.insert_cityobject_bbox,
+                        cityobject_id,
+                        entry.bounds,
+                    )?;
+                }
+            }
+
+            for object in &entry.cityobjects {
+                let parent_id = object_ids_by_external_id
+                    .get(&object.external_id)
+                    .copied()
+                    .ok_or_else(|| {
+                        import_error(format!(
+                            "CityObject {} was not inserted",
+                            object.external_id
+                        ))
+                    })?;
+                for child_external_id in &object.children {
+                    let child_id = object_ids_by_external_id
+                        .get(child_external_id)
+                        .copied()
+                        .ok_or_else(|| {
+                            import_error(format!("missing relationship target {child_external_id}"))
+                        })?;
+                    if parent_id == child_id {
+                        return Err(import_error(format!(
+                            "relationship cycle includes {}",
+                            object.external_id
+                        )));
+                    }
+                    sqlite_result(
+                        self.insert_relationship
+                            .execute(params![parent_id, child_id]),
+                    )?;
+                }
+            }
         }
-
         Ok(())
-    }
-
-    fn feature_location_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<FeatureLocation> {
-        Self::feature_location_from_row_offset(row, 0)
-    }
-
-    fn feature_location_from_row_offset(
-        row: &rusqlite::Row<'_>,
-        col: usize,
-    ) -> rusqlite::Result<FeatureLocation> {
-        let feature_id = row.get::<_, String>(col)?;
-        let source_id = row.get::<_, i64>(col + 1)?;
-        let source_path = PathBuf::from(row.get::<_, String>(col + 2)?);
-        let offset = i64_to_u64(row.get::<_, i64>(col + 3)?)?;
-        let length = i64_to_u64(row.get::<_, i64>(col + 4)?)?;
-        let vertices_offset = match row.get::<_, Option<i64>>(col + 5)? {
-            Some(value) => Some(i64_to_u64(value)?),
-            None => None,
-        };
-        let vertices_length = match row.get::<_, Option<i64>>(col + 6)? {
-            Some(value) => Some(i64_to_u64(value)?),
-            None => None,
-        };
-        let member_ranges_json = row.get::<_, Option<String>>(col + 7)?;
-
-        Ok(FeatureLocation {
-            feature_id,
-            source_id,
-            source_path,
-            offset,
-            length,
-            vertices_offset,
-            vertices_length,
-            member_ranges_json,
-        })
-    }
-
-    fn indexed_feature_location_from_row(
-        row: &rusqlite::Row<'_>,
-    ) -> rusqlite::Result<IndexedFeatureLocation> {
-        let row_id = row.get::<_, i64>(0)?;
-        let location = Self::feature_location_from_row_offset(row, 1)?;
-        Ok(IndexedFeatureLocation { row_id, location })
-    }
-
-    fn indexed_feature_ref_location_from_row(
-        row: &rusqlite::Row<'_>,
-    ) -> rusqlite::Result<IndexedFeatureRefLocation> {
-        let row_id = row.get::<_, i64>(0)?;
-        let feature_id = row.get::<_, String>(1)?;
-        let source_id = row.get::<_, i64>(2)?;
-        let source_path = PathBuf::from(row.get::<_, String>(3)?);
-        let offset = i64_to_u64(row.get::<_, i64>(4)?)?;
-        let length = i64_to_u64(row.get::<_, i64>(5)?)?;
-        let vertices_offset = match row.get::<_, Option<i64>>(6)? {
-            Some(value) => Some(i64_to_u64(value)?),
-            None => None,
-        };
-        let vertices_length = match row.get::<_, Option<i64>>(7)? {
-            Some(value) => Some(i64_to_u64(value)?),
-            None => None,
-        };
-        let member_ranges_json = row.get::<_, Option<String>>(8)?;
-        let bounds = FeatureBounds {
-            min_x: row.get::<_, f64>(9)?,
-            max_x: row.get::<_, f64>(10)?,
-            min_y: row.get::<_, f64>(11)?,
-            max_y: row.get::<_, f64>(12)?,
-            min_z: row.get::<_, f64>(13)?,
-            max_z: row.get::<_, f64>(14)?,
-        };
-
-        Ok(IndexedFeatureRefLocation {
-            row_id,
-            feature: IndexedFeatureRef {
-                row_id,
-                feature_id,
-                source_id,
-                source_path,
-                offset,
-                length,
-                vertices_offset,
-                vertices_length,
-                member_ranges_json,
-                bounds,
-            },
-        })
     }
 }
 
-trait StorageBackend: Send + Sync {
-    fn scan(&self, worker_count: usize) -> Result<Vec<SourceScan>>;
-    fn read_one(&self, loc: &FeatureLocation, metadata_bytes: Arc<[u8]>) -> Result<CityModel>;
-    fn read_many(
-        &self,
-        locations: &[&FeatureLocation],
-        metadata_bytes: Arc<[u8]>,
-    ) -> Result<Vec<CityModel>> {
-        locations
-            .iter()
-            .map(|loc| self.read_one(loc, Arc::clone(&metadata_bytes)))
-            .collect()
+#[derive(Clone, Debug)]
+struct NormalizedCityObjectScan {
+    external_id: String,
+    cityobject_type: String,
+    path: PathBuf,
+    offset: u64,
+    length: u64,
+    children: BTreeSet<String>,
+}
+
+fn feature_model_id(feature: &Value, label: &str) -> Result<String> {
+    feature
+        .get("id")
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned)
+        .ok_or_else(|| import_error(format!("{label} is missing CityJSONFeature id")))
+}
+
+fn normalized_cityobjects_from_feature_bytes(
+    feature: &Value,
+    feature_bytes: &[u8],
+    path: &Path,
+    base_offset: u64,
+    label: &str,
+) -> Result<Vec<NormalizedCityObjectScan>> {
+    let cityobjects = feature
+        .get("CityObjects")
+        .and_then(Value::as_object)
+        .ok_or_else(|| import_error(format!("{label} is missing CityObjects")))?;
+    cityobject_entry_ranges(feature_bytes)?
+        .into_iter()
+        .map(|(external_id, relative_offset, length)| {
+            let object = cityobjects.get(&external_id).ok_or_else(|| {
+                import_error(format!(
+                    "CityObject fragment for {external_id} could not be resolved in {}",
+                    path.display()
+                ))
+            })?;
+            normalized_cityobject_scan(
+                external_id,
+                object,
+                path,
+                base_offset.checked_add(relative_offset).ok_or_else(|| {
+                    import_error("CityObject absolute byte offset does not fit in u64")
+                })?,
+                length,
+            )
+        })
+        .collect()
+}
+
+fn normalized_cityobject_scan(
+    external_id: String,
+    object: &Value,
+    path: &Path,
+    offset: u64,
+    length: u64,
+) -> Result<NormalizedCityObjectScan> {
+    let cityobject_type = cityobject_type(object, &external_id)?;
+    let children = normalized_children(&external_id, object)?;
+    Ok(NormalizedCityObjectScan {
+        external_id,
+        cityobject_type,
+        path: path.to_path_buf(),
+        offset,
+        length,
+        children,
+    })
+}
+
+fn cityobject_type(object: &Value, external_id: &str) -> Result<String> {
+    object
+        .get("type")
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned)
+        .ok_or_else(|| import_error(format!("CityObject {external_id} is missing type")))
+}
+
+fn normalized_children(external_id: &str, object: &Value) -> Result<BTreeSet<String>> {
+    let mut children = BTreeSet::new();
+    if let Some(values) = object.get("children").and_then(Value::as_array) {
+        for value in values {
+            let child = value.as_str().ok_or_else(|| {
+                import_error(format!(
+                    "CityObject {external_id} child reference is not a string"
+                ))
+            })?;
+            children.insert(child.to_owned());
+        }
     }
+    Ok(children)
+}
+
+fn validate_normalized_relationships(objects: &[NormalizedCityObjectScan]) -> Result<()> {
+    let ids = objects
+        .iter()
+        .map(|object| object.external_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let graph = objects
+        .iter()
+        .map(|object| {
+            for child in &object.children {
+                if !ids.contains(child.as_str()) {
+                    return Err(import_error(format!("missing relationship target {child}")));
+                }
+            }
+            Ok((
+                object.external_id.as_str(),
+                object
+                    .children
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>(),
+            ))
+        })
+        .collect::<Result<BTreeMap<_, _>>>()?;
+    ensure_relationship_graph_acyclic(&graph)
+}
+
+fn ensure_relationship_graph_acyclic(graph: &BTreeMap<&str, Vec<&str>>) -> Result<()> {
+    fn visit<'a>(
+        node: &'a str,
+        graph: &BTreeMap<&'a str, Vec<&'a str>>,
+        visiting: &mut BTreeSet<&'a str>,
+        visited: &mut BTreeSet<&'a str>,
+    ) -> Result<()> {
+        if visited.contains(node) {
+            return Ok(());
+        }
+        if !visiting.insert(node) {
+            return Err(import_error(format!("relationship cycle includes {node}")));
+        }
+        if let Some(children) = graph.get(node) {
+            for child in children {
+                visit(child, graph, visiting, visited)?;
+            }
+        }
+        visiting.remove(node);
+        visited.insert(node);
+        Ok(())
+    }
+
+    let mut visiting = BTreeSet::new();
+    let mut visited = BTreeSet::new();
+    for node in graph.keys() {
+        visit(node, graph, &mut visiting, &mut visited)?;
+    }
+    Ok(())
+}
+
+fn insert_or_lookup_cityobject(
+    insert_cityobject: &mut rusqlite::Statement<'_>,
+    lookup_cityobject: &mut rusqlite::Statement<'_>,
+    cityobject_ids_by_range: &mut HashMap<(PathBuf, u64, u64), i64>,
+    source_id: i64,
+    object: &NormalizedCityObjectScan,
+) -> Result<i64> {
+    let key = (object.path.clone(), object.offset, object.length);
+    if let Some(cityobject_id) = cityobject_ids_by_range.get(&key).copied() {
+        return Ok(cityobject_id);
+    }
+
+    let offset = sqlite_result(u64_to_i64(object.offset))?;
+    let length = sqlite_result(u64_to_i64(object.length))?;
+    sqlite_result(insert_cityobject.execute(params![
+        source_id,
+        &object.external_id,
+        &object.cityobject_type,
+        object.path.to_string_lossy(),
+        offset,
+        length,
+    ]))?;
+    let cityobject_id = sqlite_result(lookup_cityobject.query_row(
+        params![object.path.to_string_lossy(), offset, length],
+        |row| row.get::<_, i64>(0),
+    ))?;
+    cityobject_ids_by_range.insert(key, cityobject_id);
+    Ok(cityobject_id)
+}
+
+fn insert_package_bbox_with_stmt(
+    stmt: &mut rusqlite::Statement<'_>,
+    package_id: i64,
+    bounds: FeatureBounds,
+) -> Result<()> {
+    sqlite_result(stmt.execute(params![
+        package_id,
+        bounds.min_x,
+        bounds.max_x,
+        bounds.min_y,
+        bounds.max_y,
+        bounds.min_z,
+        bounds.max_z,
+    ]))?;
+    Ok(())
+}
+
+fn insert_cityobject_bbox_with_stmt(
+    stmt: &mut rusqlite::Statement<'_>,
+    cityobject_id: i64,
+    bounds: FeatureBounds,
+) -> Result<()> {
+    sqlite_result(stmt.execute(params![
+        cityobject_id,
+        bounds.min_x,
+        bounds.max_x,
+        bounds.min_y,
+        bounds.max_y,
+        bounds.min_z,
+        bounds.max_z,
+    ]))?;
+    Ok(())
+}
+
+trait ScanSink {
+    fn add_source(&mut self, source_index: usize, header: SourceScanHeader) -> Result<()>;
+
+    fn add_features(&mut self, source_index: usize, features: Vec<ScannedFeature>) -> Result<()>;
+}
+
+trait StorageBackend: Send + Sync {
+    fn scan_into(&self, worker_count: usize, sink: &mut dyn ScanSink) -> Result<()>;
+
+    fn as_cityjson(&self) -> Option<&CityJsonBackend> {
+        None
+    }
+}
+
+struct SourceScanHeader {
+    path: PathBuf,
+    metadata: Meta,
+    vertices_offset: Option<u64>,
+    vertices_length: Option<u64>,
+    source_size: u64,
+    source_mtime_ns: i64,
 }
 
 struct SourceScan {
@@ -2898,22 +3053,219 @@ struct SourceScan {
 }
 
 struct ScannedFeature {
-    id: String,
+    root_id: String,
+    model_id: String,
+    package_type: PackageType,
     path: PathBuf,
     file_size: u64,
     file_mtime_ns: i64,
     offset: u64,
     length: u64,
     bounds: FeatureBounds,
-    cityobject_count: u64,
-    member_ranges: Option<Vec<IndexedObjectRange>>,
+    spatial: bool,
+    cityobjects: Vec<NormalizedCityObjectScan>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct IndexedObjectRange {
-    id: String,
-    offset: u64,
-    length: u64,
+impl SourceScan {
+    fn header(&self) -> SourceScanHeader {
+        SourceScanHeader {
+            path: self.path.clone(),
+            metadata: self.metadata.clone(),
+            vertices_offset: self.vertices_offset,
+            vertices_length: self.vertices_length,
+            source_size: self.source_size,
+            source_mtime_ns: self.source_mtime_ns,
+        }
+    }
+}
+
+struct RebuildSink<'tx, 'conn, 'inserter> {
+    tx: &'tx rusqlite::Transaction<'conn>,
+    inserter: &'inserter mut NormalizedFeatureInserter<'tx, 'conn>,
+    source_ids: HashMap<usize, i64>,
+}
+
+impl<'tx, 'conn, 'inserter> RebuildSink<'tx, 'conn, 'inserter> {
+    fn new(
+        tx: &'tx rusqlite::Transaction<'conn>,
+        inserter: &'inserter mut NormalizedFeatureInserter<'tx, 'conn>,
+    ) -> Self {
+        Self {
+            tx,
+            inserter,
+            source_ids: HashMap::new(),
+        }
+    }
+}
+
+impl ScanSink for RebuildSink<'_, '_, '_> {
+    fn add_source(&mut self, source_index: usize, header: SourceScanHeader) -> Result<()> {
+        let source_id = Index::insert_source_in_tx(
+            self.tx,
+            header.path.as_path(),
+            &header.metadata,
+            header.vertices_offset,
+            header.vertices_length,
+            header.source_size,
+            header.source_mtime_ns,
+        )?;
+        if self.source_ids.insert(source_index, source_id).is_some() {
+            return Err(import_error(format!(
+                "scan source {source_index} was registered more than once"
+            )));
+        }
+        Ok(())
+    }
+
+    fn add_features(&mut self, source_index: usize, features: Vec<ScannedFeature>) -> Result<()> {
+        if features.is_empty() {
+            return Ok(());
+        }
+        let source_id = self.source_ids.get(&source_index).copied().ok_or_else(|| {
+            import_error(format!("scan source {source_index} was not registered"))
+        })?;
+        self.inserter.insert_features(source_id, &features)
+    }
+}
+
+enum ScanEvent {
+    Source {
+        source_index: usize,
+        header: SourceScanHeader,
+    },
+    Features {
+        source_index: usize,
+        features: Vec<ScannedFeature>,
+    },
+}
+
+fn apply_scan_event(sink: &mut dyn ScanSink, event: ScanEvent) -> Result<()> {
+    match event {
+        ScanEvent::Source {
+            source_index,
+            header,
+        } => sink.add_source(source_index, header),
+        ScanEvent::Features {
+            source_index,
+            features,
+        } => sink.add_features(source_index, features),
+    }
+}
+
+fn send_scan_event(sender: &SyncSender<ScanEvent>, event: ScanEvent) -> Result<()> {
+    sender
+        .send(event)
+        .map_err(|_| import_error("scan result receiver was dropped"))
+}
+
+fn send_feature_batch(
+    sender: &SyncSender<ScanEvent>,
+    source_index: usize,
+    batch: &mut Vec<ScannedFeature>,
+) -> Result<()> {
+    if batch.is_empty() {
+        return Ok(());
+    }
+    let features = std::mem::take(batch);
+    send_scan_event(
+        sender,
+        ScanEvent::Features {
+            source_index,
+            features,
+        },
+    )
+}
+
+fn emit_source_scan(
+    source_index: usize,
+    scan: SourceScan,
+    sender: &SyncSender<ScanEvent>,
+) -> Result<()> {
+    send_scan_event(
+        sender,
+        ScanEvent::Source {
+            source_index,
+            header: scan.header(),
+        },
+    )?;
+    let mut batch = Vec::with_capacity(REBUILD_FEATURE_BATCH_SIZE);
+    for feature in scan.features {
+        batch.push(feature);
+        if batch.len() == REBUILD_FEATURE_BATCH_SIZE {
+            send_feature_batch(sender, source_index, &mut batch)?;
+        }
+    }
+    send_feature_batch(sender, source_index, &mut batch)
+}
+
+fn parallel_scan_sources_into<T, F>(
+    items: &[T],
+    worker_count: usize,
+    sink: &mut dyn ScanSink,
+    scan: F,
+) -> Result<()>
+where
+    T: Sync,
+    F: Fn(usize, &T, &SyncSender<ScanEvent>) -> Result<()> + Sync,
+{
+    if items.is_empty() {
+        return Ok(());
+    }
+
+    let shard_count = worker_count.max(1).min(items.len());
+    let chunk_size = items.len().div_ceil(shard_count);
+    let channel_capacity = worker_count.max(1).saturating_mul(2).max(2);
+    let (sender, receiver) = sync_channel(channel_capacity);
+
+    std::thread::scope(|scope| -> Result<()> {
+        let mut handles = Vec::with_capacity(shard_count);
+        let scan = &scan;
+        for (shard_index, shard) in items.chunks(chunk_size).enumerate() {
+            let sender = sender.clone();
+            let source_index_offset = shard_index * chunk_size;
+            handles.push(scope.spawn(move || {
+                for (offset, item) in shard.iter().enumerate() {
+                    scan(source_index_offset + offset, item, &sender)?;
+                }
+                Ok::<(), Error>(())
+            }));
+        }
+        drop(sender);
+
+        let mut sink_error = None;
+        while let Ok(event) = receiver.recv() {
+            if sink_error.is_none()
+                && let Err(error) = apply_scan_event(sink, event)
+            {
+                sink_error = Some(error);
+            }
+        }
+
+        let mut worker_error = None;
+        for handle in handles {
+            match handle.join() {
+                Ok(Ok(())) => {}
+                Ok(Err(error)) => {
+                    if worker_error.is_none() {
+                        worker_error = Some(error);
+                    }
+                }
+                Err(_) => {
+                    if worker_error.is_none() {
+                        worker_error = Some(import_error("parallel scan worker panicked"));
+                    }
+                }
+            }
+        }
+
+        if let Some(error) = sink_error {
+            Err(error)
+        } else if let Some(error) = worker_error {
+            Err(error)
+        } else {
+            Ok(())
+        }
+    })
 }
 
 struct LocalizedFeatureParts {
@@ -2932,24 +3284,11 @@ struct NdjsonBackend {
 }
 
 impl StorageBackend for NdjsonBackend {
-    fn scan(&self, worker_count: usize) -> Result<Vec<SourceScan>> {
+    fn scan_into(&self, worker_count: usize, sink: &mut dyn ScanSink) -> Result<()> {
         let paths = collect_layout_files(&self.paths, ".jsonl")?;
-        parallel_scan_items(&paths, worker_count, |path| {
-            scan_ndjson_source(path.as_path())
+        parallel_scan_sources_into(&paths, worker_count, sink, |source_index, path, sender| {
+            scan_ndjson_source_into(source_index, path.as_path(), sender)
         })
-    }
-
-    fn read_one(&self, loc: &FeatureLocation, metadata_bytes: Arc<[u8]>) -> Result<CityModel> {
-        let bytes = read_exact_range(&loc.source_path, loc.offset, loc.length)?;
-        feature_slice_with_indexed_id(&bytes, loc, metadata_bytes.as_ref())
-    }
-
-    fn read_many(
-        &self,
-        locations: &[&FeatureLocation],
-        metadata_bytes: Arc<[u8]>,
-    ) -> Result<Vec<CityModel>> {
-        read_feature_slices_with_base(locations, metadata_bytes.as_ref())
     }
 }
 
@@ -2989,110 +3328,67 @@ impl CityJsonBackend {
 }
 
 impl StorageBackend for CityJsonBackend {
-    fn scan(&self, worker_count: usize) -> Result<Vec<SourceScan>> {
+    fn scan_into(&self, worker_count: usize, sink: &mut dyn ScanSink) -> Result<()> {
         let _ = &self.vertices_cache;
         let paths = collect_layout_files(&self.paths, ".city.json")?;
-        parallel_scan_items(&paths, worker_count, |path| {
-            scan_cityjson_source(path.as_path())
+        parallel_scan_sources_into(&paths, worker_count, sink, |source_index, path, sender| {
+            let scan = scan_cityjson_source(path.as_path())?;
+            emit_source_scan(source_index, scan, sender)
         })
     }
 
-    fn read_one(&self, loc: &FeatureLocation, metadata_bytes: Arc<[u8]>) -> Result<CityModel> {
-        let mut source_file = fs::File::open(&loc.source_path)?;
-        self.read_one_from_file(loc, metadata_bytes.as_ref(), &mut source_file)
-    }
-
-    fn read_many(
-        &self,
-        locations: &[&FeatureLocation],
-        metadata_bytes: Arc<[u8]>,
-    ) -> Result<Vec<CityModel>> {
-        let mut locations_by_path: BTreeMap<PathBuf, Vec<usize>> = BTreeMap::new();
-        for (index, location) in locations.iter().enumerate() {
-            locations_by_path
-                .entry(location.source_path.clone())
-                .or_default()
-                .push(index);
-        }
-
-        let mut models = std::iter::repeat_with(|| None)
-            .take(locations.len())
-            .collect::<Vec<Option<CityModel>>>();
-        for (path, mut indexes) in locations_by_path {
-            indexes.sort_by_key(|index| locations[*index].offset);
-            let mut source_file = fs::File::open(&path)?;
-            for index in indexes {
-                let model = self.read_one_from_file(
-                    locations[index],
-                    metadata_bytes.as_ref(),
-                    &mut source_file,
-                )?;
-                models[index] = Some(model);
-            }
-        }
-
-        Ok(models
-            .into_iter()
-            .map(|model| model.expect("every input feature should have a decoded model"))
-            .collect())
+    fn as_cityjson(&self) -> Option<&CityJsonBackend> {
+        Some(self)
     }
 }
 
 impl CityJsonBackend {
-    fn read_one_from_file(
+    fn read_package_members_from_file(
         &self,
-        loc: &FeatureLocation,
-        metadata_bytes: &[u8],
+        model_id: &str,
+        source_path: &Path,
         source_file: &mut fs::File,
+        members: &[PackageMemberLocation],
+        metadata_bytes: &[u8],
     ) -> Result<CityModel> {
-        let vertices_offset = loc.vertices_offset.ok_or_else(|| {
+        let first_member = members
+            .first()
+            .ok_or_else(|| import_error(format!("package {model_id} has no CityObject members")))?;
+        let vertices_offset = first_member.vertices_offset.ok_or_else(|| {
             Error::UnsupportedFeature(
                 "regular CityJSON reads require an indexed shared vertices range".into(),
             )
         })?;
-        let vertices_length = loc.vertices_length.ok_or_else(|| {
+        let vertices_length = first_member.vertices_length.ok_or_else(|| {
             Error::UnsupportedFeature(
                 "regular CityJSON reads require an indexed shared vertices range".into(),
             )
         })?;
 
-        let member_ranges = loc
-            .member_ranges_json
-            .as_deref()
-            .map(parse_json_str::<Vec<IndexedObjectRange>>)
-            .transpose()?
-            .unwrap_or_else(|| {
-                vec![IndexedObjectRange {
-                    id: loc.feature_id.clone(),
-                    offset: loc.offset,
-                    length: loc.length,
-                }]
-            });
-        let mut object_entries = Vec::with_capacity(member_ranges.len());
-        for member_range in &member_ranges {
-            let object_fragment = read_exact_range_from_file(
-                source_file,
-                &loc.source_path,
-                member_range.offset,
-                member_range.length,
-            )?;
+        let mut object_entries = Vec::with_capacity(members.len());
+        for member in members {
+            if member.source_id != first_member.source_id
+                || member.source_path != first_member.source_path
+            {
+                return Err(import_error(format!(
+                    "package {model_id} spans multiple CityJSON sources"
+                )));
+            }
+            let object_fragment =
+                read_exact_range_from_file(source_file, source_path, member.offset, member.length)?;
             let (object_id, object_value) = parse_cityobject_entry(&object_fragment)?;
-            if object_id != member_range.id {
+            if object_id != member.external_id {
                 return Err(import_error(format!(
                     "indexed CityJSON member {} resolved to fragment for {}",
-                    member_range.id, object_id
+                    member.external_id, object_id
                 )));
             }
             object_entries.push((object_id, object_value));
         }
-        let shared_vertices = self.load_shared_vertices(
-            &loc.source_path,
-            source_file,
-            vertices_offset,
-            vertices_length,
-        )?;
+        let shared_vertices =
+            self.load_shared_vertices(source_path, source_file, vertices_offset, vertices_length)?;
         let feature_parts =
-            build_feature_parts(&loc.feature_id, object_entries, shared_vertices.as_ref())?;
+            build_feature_parts(model_id, object_entries, shared_vertices.as_ref())?;
         let cityobjects = feature_parts
             .cityobjects
             .iter()
@@ -3148,48 +3444,39 @@ impl FeatureFilesBackend {
 }
 
 impl StorageBackend for FeatureFilesBackend {
-    fn scan(&self, worker_count: usize) -> Result<Vec<SourceScan>> {
-        scan_feature_files_root(
+    fn scan_into(&self, worker_count: usize, sink: &mut dyn ScanSink) -> Result<()> {
+        scan_feature_files_root_into(
             &self.root,
             &self.metadata_glob,
             &self.feature_glob,
             worker_count,
+            sink,
         )
-    }
-
-    fn read_one(&self, loc: &FeatureLocation, metadata_bytes: Arc<[u8]>) -> Result<CityModel> {
-        let feature_bytes = read_exact_range(&loc.source_path, loc.offset, loc.length)?;
-        feature_slice_with_indexed_id(&feature_bytes, loc, metadata_bytes.as_ref())
-    }
-
-    fn read_many(
-        &self,
-        locations: &[&FeatureLocation],
-        metadata_bytes: Arc<[u8]>,
-    ) -> Result<Vec<CityModel>> {
-        read_feature_slices_with_base(locations, metadata_bytes.as_ref())
     }
 }
 
-fn scan_feature_files_root(
+fn scan_feature_files_root_into(
     root: &Path,
     metadata_glob: &GlobMatcher,
     feature_glob: &GlobMatcher,
     worker_count: usize,
-) -> Result<Vec<SourceScan>> {
+    sink: &mut dyn ScanSink,
+) -> Result<()> {
     let plans = discover_feature_file_sources(root, metadata_glob, feature_glob)?;
-    let mut sources = plans
-        .iter()
-        .map(|plan| SourceScan {
-            path: plan.path.clone(),
-            metadata: plan.metadata.clone(),
-            vertices_offset: None,
-            vertices_length: None,
-            source_size: plan.source_size,
-            source_mtime_ns: plan.source_mtime_ns,
-            features: Vec::with_capacity(plan.feature_paths.len()),
-        })
-        .collect::<Vec<_>>();
+    for (source_index, plan) in plans.iter().enumerate() {
+        sink.add_source(
+            source_index,
+            SourceScanHeader {
+                path: plan.path.clone(),
+                metadata: plan.metadata.clone(),
+                vertices_offset: None,
+                vertices_length: None,
+                source_size: plan.source_size,
+                source_mtime_ns: plan.source_mtime_ns,
+            },
+        )?;
+    }
+
     let scan_items = plans
         .iter()
         .enumerate()
@@ -3203,11 +3490,22 @@ fn scan_feature_files_root(
                 })
         })
         .collect::<Vec<_>>();
-    let features = parallel_scan_items(&scan_items, worker_count, scan_feature_file)?;
-    for (source_index, features) in features {
-        sources[source_index].features.extend(features);
-    }
-    Ok(sources)
+
+    parallel_scan_sources_into(
+        &scan_items,
+        worker_count,
+        sink,
+        |_event_index, item, sender| {
+            let (source_index, features) = scan_feature_file(item)?;
+            send_scan_event(
+                sender,
+                ScanEvent::Features {
+                    source_index,
+                    features,
+                },
+            )
+        },
+    )
 }
 
 fn discover_feature_file_sources(
@@ -3291,24 +3589,29 @@ fn discover_feature_file_sources(
 }
 
 fn scan_feature_file(item: &FeatureFileScanItem<'_>) -> Result<(usize, Vec<ScannedFeature>)> {
-    let feature: Value = read_json(item.path)?;
-    let (ids, bounds, cityobject_count) = parse_feature_file_bounds(&feature, item.metadata)?;
+    let bytes = fs::read(item.path)?;
+    let feature: Value = parse_json_slice(&bytes)?;
+    let model_id = feature_model_id(&feature, "feature file")?;
+    let (_ids, bounds, spatial) = parse_feature_file_bounds(&feature, item.metadata)?;
     let (file_size, file_mtime_ns) = file_status(item.path)?;
-    let features = ids
-        .into_iter()
-        .map(|id| ScannedFeature {
-            id,
+    let cityobjects =
+        normalized_cityobjects_from_feature_bytes(&feature, &bytes, item.path, 0, "feature file")?;
+    Ok((
+        item.source_index,
+        vec![ScannedFeature {
+            root_id: model_id.clone(),
+            model_id,
+            package_type: PackageType::FeatureFiles,
             path: item.path.to_path_buf(),
             file_size,
             file_mtime_ns,
             offset: 0,
             length: file_size,
             bounds,
-            cityobject_count,
-            member_ranges: None,
-        })
-        .collect();
-    Ok((item.source_index, features))
+            spatial,
+            cityobjects,
+        }],
+    ))
 }
 
 fn resolve_feature_metadata_path(
@@ -3332,7 +3635,7 @@ fn resolve_feature_metadata_path(
 fn parse_feature_file_bounds(
     feature: &Value,
     metadata: &Meta,
-) -> Result<(Vec<String>, FeatureBounds, u64)> {
+) -> Result<(Vec<String>, FeatureBounds, bool)> {
     let ids = feature_cityobject_keys(feature, "feature file")?;
     let vertices = feature
         .get("vertices")
@@ -3342,9 +3645,15 @@ fn parse_feature_file_bounds(
 
     let referenced_vertices = collect_feature_vertex_indices(feature, vertices.len())?;
     let (scale, translate) = parse_ndjson_transform(metadata)?;
-    let bounds = feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?;
-    let cityobject_count = feature_cityobject_count(feature, "feature file")?;
-    Ok((ids, bounds, cityobject_count))
+    let (bounds, spatial) = if referenced_vertices.is_empty() {
+        (empty_feature_bounds(), false)
+    } else {
+        (
+            feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?,
+            true,
+        )
+    };
+    Ok((ids, bounds, spatial))
 }
 
 fn trim_fragment_delimiters(bytes: &[u8]) -> &[u8] {
@@ -3605,46 +3914,6 @@ pub fn configured_worker_count() -> Result<usize> {
     }
 }
 
-fn parallel_scan_items<T, U, F>(items: &[T], worker_count: usize, scan: F) -> Result<Vec<U>>
-where
-    T: Sync,
-    U: Send,
-    F: Fn(&T) -> Result<U> + Sync,
-{
-    if items.is_empty() {
-        return Ok(Vec::new());
-    }
-
-    let shard_count = worker_count.max(1).min(items.len());
-    if shard_count == 1 {
-        return items.iter().map(scan).collect();
-    }
-
-    let chunk_size = items.len().div_ceil(shard_count);
-    std::thread::scope(|scope| -> Result<Vec<U>> {
-        let mut handles = Vec::with_capacity(shard_count);
-        let scan = &scan;
-        for shard in items.chunks(chunk_size) {
-            handles.push(scope.spawn(move || {
-                let mut shard_results = Vec::with_capacity(shard.len());
-                for item in shard {
-                    shard_results.push(scan(item)?);
-                }
-                Ok::<Vec<U>, Error>(shard_results)
-            }));
-        }
-
-        let mut results = Vec::with_capacity(items.len());
-        for handle in handles {
-            let shard_results = handle
-                .join()
-                .map_err(|_| import_error("parallel scan worker panicked"))??;
-            results.extend(shard_results);
-        }
-        Ok(results)
-    })
-}
-
 fn serde_json_error(error: &serde_json::Error) -> Error {
     import_error(error.to_string())
 }
@@ -3665,70 +3934,12 @@ fn json_string<T: Serialize + ?Sized>(value: &T) -> Result<String> {
     serde_json::to_string(value).map_err(|error| serde_json_error(&error))
 }
 
-fn table_sql_contains(conn: &rusqlite::Connection, table: &str, needle: &str) -> Result<bool> {
-    let sql = sqlite_result(
-        conn.query_row(
-            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?1",
-            params![table],
-            |row| row.get::<_, Option<String>>(0),
-        )
-        .optional(),
-    )?
-    .flatten()
-    .unwrap_or_default();
-    Ok(sql.contains(needle))
-}
-
-fn read_exact_range(path: &Path, offset: u64, length: u64) -> Result<Vec<u8>> {
-    let mut file = fs::File::open(path)
-        .map_err(|error| import_error(format!("failed to open {}: {error}", path.display())))?;
-    read_exact_range_from_file(&mut file, path, offset, length)
-}
-
-fn read_feature_slices_with_base(
-    locations: &[&FeatureLocation],
-    metadata_bytes: &[u8],
-) -> Result<Vec<CityModel>> {
-    let mut locations_by_path: BTreeMap<PathBuf, Vec<usize>> = BTreeMap::new();
-    for (index, location) in locations.iter().enumerate() {
-        locations_by_path
-            .entry(location.source_path.clone())
-            .or_default()
-            .push(index);
-    }
-
-    let mut models = std::iter::repeat_with(|| None)
-        .take(locations.len())
-        .collect::<Vec<Option<CityModel>>>();
-    for (path, mut indexes) in locations_by_path {
-        indexes.sort_by_key(|index| locations[*index].offset);
-        let mut file = fs::File::open(&path)
-            .map_err(|error| import_error(format!("failed to open {}: {error}", path.display())))?;
-        for index in indexes {
-            let location = locations[index];
-            let feature_bytes =
-                read_exact_range_from_file(&mut file, &path, location.offset, location.length)?;
-            let model = feature_slice_with_indexed_id(&feature_bytes, location, metadata_bytes)?;
-            models[index] = Some(model);
-        }
-    }
-
-    Ok(models
-        .into_iter()
-        .map(|model| model.expect("every input feature should have a decoded model"))
-        .collect())
-}
-
-fn feature_slice_with_indexed_id(
+fn feature_slice_with_preserved_package_id(
     feature_bytes: &[u8],
-    loc: &FeatureLocation,
+    package_id: &str,
     metadata_bytes: &[u8],
 ) -> Result<CityModel> {
-    staged::from_feature_slice_with_indexed_id_and_base(
-        feature_bytes,
-        loc.feature_id.as_str(),
-        metadata_bytes,
-    )
+    staged::from_feature_slice_with_indexed_id_and_base(feature_bytes, package_id, metadata_bytes)
 }
 
 fn read_exact_range_from_file(
@@ -3807,22 +4018,14 @@ fn file_status(path: &Path) -> Result<(u64, i64)> {
     Ok((metadata.len(), nanos))
 }
 
-fn feature_cityobject_count(feature: &Value, context: &str) -> Result<u64> {
-    let cityobjects = feature
-        .get("CityObjects")
-        .and_then(Value::as_object)
-        .ok_or_else(|| import_error(format!("{context} is missing CityObjects")))?;
-    u64::try_from(cityobjects.len())
-        .map_err(|_| import_error("CityObject count does not fit in u64"))
-}
-
+#[cfg(test)]
 fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
     let bytes = fs::read(path)?;
     let (source_size, source_mtime_ns) = file_status(path)?;
     let line_spans = line_spans(&bytes);
     let Some((_, metadata_bytes)) = line_spans.first() else {
         return Err(import_error(format!(
-            "NDJSON source {} is empty",
+            "CityJSONSeq source {} is empty",
             path.display()
         )));
     };
@@ -3837,21 +4040,30 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
         }
 
         let feature: Value = parse_json_slice(line_bytes)?;
-        let (ids, bounds) = parse_ndjson_feature_bounds(&feature, scale, translate)?;
-        let cityobject_count = feature_cityobject_count(&feature, "ndjson feature")?;
+        let model_id = feature_model_id(&feature, "CityJSONSeq feature")?;
+        let (_ids, bounds, spatial) = parse_ndjson_feature_bounds(&feature, scale, translate)?;
         let length = u64::try_from(line_bytes.len())
-            .map_err(|_| import_error("NDJSON feature line length does not fit in u64"))?;
-        features.extend(ids.into_iter().map(|id| ScannedFeature {
-            id,
+            .map_err(|_| import_error("CityJSONSeq feature line length does not fit in u64"))?;
+        let cityobjects = normalized_cityobjects_from_feature_bytes(
+            &feature,
+            line_bytes,
+            path,
+            offset,
+            "CityJSONSeq feature",
+        )?;
+        features.push(ScannedFeature {
+            root_id: model_id.clone(),
+            model_id,
+            package_type: PackageType::CityJsonSeq,
             path: path.to_path_buf(),
             file_size: source_size,
             file_mtime_ns: source_mtime_ns,
             offset,
             length,
             bounds,
-            cityobject_count,
-            member_ranges: None,
-        }));
+            spatial,
+            cityobjects,
+        });
     }
 
     Ok(SourceScan {
@@ -3863,6 +4075,94 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
         source_mtime_ns,
         features,
     })
+}
+
+fn scan_ndjson_source_into(
+    source_index: usize,
+    path: &Path,
+    sender: &SyncSender<ScanEvent>,
+) -> Result<()> {
+    let (source_size, source_mtime_ns) = file_status(path)?;
+    let file = fs::File::open(path)?;
+    let mut reader = BufReader::new(file);
+    let mut line = Vec::new();
+    let first_line_length = reader.read_until(b'\n', &mut line)?;
+    if first_line_length == 0 {
+        return Err(import_error(format!(
+            "CityJSONSeq source {} is empty",
+            path.display()
+        )));
+    }
+
+    let metadata_bytes = trim_line_ending(&line);
+    let metadata: Meta = parse_json_slice(metadata_bytes)?;
+    let (scale, translate) = parse_ndjson_transform(&metadata)?;
+    send_scan_event(
+        sender,
+        ScanEvent::Source {
+            source_index,
+            header: SourceScanHeader {
+                path: path.to_path_buf(),
+                metadata,
+                vertices_offset: None,
+                vertices_length: None,
+                source_size,
+                source_mtime_ns,
+            },
+        },
+    )?;
+
+    let mut offset = u64::try_from(first_line_length)
+        .map_err(|_| import_error("CityJSONSeq metadata line length does not fit in u64"))?;
+    let mut batch = Vec::with_capacity(REBUILD_FEATURE_BATCH_SIZE);
+    loop {
+        line.clear();
+        let line_length = reader.read_until(b'\n', &mut line)?;
+        if line_length == 0 {
+            break;
+        }
+        let line_offset = offset;
+        offset =
+            offset
+                .checked_add(u64::try_from(line_length).map_err(|_| {
+                    import_error("CityJSONSeq feature line length does not fit in u64")
+                })?)
+                .ok_or_else(|| import_error("CityJSONSeq byte offset does not fit in u64"))?;
+        let line_bytes = trim_line_ending(&line);
+        if line_bytes.iter().all(u8::is_ascii_whitespace) {
+            continue;
+        }
+
+        let feature: Value = parse_json_slice(line_bytes)?;
+        let model_id = feature_model_id(&feature, "CityJSONSeq feature")?;
+        let (_ids, bounds, spatial) = parse_ndjson_feature_bounds(&feature, scale, translate)?;
+        let length = u64::try_from(line_bytes.len())
+            .map_err(|_| import_error("CityJSONSeq feature line length does not fit in u64"))?;
+        let cityobjects = normalized_cityobjects_from_feature_bytes(
+            &feature,
+            line_bytes,
+            path,
+            line_offset,
+            "CityJSONSeq feature",
+        )?;
+        batch.push(ScannedFeature {
+            root_id: model_id.clone(),
+            model_id,
+            package_type: PackageType::CityJsonSeq,
+            path: path.to_path_buf(),
+            file_size: source_size,
+            file_mtime_ns: source_mtime_ns,
+            offset: line_offset,
+            length,
+            bounds,
+            spatial,
+            cityobjects,
+        });
+        if batch.len() == REBUILD_FEATURE_BATCH_SIZE {
+            send_feature_batch(sender, source_index, &mut batch)?;
+        }
+    }
+    send_feature_batch(sender, source_index, &mut batch)
 }
 
 fn collect_layout_files(paths: &[PathBuf], suffix: &str) -> Result<Vec<PathBuf>> {
@@ -3913,6 +4213,7 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
                 path.display()
             ))
         })?;
+    validate_cityjson_relationship_graph(cityobjects)?;
     let vertices_value = document.get("vertices").ok_or_else(|| {
         import_error(format!(
             "CityJSON source {} is missing vertices",
@@ -3936,23 +4237,12 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
             ))
         })?;
         let member_ids = collect_cityjson_feature_members(id, cityobjects)?;
-        let member_ranges = member_ids
-            .iter()
-            .map(|member_id| {
-                let (member_offset, member_length) =
-                    cityobject_ranges.get(member_id).copied().ok_or_else(|| {
-                        import_error(format!(
-                            "CityObject fragment for {member_id} could not be located in {}",
-                            path.display()
-                        ))
-                    })?;
-                Ok(IndexedObjectRange {
-                    id: member_id.clone(),
-                    offset: member_offset,
-                    length: member_length,
-                })
-            })
-            .collect::<Result<Vec<_>>>()?;
+        let cityobjects_for_package = normalized_cityjson_package_cityobjects(
+            &member_ids,
+            cityobjects,
+            &cityobject_ranges,
+            path,
+        )?;
         let mut referenced_vertices = BTreeSet::new();
         let mut visited = BTreeSet::new();
         collect_cityjson_object_vertex_indices(
@@ -3961,25 +4251,26 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
             &mut referenced_vertices,
             &mut visited,
         )?;
-        if referenced_vertices.is_empty() {
-            return Err(import_error(format!(
-                "CityObject {id} in {} does not reference any vertices",
-                path.display()
-            )));
-        }
-        let bounds =
-            feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?;
+        let (bounds, spatial) = if referenced_vertices.is_empty() {
+            (empty_feature_bounds(), false)
+        } else {
+            (
+                feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?,
+                true,
+            )
+        };
         features.push(ScannedFeature {
-            id: id.clone(),
+            root_id: id.clone(),
+            model_id: id.clone(),
+            package_type: PackageType::CityJson,
             path: path.to_path_buf(),
             file_size: source_size,
             file_mtime_ns: source_mtime_ns,
             offset,
             length,
             bounds,
-            cityobject_count: u64::try_from(member_ranges.len())
-                .map_err(|_| import_error("CityObject count does not fit in u64"))?,
-            member_ranges: Some(member_ranges),
+            spatial,
+            cityobjects: cityobjects_for_package,
         });
     }
 
@@ -3992,6 +4283,72 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
         source_mtime_ns,
         features,
     })
+}
+
+fn normalized_cityjson_package_cityobjects(
+    member_ids: &[String],
+    cityobjects: &Map<String, Value>,
+    cityobject_ranges: &HashMap<String, (u64, u64)>,
+    path: &Path,
+) -> Result<Vec<NormalizedCityObjectScan>> {
+    member_ids
+        .iter()
+        .map(|member_id| {
+            let (member_offset, member_length) =
+                cityobject_ranges.get(member_id).copied().ok_or_else(|| {
+                    import_error(format!(
+                        "CityObject fragment for {member_id} could not be located in {}",
+                        path.display()
+                    ))
+                })?;
+            let object = cityobjects.get(member_id).ok_or_else(|| {
+                import_error(format!(
+                    "CityObject {member_id} could not be resolved in {}",
+                    path.display()
+                ))
+            })?;
+            normalized_cityobject_scan(
+                member_id.clone(),
+                object,
+                path,
+                member_offset,
+                member_length,
+            )
+        })
+        .collect()
+}
+
+fn validate_cityjson_relationship_graph(cityobjects: &Map<String, Value>) -> Result<()> {
+    let mut graph = BTreeMap::new();
+    for (object_id, object) in cityobjects {
+        let mut children = Vec::new();
+        if let Some(values) = object.get("children").and_then(Value::as_array) {
+            for value in values {
+                let child = value.as_str().ok_or_else(|| {
+                    import_error(format!(
+                        "CityObject {object_id} child reference is not a string"
+                    ))
+                })?;
+                if !cityobjects.contains_key(child) {
+                    return Err(import_error(format!("missing relationship target {child}")));
+                }
+                children.push(child);
+            }
+        }
+        graph.insert(object_id.as_str(), children);
+    }
+    ensure_relationship_graph_acyclic(&graph)
+}
+
+fn empty_feature_bounds() -> FeatureBounds {
+    FeatureBounds {
+        min_x: 0.0,
+        max_x: 0.0,
+        min_y: 0.0,
+        max_y: 0.0,
+        min_z: 0.0,
+        max_z: 0.0,
+    }
 }
 
 fn cityjson_base_metadata(document: &Value) -> Result<Meta> {
@@ -4280,7 +4637,7 @@ fn parse_ndjson_transform(metadata: &Value) -> Result<([f64; 3], [f64; 3])> {
     let transform = metadata
         .get("transform")
         .and_then(Value::as_object)
-        .ok_or_else(|| import_error("NDJSON metadata is missing transform"))?;
+        .ok_or_else(|| import_error("CityJSONSeq metadata is missing transform"))?;
 
     let scale = parse_vector3_f64(transform, "scale")?;
     let translate = parse_vector3_f64(transform, "translate")?;
@@ -4347,15 +4704,22 @@ fn parse_ndjson_feature_bounds(
     feature: &Value,
     scale: [f64; 3],
     translate: [f64; 3],
-) -> Result<(Vec<String>, FeatureBounds)> {
-    let ids = feature_cityobject_keys(feature, "NDJSON feature")?;
+) -> Result<(Vec<String>, FeatureBounds, bool)> {
+    let ids = feature_cityobject_keys(feature, "CityJSONSeq feature")?;
     let vertices = feature
         .get("vertices")
-        .ok_or_else(|| import_error("NDJSON feature is missing vertices"))?;
+        .ok_or_else(|| import_error("CityJSONSeq feature is missing vertices"))?;
     let vertices: Vec<[i64; 3]> = parse_json_value(vertices.clone())?;
     let referenced_vertices = collect_feature_vertex_indices(feature, vertices.len())?;
-    let bounds = feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?;
-    Ok((ids, bounds))
+    let (bounds, spatial) = if referenced_vertices.is_empty() {
+        (empty_feature_bounds(), false)
+    } else {
+        (
+            feature_bounds_from_vertices(&vertices, &referenced_vertices, scale, translate)?,
+            true,
+        )
+    };
+    Ok((ids, bounds, spatial))
 }
 
 #[allow(clippy::cast_precision_loss)]
@@ -4375,7 +4739,7 @@ fn feature_bounds_from_vertices(
     for &index in referenced_vertices {
         let vertex = vertices.get(index).copied().ok_or_else(|| {
             import_error(format!(
-                "vertex index {index} is outside the NDJSON feature vertex array"
+                "vertex index {index} is outside the CityJSONSeq feature vertex array"
             ))
         })?;
         let x = translate[0] + scale[0] * vertex[0] as f64;
@@ -4396,7 +4760,9 @@ fn feature_bounds_from_vertices(
         || !max_y.is_finite()
         || !max_z.is_finite()
     {
-        return Err(import_error("NDJSON feature bbox could not be computed"));
+        return Err(import_error(
+            "CityJSONSeq feature bbox could not be computed",
+        ));
     }
 
     Ok(FeatureBounds {
@@ -4409,6 +4775,7 @@ fn feature_bounds_from_vertices(
     })
 }
 
+#[cfg(test)]
 fn line_spans(bytes: &[u8]) -> Vec<(u64, &[u8])> {
     let mut spans = Vec::new();
     let mut offset = 0u64;
@@ -4456,1212 +4823,273 @@ fn i64_to_u64(value: i64) -> rusqlite::Result<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::{SystemTime, UNIX_EPOCH};
 
-    fn parent_child_lod_fixture() -> CityModel {
-        cityjson_lib::json::from_feature_slice(
-            br#"{
-                "type":"CityJSONFeature",
-                "id":"building",
-                "CityObjects":{
-                    "building":{
-                        "type":"Building",
-                        "children":["building-part"]
-                    },
-                    "building-part":{
-                        "type":"BuildingPart",
-                        "parents":["building"],
-                        "geometry":[
-                            {"type":"MultiSurface","lod":"1","boundaries":[[[0,1,2]]]},
-                            {"type":"MultiSurface","lod":"2","boundaries":[[[0,2,3]]]}
-                        ]
-                    },
-                    "road":{
-                        "type":"Road",
-                        "geometry":[{"type":"MultiSurface","lod":"1","boundaries":[[[4,5,6]]]}]
-                    }
-                },
-                "vertices":[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[10,0,0],[11,0,0],[10,1,0]]
-            }"#,
-        )
-        .expect("parent-child fixture should parse")
-    }
-
-    #[test]
-    fn feature_filter_selecting_parent_type_retains_child_geometry() {
-        let filter = FeatureFilter {
-            cityobject_types: Some(BTreeSet::from(["Building".to_owned()])),
-            default_lod: LodSelection::Highest,
-            lods_by_type: BTreeMap::new(),
-        };
-
-        let filtered = filter
-            .apply(&parent_child_lod_fixture())
-            .expect("filter should succeed");
-
-        assert_eq!(
-            filtered.diagnostics.retained_types,
-            BTreeSet::from(["Building".to_owned(), "BuildingPart".to_owned()])
-        );
-        assert_eq!(
-            filtered.diagnostics.retained_lods.get("BuildingPart"),
-            Some(&BTreeSet::from(["2".to_owned()]))
-        );
-        assert!(filtered.model.cityobjects().iter().any(|(_, cityobject)| {
-            cityobject.id() == "building-part"
-                && cityobject
-                    .geometry()
-                    .is_some_and(|geometries| !geometries.is_empty())
-        }));
-        assert!(
-            !filtered
-                .model
-                .cityobjects()
-                .iter()
-                .any(|(_, cityobject)| cityobject.id() == "road")
-        );
-    }
-
-    #[test]
-    fn feature_filter_summary_reports_missing_explicit_lod() {
-        let filter = FeatureFilter {
-            cityobject_types: None,
-            default_lod: LodSelection::Highest,
-            lods_by_type: BTreeMap::from([(
-                "BuildingPart".to_owned(),
-                LodSelection::Exact("3".to_owned()),
-            )]),
-        };
-        let filtered = filter
-            .apply(&parent_child_lod_fixture())
-            .expect("filter should succeed");
-        let mut summary = FeatureFilterSummary::default();
-        summary.add(&filtered.diagnostics);
-
-        let failures = summary.requested_lod_failures(&filter);
-
-        assert_eq!(
-            failures,
-            vec![MissingLodSelection {
-                cityobject_type: "BuildingPart".to_owned(),
-                requested_lod: "3".to_owned(),
-                available_lods: BTreeSet::from(["1".to_owned(), "2".to_owned()]),
-            }]
-        );
-    }
-
-    #[test]
-    fn cityjson_read_one_localizes_vertices_and_preserves_base_root_members() {
-        let selected_id = "building-1";
-        let selected_object = serde_json::json!({
-            "type": "Building",
-            "children": ["building-1-part"],
-            "geometry": [{
-                "type": "MultiSurface",
-                "lod": "0",
-                "boundaries": [[[2, 7, 5]]]
-            }]
-        });
-        let other_object = serde_json::json!({
-            "type": "Building",
-            "geometry": [{
-                "type": "MultiSurface",
-                "lod": "0",
-                "boundaries": [[[0, 1, 3]]]
-            }]
-        });
-        let vertices = serde_json::json!([
-            [100, 0, 0],
-            [101, 0, 0],
-            [0, 0, 0],
-            [102, 0, 0],
-            [103, 0, 0],
-            [2, 0, 0],
-            [104, 0, 0],
-            [1, 0, 0]
-        ]);
-        let document = serde_json::json!({
-            "type": "CityJSON",
-            "version": "2.0",
-            "transform": {
-                "scale": [0.5, 0.5, 0.5],
-                "translate": [10.0, 20.0, 30.0]
-            },
-            "metadata": {
-                "title": "unit-test-fixture"
-            },
-            "CityObjects": {
-                selected_id: selected_object.clone(),
-                "other-object": other_object
-            },
-            "vertices": vertices.clone()
-        });
-        let document_bytes = serde_json::to_vec(&document).expect("fixture JSON");
-        let base_document = cityjson_base_metadata(&document).expect("base CityJSON metadata");
-        let base_document_bytes: Arc<[u8]> =
-            Arc::from(serde_json::to_vec(&base_document).expect("base CityJSON metadata bytes"));
-        let object_fragment = object_entry_fragment(selected_id, &selected_object);
-        let vertices_fragment = serde_json::to_vec(&vertices).expect("vertices fragment");
-        let loc = FeatureLocation {
-            feature_id: selected_id.to_owned(),
-            source_id: 0,
-            source_path: write_temp_cityjson(&document_bytes),
-            offset: find_subslice(&document_bytes, &object_fragment)
-                .expect("selected object offset") as u64,
-            length: object_fragment.len() as u64,
-            vertices_offset: Some(
-                find_subslice(&document_bytes, &vertices_fragment).expect("vertices offset") as u64,
-            ),
-            vertices_length: Some(vertices_fragment.len() as u64),
-            member_ranges_json: None,
-        };
-
-        let backend = CityJsonBackend::new(vec![loc.source_path.clone()]);
-        let model = backend
-            .read_one(&loc, base_document_bytes)
-            .expect("CityJSON read should succeed");
-        let output: Value =
-            serde_json::from_str(&cityjson_lib::json::to_string(&model).expect("serialize result"))
-                .expect("valid output JSON");
-
-        let cityobjects = output["CityObjects"]
-            .as_object()
-            .expect("result CityObjects must be an object");
-        assert_eq!(cityobjects.len(), 1);
-        assert!(cityobjects.contains_key(selected_id));
-        assert_eq!(output["transform"], document["transform"]);
-        assert_eq!(output["metadata"], document["metadata"]);
-        assert!(cityobjects[selected_id].get("children").is_none());
-        assert_eq!(
-            output["vertices"],
-            serde_json::json!([[0, 0, 0], [2, 0, 0], [1, 0, 0]])
-        );
-        assert_eq!(
-            cityobjects[selected_id]["geometry"][0]["boundaries"],
-            serde_json::json!([[[0, 2, 1]]])
-        );
-    }
-
-    #[test]
-    fn cityjson_scan_and_read_one_group_root_objects_with_children() {
-        let document = serde_json::json!({
-            "type": "CityJSON",
-            "version": "2.0",
-            "transform": {
-                "scale": [1.0, 1.0, 1.0],
-                "translate": [0.0, 0.0, 0.0]
-            },
-            "CityObjects": {
-                "building-1": {
-                    "type": "Building",
-                    "children": ["building-1-part"],
-                    "geometry": [{
-                        "type": "MultiSurface",
-                        "lod": "1.0",
-                        "boundaries": [[[0, 1, 2]]]
-                    }]
-                },
-                "building-1-part": {
-                    "type": "BuildingPart",
-                    "parents": ["building-1"],
-                    "geometry": [{
-                        "type": "MultiSurface",
-                        "lod": "1.0",
-                        "boundaries": [[[3, 4, 5]]]
-                    }]
-                }
-            },
-            "vertices": [
-                [0, 0, 0],
-                [1, 0, 0],
-                [0, 1, 0],
-                [2, 0, 0],
-                [3, 0, 0],
-                [2, 1, 0]
-            ]
-        });
-        let bytes = serde_json::to_vec(&document).expect("fixture JSON");
-        let path = write_temp_cityjson(&bytes);
-        let scan = scan_cityjson_source(&path).expect("scan should succeed");
-
-        assert_eq!(scan.features.len(), 1);
-        assert_eq!(scan.features[0].id, "building-1");
-        let member_ranges = scan.features[0]
-            .member_ranges
-            .as_ref()
-            .expect("root feature should carry member ranges");
-        assert_eq!(member_ranges.len(), 2);
-        assert_eq!(member_ranges[0].id, "building-1");
-        assert_eq!(member_ranges[1].id, "building-1-part");
-
-        let loc = FeatureLocation {
-            feature_id: scan.features[0].id.clone(),
-            source_id: 0,
-            source_path: path,
-            offset: scan.features[0].offset,
-            length: scan.features[0].length,
-            vertices_offset: scan.vertices_offset,
-            vertices_length: scan.vertices_length,
-            member_ranges_json: Some(
-                serde_json::to_string(member_ranges).expect("member ranges JSON"),
-            ),
-        };
-        let backend = CityJsonBackend::new(vec![loc.source_path.clone()]);
-        let metadata_bytes: Arc<[u8]> =
-            Arc::from(serde_json::to_vec(&scan.metadata).expect("metadata JSON"));
-        let model = backend
-            .read_one(&loc, metadata_bytes)
-            .expect("CityJSON read should succeed");
-        let output: Value =
-            serde_json::from_str(&cityjson_lib::json::to_string(&model).expect("serialize result"))
-                .expect("valid output JSON");
-        let cityobjects = output["CityObjects"]
-            .as_object()
-            .expect("result CityObjects must be an object");
-
-        assert_eq!(cityobjects.len(), 2);
-        assert!(cityobjects.contains_key("building-1"));
-        assert!(cityobjects.contains_key("building-1-part"));
-        assert_eq!(
-            cityobjects["building-1"]["children"],
-            serde_json::json!(["building-1-part"])
-        );
-        assert_eq!(
-            cityobjects["building-1-part"]["parents"],
-            serde_json::json!(["building-1"])
-        );
-    }
-
-    #[test]
-    fn feature_parts_builder_drops_dangling_parent_links() {
-        let parts = build_feature_parts(
-            "building-1-part",
-            vec![(
-                "building-1-part".to_owned(),
-                serde_json::json!({
-                    "type": "BuildingPart",
-                    "parents": ["building-1"],
-                    "geometry": [{
-                        "type": "MultiSurface",
-                        "lod": "0",
-                        "boundaries": [[[5, 9, 7]]]
-                    }]
-                }),
-            )],
-            &[
-                [100, 0, 0],
-                [101, 0, 0],
-                [102, 0, 0],
-                [103, 0, 0],
-                [104, 0, 0],
-                [0, 0, 0],
-                [105, 0, 0],
-                [2, 0, 0],
-                [106, 0, 0],
-                [1, 0, 0],
-            ],
-        )
-        .expect("feature parts should build");
-        let object: Value = serde_json::from_str(parts.cityobjects[0].object_json.get())
-            .expect("valid object JSON");
-
-        assert_eq!(parts.feature_id, "building-1-part");
-        assert!(object.get("parents").is_none());
-        assert_eq!(parts.vertices, vec![[0, 0, 0], [2, 0, 0], [1, 0, 0]]);
-        assert_eq!(
-            object["geometry"][0]["boundaries"],
-            serde_json::json!([[[0, 2, 1]]])
-        );
-    }
-
-    #[test]
-    fn ndjson_backend_scan_and_index_lookup_roundtrip() {
-        let metadata = serde_json::json!({
-            "type": "CityJSON",
-            "version": "2.0",
-            "transform": {
-                "scale": [1.0, 1.0, 1.0],
-                "translate": [0.0, 0.0, 0.0]
-            }
-        });
-        let feature = serde_json::json!({
-            "type": "CityJSONFeature",
-            "id": "ndjson-test-feature",
-            "CityObjects": {
-                "ndjson-test-feature": {
-                    "type": "Building",
-                    "geometry": [{
-                        "type": "MultiSurface",
-                        "lod": "1.0",
-                        "boundaries": [[[0, 1, 2]]]
-                    }]
-                }
-            },
-            "vertices": [
-                [0, 0, 0],
-                [1, 0, 0],
-                [0, 1, 0]
-            ]
-        });
-        let ndjson_path = write_temp_ndjson(&metadata, &feature);
-        let backend = NdjsonBackend {
-            paths: vec![ndjson_path.clone()],
-        };
-        let scans = backend.scan(1).expect("NDJSON scan should succeed");
-        assert_eq!(scans.len(), 1);
-        assert_eq!(scans[0].features.len(), 1);
-        assert_eq!(scans[0].features[0].id, "ndjson-test-feature");
-
-        let index_path = write_temp_index_path();
-        let mut index = Index::open(&index_path).expect("SQLite index should open");
-        index.rebuild(&scans).expect("NDJSON scan should index");
-
-        let by_id = index
-            .lookup_id("ndjson-test-feature")
-            .expect("id lookup should succeed");
-        assert!(
-            by_id.is_some(),
-            "indexed feature should be addressable by id"
-        );
-
-        let hits = index
-            .lookup_bbox_iter(BBox {
-                min_x: -1.0,
-                max_x: 1.0,
-                min_y: -1.0,
-                max_y: 1.0,
-            })
-            .collect::<Result<Vec<_>>>()
-            .expect("bbox lookup should collect");
-        assert_eq!(hits.len(), 1);
-        assert_eq!(hits[0].source_path, ndjson_path);
-    }
-
-    #[test]
-    fn opening_old_unique_schema_removes_feature_id_uniqueness() {
-        let index_path = write_temp_index_path_with_prefix("old-unique-schema");
-        {
-            let conn = rusqlite::Connection::open(&index_path).expect("old index should open");
-            conn.execute_batch(
-                r"
-                CREATE TABLE sources (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    path TEXT NOT NULL UNIQUE,
-                    metadata TEXT NOT NULL,
-                    vertices_offset INTEGER,
-                    vertices_length INTEGER,
-                    source_size INTEGER,
-                    source_mtime_ns INTEGER
-                );
-                CREATE TABLE features (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    feature_id TEXT NOT NULL UNIQUE,
-                    source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
-                    path TEXT NOT NULL,
-                    file_size INTEGER,
-                    file_mtime_ns INTEGER,
-                    offset INTEGER NOT NULL,
-                    length INTEGER NOT NULL,
-                    min_z REAL,
-                    max_z REAL,
-                    cityobject_count INTEGER,
-                    member_ranges TEXT
-                );
-                CREATE VIRTUAL TABLE feature_bbox
-                USING rtree(feature_rowid, min_x, max_x, min_y, max_y);
-                CREATE TABLE bbox_map (
-                    feature_rowid INTEGER PRIMARY KEY,
-                    feature_id TEXT NOT NULL UNIQUE REFERENCES features(feature_id) ON DELETE CASCADE
-                );
-                INSERT INTO sources (path, metadata, source_size, source_mtime_ns)
-                VALUES ('metadata.json', '{}', 0, 0);
-                INSERT INTO features (
-                    feature_id,
-                    source_id,
-                    path,
-                    file_size,
-                    file_mtime_ns,
-                    offset,
-                    length,
-                    min_z,
-                    max_z,
-                    cityobject_count,
-                    member_ranges
-                )
-                VALUES ('duplicate', 1, 'feature-a.city.jsonl', 0, 0, 0, 1, 0, 0, 1, NULL);
-                INSERT INTO feature_bbox (feature_rowid, min_x, max_x, min_y, max_y)
-                VALUES (1, 0, 1, 0, 1);
-                INSERT INTO bbox_map (feature_rowid, feature_id) VALUES (1, 'duplicate');
-                ",
-            )
-            .expect("old schema should initialize");
-        }
-
-        let index = Index::open(&index_path).expect("index migration should succeed");
-
-        assert!(
-            !table_sql_contains(&index.conn, "features", "feature_id TEXT NOT NULL UNIQUE",)
-                .expect("features schema should load")
-        );
-        assert!(
-            !table_sql_contains(&index.conn, "bbox_map", "feature_id TEXT NOT NULL UNIQUE",)
-                .expect("bbox_map schema should load")
-        );
-
-        index
-            .conn
-            .execute(
-                r"
-                INSERT INTO features (
-                    feature_id,
-                    source_id,
-                    path,
-                    file_size,
-                    file_mtime_ns,
-                    offset,
-                    length,
-                    min_z,
-                    max_z,
-                    cityobject_count,
-                    member_ranges
-                )
-                VALUES ('duplicate', 1, 'feature-b.city.jsonl', 0, 0, 0, 1, 0, 0, 1, NULL)
-                ",
-                [],
-            )
-            .expect("duplicate feature_id should insert after migration");
-        let row_id = index.conn.last_insert_rowid();
-        index
-            .conn
-            .execute(
-                "INSERT INTO bbox_map (feature_rowid, feature_id) VALUES (?1, 'duplicate')",
-                params![row_id],
-            )
-            .expect("duplicate bbox_map feature_id should insert after migration");
-    }
-
-    #[test]
-    fn iter_all_scans_each_supported_layout_in_deterministic_order() {
-        let expected_ids = vec!["alpha", "beta", "gamma"];
-        let feature_files_root = write_temp_feature_files_root(&expected_ids);
-        let feature_files_index_path = write_temp_index_path_with_prefix("feature-files");
-        let mut feature_files_index = CityIndex::open(
-            StorageLayout::FeatureFiles {
-                root: feature_files_root,
-                metadata_glob: "**/metadata.json".to_owned(),
-                feature_glob: "**/*.city.jsonl".to_owned(),
-            },
-            &feature_files_index_path,
-        )
-        .expect("feature-files index should open");
-        feature_files_index
-            .reindex()
-            .expect("feature-files dataset should index");
-        assert_full_scan_order(&feature_files_index, &expected_ids);
-
-        let cityjson_root = write_temp_cityjson_root(&expected_ids);
-        let cityjson_index_path = write_temp_index_path_with_prefix("cityjson");
-        let mut cityjson_index = CityIndex::open(
-            StorageLayout::CityJson {
-                paths: vec![cityjson_root],
-            },
-            &cityjson_index_path,
-        )
-        .expect("cityjson index should open");
-        cityjson_index
-            .reindex()
-            .expect("cityjson dataset should index");
-        assert_full_scan_order(&cityjson_index, &expected_ids);
-
-        let ndjson_root = write_temp_ndjson_root(&expected_ids);
-        let ndjson_index_path = write_temp_index_path_with_prefix("ndjson");
-        let mut ndjson_index = CityIndex::open(
-            StorageLayout::Ndjson {
-                paths: vec![ndjson_root],
-            },
-            &ndjson_index_path,
-        )
-        .expect("ndjson index should open");
-        ndjson_index.reindex().expect("ndjson dataset should index");
-        assert_full_scan_order(&ndjson_index, &expected_ids);
-        assert_full_scan_pages(&ndjson_index, &expected_ids);
-    }
-
-    #[test]
-    fn iter_all_paginates_across_multiple_pages() {
-        let ids = (0..600)
-            .map(|idx| format!("feature-{idx:03}"))
-            .collect::<Vec<_>>();
-        let id_refs = ids.iter().map(String::as_str).collect::<Vec<_>>();
-        let root = write_temp_ndjson_root(&id_refs);
-        let index_path = write_temp_index_path_with_prefix("iter-all-pages");
-        let layout = StorageLayout::Ndjson {
-            paths: vec![root.clone()],
-        };
-        let mut index = CityIndex::open(layout, &index_path).expect("index should open");
-        index.reindex().expect("dataset should index");
-
-        let scanned_ids = index
-            .iter_all_with_ids()
-            .expect("iter_all_with_ids should build")
-            .map(|result| result.map(|(id, _)| id))
-            .collect::<Result<Vec<_>>>()
-            .expect("iter_all_with_ids should collect");
-
-        assert_eq!(scanned_ids.len(), 600);
-        assert_eq!(scanned_ids.first().expect("first id"), "feature-000");
-        assert_eq!(scanned_ids.last().expect("last id"), "feature-599");
-
-        let ref_pages = index
-            .iter_all_feature_ref_pages(128)
-            .expect("iter_all_feature_ref_pages should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("iter_all_feature_ref_pages should collect");
-        assert_eq!(
-            ref_pages.iter().map(Vec::len).collect::<Vec<_>>(),
-            vec![128, 128, 128, 128, 88]
-        );
-        assert_eq!(
-            ref_pages
-                .iter()
-                .flat_map(|page| page.iter().map(|feature| feature.feature_id.as_str()))
-                .collect::<Vec<_>>(),
-            ids.iter().map(String::as_str).collect::<Vec<_>>()
-        );
-        assert_eq!(
-            ref_pages
-                .iter()
-                .flat_map(|page| page.iter().map(|feature| feature.row_id))
-                .collect::<Vec<_>>(),
-            (1..=600).collect::<Vec<_>>()
-        );
-
-        let first_batch = index
-            .read_features(ref_pages.first().expect("first page should exist"))
-            .expect("feature batch should reconstruct");
-        assert_eq!(first_batch.len(), 128);
-
-        assert_indexed_batch_preserves_order(&index, ref_pages.first().expect("first page"), &ids);
-        assert_decoded_scan_pages(&index, &ids);
-        assert_rowid_feature_reads(&index);
-
-        for page in &ref_pages {
-            for feature in page {
-                let model = index
-                    .read_feature(feature)
-                    .expect("feature should reconstruct");
-                assert!(model_contains_id(&model, &feature.feature_id));
-                assert_eq!(
-                    feature_bounds_for_model(&model).expect("bounds should be computable"),
-                    feature.bounds
-                );
-            }
-        }
-
-        let bbox_pages = index
-            .iter_all_bbox_pages(128)
-            .expect("iter_all_bbox_pages should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("iter_all_bbox_pages should collect");
-        assert_eq!(
-            bbox_pages
-                .iter()
-                .flat_map(|page| page.iter().map(|feature| feature.feature_id.as_str()))
-                .collect::<Vec<_>>(),
-            ids.iter().map(String::as_str).collect::<Vec<_>>()
-        );
-    }
-
-    #[test]
-    fn iter_all_feature_ref_pages_handles_page_boundaries_without_gaps() {
-        let ids = (0..256)
-            .map(|idx| format!("boundary-{idx:03}"))
-            .collect::<Vec<_>>();
-        let id_refs = ids.iter().map(String::as_str).collect::<Vec<_>>();
-        let root = write_temp_ndjson_root(&id_refs);
-        let index_path = write_temp_index_path_with_prefix("iter-boundary-pages");
-        let mut index = CityIndex::open(StorageLayout::Ndjson { paths: vec![root] }, &index_path)
-            .expect("index should open");
-        index.reindex().expect("dataset should index");
-
-        let pages = index
-            .iter_all_feature_ref_pages(128)
-            .expect("iter_all_feature_ref_pages should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("iter_all_feature_ref_pages should collect");
-
-        assert_eq!(
-            pages.iter().map(Vec::len).collect::<Vec<_>>(),
-            vec![128, 128]
-        );
-        assert_eq!(
-            pages
-                .iter()
-                .flat_map(|page| page.iter().map(|feature| feature.feature_id.as_str()))
-                .collect::<Vec<_>>(),
-            ids.iter().map(String::as_str).collect::<Vec<_>>()
-        );
-    }
-
-    #[test]
-    fn feature_bounds_summary_matches_iterative_bounds() {
-        let ids = ["alpha", "beta", "gamma"];
-        let root = write_temp_ndjson_root(&ids);
-        let index_path = write_temp_index_path_with_prefix("bounds-summary");
-        let mut index = CityIndex::open(StorageLayout::Ndjson { paths: vec![root] }, &index_path)
-            .expect("index should open");
-        index.reindex().expect("dataset should index");
-
-        let summary = index
-            .feature_bounds_summary()
-            .expect("bounds summary should load")
-            .expect("non-empty index should have a summary");
-        let mut pages = index
-            .iter_all_bbox_pages(2)
-            .expect("bbox pages should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("bbox pages should collect")
-            .into_iter()
-            .flatten();
-        let first = pages.next().expect("first indexed feature");
-        let mut expected = first.bounds;
-        let mut count = 1usize;
-        for feature in pages {
-            expected.min_x = expected.min_x.min(feature.bounds.min_x);
-            expected.max_x = expected.max_x.max(feature.bounds.max_x);
-            expected.min_y = expected.min_y.min(feature.bounds.min_y);
-            expected.max_y = expected.max_y.max(feature.bounds.max_y);
-            expected.min_z = expected.min_z.min(feature.bounds.min_z);
-            expected.max_z = expected.max_z.max(feature.bounds.max_z);
-            count += 1;
-        }
-
-        assert_eq!(summary.feature_count, count);
-        assert_eq!(summary.bounds, expected);
-    }
-
-    #[test]
-    fn feature_bounds_summary_returns_none_for_empty_index() {
-        let index_path = write_temp_index_path_with_prefix("empty-bounds-summary");
-        let index = CityIndex::open(StorageLayout::Ndjson { paths: Vec::new() }, &index_path)
-            .expect("index should open");
-
-        assert_eq!(
-            index.feature_bounds_summary().expect("summary should load"),
-            None
-        );
-    }
-
-    #[test]
-    fn iter_all_feature_ref_pages_rejects_zero_page_size() {
-        let root = write_temp_ndjson_root(&["alpha"]);
-        let index_path = write_temp_index_path_with_prefix("page-size-zero");
-        let mut index = CityIndex::open(StorageLayout::Ndjson { paths: vec![root] }, &index_path)
-            .expect("index should open");
-        index.reindex().expect("dataset should index");
-
-        match index.iter_all_feature_ref_pages(0) {
-            Ok(_) => panic!("zero page size should be rejected"),
-            Err(error) => assert!(error.to_string().contains("page_size")),
-        }
-    }
-
-    #[test]
-    fn read_exact_range_reads_only_the_requested_span() {
-        let path = write_temp_bytes(b"abcdefghij");
-
-        let bytes = read_exact_range(&path, 3, 4).expect("range read should succeed");
-
-        assert_eq!(bytes, b"defg");
-    }
-
-    #[test]
-    fn read_exact_range_rejects_short_reads() {
-        let path = write_temp_bytes(b"abc");
-
-        let error = read_exact_range(&path, 2, 4).expect_err("range read should fail");
-
-        assert!(error.to_string().contains("short read"));
-    }
-
-    #[test]
-    fn read_exact_range_rejects_oversized_lengths() {
-        let path = write_temp_bytes(b"abc");
-
-        let error = read_exact_range(&path, 0, u64::MAX).expect_err("range read should fail");
-
-        assert!(
-            error
-                .to_string()
-                .contains("exceeds the supported buffer size")
-        );
-    }
-
-    #[test]
-    fn feature_files_metadata_resolution_prefers_nearest_ancestor() {
-        let root = PathBuf::from("/data/root");
-        let mut metadata_by_dir = BTreeMap::new();
-        metadata_by_dir.insert(root.clone(), root.join("metadata.json"));
-        metadata_by_dir.insert(
-            root.join("features/8"),
-            root.join("features/8/metadata.json"),
-        );
-
-        let feature_path = root.join("features/8/296/592/sample.city.jsonl");
-        let resolved = resolve_feature_metadata_path(&root, &feature_path, &metadata_by_dir)
-            .expect("metadata must resolve");
-
-        assert_eq!(resolved, root.join("features/8/metadata.json"));
-    }
-
-    fn object_entry_fragment(object_id: &str, object: &Value) -> Vec<u8> {
-        let mut map = Map::new();
-        map.insert(object_id.to_owned(), object.clone());
-        let serialized = serde_json::to_vec(&Value::Object(map)).expect("object entry");
-        serialized[1..serialized.len() - 1].to_vec()
-    }
-
-    fn find_subslice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
-        haystack
-            .windows(needle.len())
-            .position(|window| window == needle)
-    }
-
-    fn write_temp_cityjson(bytes: &[u8]) -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system time")
+    fn temp_dir(label: &str) -> PathBuf {
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("system time should be after unix epoch")
             .as_nanos();
-        let path =
-            std::env::temp_dir().join(format!("cityjson-index-cityjson-read-one-{unique}.json"));
-        fs::write(&path, bytes).expect("write temp cityjson");
+        let path = std::env::temp_dir().join(format!(
+            "cityjson-index-scan-{label}-{}-{nanos}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&path).expect("temp test directory should be created");
         path
     }
 
-    fn write_temp_ndjson(metadata: &Value, feature: &Value) -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system time")
-            .as_nanos();
-        let path = std::env::temp_dir().join(format!("cityjson-index-ndjson-{unique}.jsonl"));
-        let contents = format!(
-            "{}\n{}\n",
-            serde_json::to_string(metadata).expect("metadata JSON"),
-            serde_json::to_string(feature).expect("feature JSON")
-        );
-        fs::write(&path, contents).expect("write temp ndjson");
-        path
-    }
-
-    fn write_temp_index_path() -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system time")
-            .as_nanos();
-        let path = std::env::temp_dir().join(format!("cityjson-index-ndjson-{unique}.sqlite"));
-        if path.exists() {
-            fs::remove_file(&path).expect("remove temp sqlite");
-        }
-        path
-    }
-
-    fn write_temp_index_path_with_prefix(prefix: &str) -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system time")
-            .as_nanos();
-        let path = std::env::temp_dir().join(format!("cityjson-index-{prefix}-{unique}.sqlite"));
-        if path.exists() {
-            fs::remove_file(&path).expect("remove temp sqlite");
-        }
-        path
-    }
-
-    fn write_temp_feature_files_root(ids: &[&str]) -> PathBuf {
-        let root = write_temp_dir("cityjson-index-feature-files");
-        fs::write(
-            root.join("metadata.json"),
-            serde_json::to_vec(&base_document()).expect("metadata JSON"),
-        )
-        .expect("write metadata");
-        for (idx, id) in ids.iter().enumerate() {
-            let feature_path = root.join(format!("features/{idx:03}.city.jsonl"));
-            let idx = i64::try_from(idx).expect("test index fits in i64");
-            if let Some(parent) = feature_path.parent() {
-                fs::create_dir_all(parent).expect("create feature directory");
-            }
-            fs::write(
-                &feature_path,
-                serde_json::to_vec(&feature_feature_document(id, idx)).expect("feature JSON"),
-            )
-            .expect("write feature file");
-        }
-        root
-    }
-
-    fn write_temp_cityjson_root(ids: &[&str]) -> PathBuf {
-        let root = write_temp_dir("cityjson-index-cityjson");
-        let mut cityobjects = Map::new();
-        for id in ids {
-            cityobjects.insert((*id).to_owned(), feature_object(0));
-        }
-        let document = serde_json::json!({
-            "type": "CityJSON",
-            "version": "2.0",
-            "transform": {
-                "scale": [1.0, 1.0, 1.0],
-                "translate": [0.0, 0.0, 0.0]
-            },
-            "metadata": {
-                "referenceSystem": "https://www.opengis.net/def/crs/EPSG/0/7415"
-            },
-            "CityObjects": cityobjects,
-            "vertices": [
-                [0, 0, 0],
-                [1, 0, 0],
-                [0, 1, 0]
-            ]
-        });
-        fs::write(
-            root.join("dataset.city.json"),
-            serde_json::to_vec(&document).expect("cityjson JSON"),
-        )
-        .expect("write cityjson");
-        root
-    }
-
-    fn write_temp_ndjson_root(ids: &[&str]) -> PathBuf {
-        let root = write_temp_dir("cityjson-index-ndjson-root");
-        let mut contents = serde_json::to_string(&base_document()).expect("metadata JSON");
-        contents.push('\n');
-        for (idx, id) in ids.iter().enumerate() {
-            let idx = i64::try_from(idx).expect("test index fits in i64");
-            contents.push_str(
-                &serde_json::to_string(&feature_feature_document(id, idx)).expect("feature JSON"),
-            );
-            contents.push('\n');
-        }
-        fs::write(root.join("dataset.city.jsonl"), contents).expect("write ndjson");
-        root
-    }
-
-    fn write_temp_dir(prefix: &str) -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system time")
-            .as_nanos();
-        let path = std::env::temp_dir().join(format!("{prefix}-{unique}"));
-        fs::create_dir_all(&path).expect("create temp dir");
-        path
-    }
-
-    fn base_document() -> Value {
+    fn stream_metadata() -> Value {
         serde_json::json!({
             "type": "CityJSON",
             "version": "2.0",
             "transform": {
                 "scale": [1.0, 1.0, 1.0],
                 "translate": [0.0, 0.0, 0.0]
-            },
-            "metadata": {
-                "referenceSystem": "https://www.opengis.net/def/crs/EPSG/0/7415"
             },
             "CityObjects": {},
             "vertices": []
         })
     }
 
-    fn feature_feature_document(id: &str, offset: i64) -> Value {
-        let object = feature_object(offset);
-        serde_json::json!({
-            "type": "CityJSONFeature",
-            "id": id,
-            "CityObjects": {
-                id: object
-            },
-            "vertices": [
-                [offset, 0, 0],
-                [offset + 1, 0, 0],
-                [offset, 1, 0]
-            ]
-        })
+    struct EnvGuard {
+        previous: Option<std::ffi::OsString>,
     }
 
-    fn feature_object(_offset: i64) -> Value {
-        serde_json::json!({
-            "type": "Building",
-            "geometry": [{
-                "type": "MultiSurface",
-                "lod": "1.0",
-                "boundaries": [[[0, 1, 2]]]
-            }]
-        })
-    }
-
-    fn assert_full_scan_order(index: &CityIndex, expected_ids: &[&str]) {
-        let ids = index
-            .iter_all_with_ids()
-            .expect("iter_all_with_ids should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("iter_all_with_ids should collect");
-        assert_eq!(
-            ids.iter().map(|(id, _)| id.as_str()).collect::<Vec<_>>(),
-            expected_ids
-        );
-
-        let models = index
-            .iter_all()
-            .expect("iter_all should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("iter_all should collect");
-        assert_eq!(models.len(), expected_ids.len());
-
-        let models_with_metadata = index
-            .iter_all_with_metadata()
-            .expect("iter_all_with_metadata should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("iter_all_with_metadata should collect");
-        assert_eq!(models_with_metadata.len(), expected_ids.len());
-    }
-
-    fn assert_full_scan_pages(index: &CityIndex, expected_ids: &[&str]) {
-        let pages = index
-            .iter_all_feature_ref_pages(2)
-            .expect("iter_all_feature_ref_pages should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("iter_all_feature_ref_pages should collect");
-        assert_eq!(
-            pages
-                .iter()
-                .flat_map(|page| page.iter().map(|feature| feature.feature_id.as_str()))
-                .collect::<Vec<_>>(),
-            expected_ids
-        );
-
-        let bbox_pages = index
-            .iter_all_bbox_pages(2)
-            .expect("iter_all_bbox_pages should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("iter_all_bbox_pages should collect");
-        assert_eq!(
-            bbox_pages
-                .iter()
-                .flat_map(|page| page.iter().map(|feature| feature.feature_id.as_str()))
-                .collect::<Vec<_>>(),
-            expected_ids
-        );
-
-        for page in pages {
-            for feature in page {
-                let model = index
-                    .read_feature(&feature)
-                    .expect("feature should reconstruct");
-                assert!(model_contains_id(&model, &feature.feature_id));
-                assert_eq!(
-                    feature_bounds_for_model(&model).expect("bounds should be computable"),
-                    feature.bounds
-                );
+    impl Drop for EnvGuard {
+        fn drop(&mut self) {
+            // SAFETY: tests use a process-wide mutex before mutating the variable.
+            unsafe {
+                if let Some(previous) = self.previous.take() {
+                    std::env::set_var(WORKER_COUNT_ENV, previous);
+                } else {
+                    std::env::remove_var(WORKER_COUNT_ENV);
+                }
             }
         }
     }
 
-    fn assert_indexed_batch_preserves_order(
-        index: &CityIndex,
-        features: &[IndexedFeatureRef],
-        ids: &[String],
-    ) {
-        let indexed_features = index
-            .read_indexed_features(features)
-            .expect("indexed feature batch should reconstruct");
-        assert_eq!(
-            indexed_features
-                .iter()
-                .map(|feature| feature.reference.feature_id.as_str())
-                .collect::<Vec<_>>(),
-            ids.iter()
-                .take(features.len())
-                .map(String::as_str)
-                .collect::<Vec<_>>()
-        );
+    fn with_worker_count_env<T>(worker_count: usize, f: impl FnOnce() -> T) -> T {
+        static ENV_LOCK: std::sync::OnceLock<Mutex<()>> = std::sync::OnceLock::new();
+        let _lock = ENV_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .expect("env lock");
+        let previous = std::env::var_os(WORKER_COUNT_ENV);
+        let _guard = EnvGuard { previous };
+        // SAFETY: the test holds a process-wide mutex while mutating the variable.
+        unsafe {
+            std::env::set_var(WORKER_COUNT_ENV, worker_count.to_string());
+        }
+        f()
     }
 
-    fn assert_decoded_scan_pages(index: &CityIndex, ids: &[String]) {
-        let scan_pages = index
-            .scan_feature_pages(128)
-            .expect("scan_feature_pages should build")
-            .collect::<Result<Vec<_>>>()
-            .expect("scan_feature_pages should collect");
-        assert_eq!(
-            scan_pages.iter().map(Vec::len).collect::<Vec<_>>(),
-            vec![128, 128, 128, 128, 88]
-        );
-        assert_eq!(
-            scan_pages
-                .iter()
-                .flat_map(|page| {
-                    page.iter()
-                        .map(|feature| feature.reference.feature_id.as_str())
-                })
-                .collect::<Vec<_>>(),
-            ids.iter().map(String::as_str).collect::<Vec<_>>()
-        );
-
-        let scanned_ids = index
-            .scan_features()
-            .expect("scan_features should build")
-            .map(|result| result.map(|feature| feature.reference.feature_id))
-            .collect::<Result<Vec<_>>>()
-            .expect("scan_features should collect");
-        assert_eq!(scanned_ids, ids);
+    fn cityjson_feature_line(id: &str) -> String {
+        format!(
+            r#"{{"type":"CityJSONFeature","id":"{id}","CityObjects":{{"{id}":{{"type":"Building"}}}},"vertices":[]}}"#
+        )
     }
 
-    fn assert_rowid_feature_reads(index: &CityIndex) {
-        let first_ref = index
-            .lookup_feature_ref_by_rowid(1)
-            .expect("rowid lookup should load")
-            .expect("first rowid should exist");
-        assert_eq!(first_ref.feature_id, "feature-000");
-        assert_eq!(
+    fn write_cityjson_seq(path: &Path, start: usize, count: usize) {
+        let header = serde_json::to_string(&stream_metadata()).expect("metadata serializes");
+        let mut contents = String::new();
+        contents.push_str(&header);
+        contents.push('\n');
+        for index in start..start + count {
+            contents.push_str(&cityjson_feature_line(&format!("object-{index}")));
+            contents.push('\n');
+        }
+        fs::write(path, contents).expect("CityJSONSeq fixture should be written");
+    }
+
+    fn write_cityjson_source(path: &Path, id: &str) {
+        let document = format!(
+            r#"{{
+                "type":"CityJSON",
+                "version":"2.0",
+                "transform":{{"scale":[1.0,1.0,1.0],"translate":[0.0,0.0,0.0]}},
+                "CityObjects":{{"{id}":{{"type":"Building"}}}},
+                "vertices":[]
+            }}"#
+        );
+        fs::write(path, document).expect("CityJSON fixture should be written");
+    }
+
+    fn build_index_with_workers(
+        layout: StorageLayout,
+        index_path: &Path,
+        worker_count: usize,
+    ) -> CityIndex {
+        with_worker_count_env(worker_count, || {
+            let mut index = CityIndex::open(layout, index_path).expect("index should open");
+            index.reindex().expect("reindex should succeed");
             index
-                .lookup_feature_ref_by_rowid(9999)
-                .expect("missing rowid lookup should load"),
-            None
-        );
-
-        let rowid_features = index
-            .read_features_by_rowids(&[2, 9999, 1, 2])
-            .expect("rowid batch should reconstruct");
-        assert_eq!(
-            rowid_features
-                .iter()
-                .map(|feature| feature
-                    .as_ref()
-                    .map(|feature| feature.reference.feature_id.as_str()))
-                .collect::<Vec<_>>(),
-            vec![
-                Some("feature-001"),
-                None,
-                Some("feature-000"),
-                Some("feature-001")
-            ]
-        );
-
-        let range_features = index
-            .read_feature_range_after_rowid(Some(127), 3)
-            .expect("rowid range should reconstruct");
-        assert_eq!(
-            range_features
-                .iter()
-                .map(|feature| feature.reference.feature_id.as_str())
-                .collect::<Vec<_>>(),
-            vec!["feature-127", "feature-128", "feature-129"]
-        );
-    }
-
-    fn model_contains_id(model: &CityModel, id: &str) -> bool {
-        let value: Value =
-            serde_json::from_str(&cityjson_lib::json::to_string(model).expect("serialize model"))
-                .expect("model JSON");
-        value["CityObjects"]
-            .as_object()
-            .is_some_and(|cityobjects| cityobjects.contains_key(id))
-    }
-
-    fn feature_bounds_for_model(model: &CityModel) -> Result<FeatureBounds> {
-        let value: Value =
-            serde_json::from_str(&cityjson_lib::json::to_string(model).expect("serialize model"))
-                .expect("model JSON");
-        let vertices = value
-            .get("vertices")
-            .and_then(Value::as_array)
-            .ok_or_else(|| import_error("model JSON is missing vertices"))?;
-        let transform = value
-            .get("transform")
-            .and_then(Value::as_object)
-            .ok_or_else(|| import_error("model JSON is missing transform"))?;
-        let scale = parse_transform_component(transform, "scale")?;
-        let translate = parse_transform_component(transform, "translate")?;
-
-        let mut min_x = f64::INFINITY;
-        let mut max_x = f64::NEG_INFINITY;
-        let mut min_y = f64::INFINITY;
-        let mut max_y = f64::NEG_INFINITY;
-        let mut min_z = f64::INFINITY;
-        let mut max_z = f64::NEG_INFINITY;
-
-        for vertex in vertices {
-            let coords = vertex
-                .as_array()
-                .ok_or_else(|| import_error("vertex must be an array"))?;
-            if coords.len() != 3 {
-                return Err(import_error("vertex must have three coordinates"));
-            }
-            let x = translate[0] + scale[0] * value_as_f64(&coords[0])?;
-            let y = translate[1] + scale[1] * value_as_f64(&coords[1])?;
-            let z = translate[2] + scale[2] * value_as_f64(&coords[2])?;
-            min_x = min_x.min(x);
-            max_x = max_x.max(x);
-            min_y = min_y.min(y);
-            max_y = max_y.max(y);
-            min_z = min_z.min(z);
-            max_z = max_z.max(z);
-        }
-
-        if !min_x.is_finite()
-            || !max_x.is_finite()
-            || !min_y.is_finite()
-            || !max_y.is_finite()
-            || !min_z.is_finite()
-            || !max_z.is_finite()
-        {
-            return Err(import_error(
-                "could not compute a finite bbox from the model",
-            ));
-        }
-
-        Ok(FeatureBounds {
-            min_x,
-            max_x,
-            min_y,
-            max_y,
-            min_z,
-            max_z,
         })
     }
 
-    fn parse_transform_component(
-        transform: &serde_json::Map<String, Value>,
-        key: &str,
-    ) -> Result<[f64; 3]> {
-        let values = transform
-            .get(key)
-            .and_then(Value::as_array)
-            .ok_or_else(|| import_error(format!("transform is missing {key}")))?;
-        if values.len() != 3 {
-            return Err(import_error(format!(
-                "transform {key} must contain three values"
-            )));
+    fn package_ids(index: &CityIndex) -> BTreeSet<String> {
+        let mut ids = BTreeSet::new();
+        let mut after_record_id = None;
+        loop {
+            let page = index
+                .package_ref_page_after_record_id(after_record_id, 128)
+                .expect("package page should load");
+            if page.is_empty() {
+                break;
+            }
+            after_record_id = page.last().map(|package| package.record_id);
+            ids.extend(page.into_iter().map(|package| package.model_id));
         }
-        Ok([
-            value_as_f64(&values[0])?,
-            value_as_f64(&values[1])?,
-            value_as_f64(&values[2])?,
-        ])
+        ids
     }
 
-    fn value_as_f64(value: &Value) -> Result<f64> {
-        value
-            .as_f64()
-            .ok_or_else(|| import_error("expected a numeric value"))
+    #[test]
+    fn cityjson_seq_reindex_streams_more_than_one_feature_batch() {
+        let root = temp_dir("seq-stream-batches");
+        let path = root.join("features.city.jsonl");
+        write_cityjson_seq(&path, 0, REBUILD_FEATURE_BATCH_SIZE + 1);
+        let index_path = root.join("index.sqlite");
+
+        let index =
+            build_index_with_workers(StorageLayout::Ndjson { paths: vec![root] }, &index_path, 1);
+
+        assert_eq!(index.source_count().expect("source count"), 1);
+        assert_eq!(
+            index.package_count().expect("package count"),
+            REBUILD_FEATURE_BATCH_SIZE + 1
+        );
     }
 
-    fn write_temp_bytes(bytes: &[u8]) -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system time")
-            .as_nanos();
-        let path = std::env::temp_dir().join(format!("cityjson-index-range-read-{unique}.bin"));
-        fs::write(&path, bytes).expect("write temp bytes");
-        path
+    #[test]
+    fn cityjson_seq_reindex_is_stable_across_worker_counts() {
+        let root = temp_dir("seq-worker-parity");
+        write_cityjson_seq(&root.join("a.city.jsonl"), 0, 2);
+        write_cityjson_seq(&root.join("b.city.jsonl"), 2, 2);
+
+        let single_index_path = root.join("single.sqlite");
+        let multi_index_path = root.join("multi.sqlite");
+        let single = build_index_with_workers(
+            StorageLayout::Ndjson {
+                paths: vec![root.clone()],
+            },
+            &single_index_path,
+            1,
+        );
+        let multi = build_index_with_workers(
+            StorageLayout::Ndjson { paths: vec![root] },
+            &multi_index_path,
+            4,
+        );
+
+        assert_eq!(single.source_count().expect("single source count"), 2);
+        assert_eq!(single.package_count().expect("single package count"), 4);
+        assert_eq!(
+            single.package_count().expect("single package count"),
+            multi.package_count().expect("multi package count")
+        );
+        assert_eq!(package_ids(&single), package_ids(&multi));
+    }
+
+    #[test]
+    fn cityjson_reindex_is_stable_across_worker_counts() {
+        let root = temp_dir("cityjson-worker-parity");
+        write_cityjson_source(&root.join("a.city.json"), "building-a");
+        write_cityjson_source(&root.join("b.city.json"), "building-b");
+
+        let single_index_path = root.join("single.sqlite");
+        let multi_index_path = root.join("multi.sqlite");
+        let single = build_index_with_workers(
+            StorageLayout::CityJson {
+                paths: vec![root.clone()],
+            },
+            &single_index_path,
+            1,
+        );
+        let multi = build_index_with_workers(
+            StorageLayout::CityJson { paths: vec![root] },
+            &multi_index_path,
+            4,
+        );
+
+        assert_eq!(single.source_count().expect("single source count"), 2);
+        assert_eq!(single.package_count().expect("single package count"), 2);
+        assert_eq!(
+            single.package_count().expect("single package count"),
+            multi.package_count().expect("multi package count")
+        );
+        assert_eq!(package_ids(&single), package_ids(&multi));
+    }
+
+    #[test]
+    fn cityjson_seq_scan_uses_feature_id_as_package_model_id() {
+        let root = temp_dir("seq-model-id");
+        let path = root.join("features.city.jsonl");
+        let header = serde_json::to_string(&stream_metadata()).expect("metadata serializes");
+        let feature = r#"{"type":"CityJSONFeature","id":"feature-root","CityObjects":{"object-a":{"type":"Building"}},"vertices":[]}"#;
+        fs::write(&path, format!("{header}\n{feature}\n")).expect("fixture should be written");
+
+        let scan = scan_ndjson_source(&path).expect("CityJSONSeq scan should succeed");
+        assert_eq!(scan.features.len(), 1);
+        let scanned = &scan.features[0];
+        assert_eq!(scanned.package_type, PackageType::CityJsonSeq);
+        assert_eq!(scanned.model_id, "feature-root");
+        assert_eq!(scanned.root_id, "feature-root");
+        assert_eq!(scanned.cityobjects[0].external_id, "object-a");
+        assert!(scanned.cityobjects[0].offset >= scanned.offset);
+        assert!(scanned.cityobjects[0].offset < scanned.offset + scanned.length);
+    }
+
+    #[test]
+    fn feature_file_scan_keeps_absolute_cityobject_offsets() {
+        let root = temp_dir("feature-file-offsets");
+        let path = root.join("feature.city.jsonl");
+        let feature = r#"{"type":"CityJSONFeature","id":"feature-root","CityObjects":{"object-a":{"type":"Building"}},"vertices":[]}"#;
+        fs::write(&path, feature).expect("fixture should be written");
+        let metadata = stream_metadata();
+        let item = FeatureFileScanItem {
+            source_index: 0,
+            metadata: &metadata,
+            path: &path,
+        };
+
+        let (_source_index, features) = scan_feature_file(&item).expect("feature scan succeeds");
+        assert_eq!(features.len(), 1);
+        let scanned = &features[0];
+        assert_eq!(scanned.package_type, PackageType::FeatureFiles);
+        assert_eq!(scanned.model_id, "feature-root");
+        assert_eq!(scanned.cityobjects[0].external_id, "object-a");
+        assert!(scanned.cityobjects[0].offset < scanned.length);
+    }
+
+    #[test]
+    fn cityjson_scan_reuses_shared_child_physical_range() {
+        let root = temp_dir("cityjson-shared-child");
+        let path = root.join("tile.city.json");
+        let document = r#"{
+            "type":"CityJSON",
+            "version":"2.0",
+            "transform":{"scale":[1.0,1.0,1.0],"translate":[0.0,0.0,0.0]},
+            "CityObjects":{
+                "root-a":{"type":"Building","children":["shared"]},
+                "root-b":{"type":"Building","children":["shared"]},
+                "shared":{"type":"BuildingPart","parents":["root-a","root-b"]}
+            },
+            "vertices":[]
+        }"#;
+        fs::write(&path, document).expect("fixture should be written");
+
+        let scan = scan_cityjson_source(&path).expect("CityJSON scan should succeed");
+        assert_eq!(scan.features.len(), 2);
+        let shared_offsets = scan
+            .features
+            .iter()
+            .map(|feature| {
+                feature
+                    .cityobjects
+                    .iter()
+                    .find(|object| object.external_id == "shared")
+                    .expect("shared child should be a package member")
+                    .offset
+            })
+            .collect::<BTreeSet<_>>();
+        assert_eq!(shared_offsets.len(), 1);
     }
 }

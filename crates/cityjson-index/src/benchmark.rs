@@ -53,6 +53,10 @@ pub struct BenchmarkCli {
     #[arg(long, value_enum)]
     pub case: Vec<BenchmarkCaseKind>,
 
+    /// Include a prepared storage layout. Defaults to all supported layouts.
+    #[arg(long, value_enum)]
+    pub layout: Vec<BenchmarkLayoutKind>,
+
     /// Worker counts to record for each dataset.
     #[arg(long, value_name = "WORKERS")]
     pub workers: Vec<usize>,
@@ -70,6 +74,26 @@ pub enum BenchmarkCaseKind {
     MultiTile,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ValueEnum)]
+#[serde(rename_all = "kebab-case")]
+pub enum BenchmarkLayoutKind {
+    CityJson,
+    CityJsonSeq,
+    FeatureFiles,
+}
+
+impl BenchmarkLayoutKind {
+    const ALL: [Self; 3] = [Self::CityJson, Self::CityJsonSeq, Self::FeatureFiles];
+
+    fn as_label(self) -> &'static str {
+        match self {
+            Self::CityJson => "cityjson",
+            Self::CityJsonSeq => "cityjson-seq",
+            Self::FeatureFiles => "feature-files",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct BenchmarkReport {
     pub runs: Vec<BenchmarkOperationRecord>,
@@ -81,15 +105,20 @@ struct BenchmarkRecordInput {
     source_artifact: PathBuf,
     prepared_dataset: PathBuf,
     subset_size: Option<usize>,
+    layout: BenchmarkLayoutKind,
     byte_size: u64,
+    sidecar_byte_size: u64,
     worker_count: usize,
     operation: String,
     variant: Option<String>,
     elapsed_ns: u64,
     memory: profile::MemorySnapshot,
     feature_count: usize,
+    package_count: usize,
     source_count: usize,
     cityobject_count: usize,
+    cityobject_relationship_count: usize,
+    multi_geometry_cityobject_count: usize,
     query_hit_count: Option<usize>,
 }
 
@@ -99,7 +128,9 @@ pub struct BenchmarkOperationRecord {
     pub source_artifact: PathBuf,
     pub prepared_dataset: PathBuf,
     pub subset_size: Option<usize>,
+    pub layout: BenchmarkLayoutKind,
     pub byte_size: u64,
+    pub sidecar_byte_size: u64,
     pub worker_count: usize,
     pub operation: String,
     pub variant: Option<String>,
@@ -110,8 +141,11 @@ pub struct BenchmarkOperationRecord {
     /// alias, not an operation-local peak.
     pub peak_rss_bytes: u64,
     pub feature_count: usize,
+    pub package_count: usize,
     pub source_count: usize,
     pub cityobject_count: usize,
+    pub cityobject_relationship_count: usize,
+    pub multi_geometry_cityobject_count: usize,
     pub query_hit_count: Option<usize>,
 }
 
@@ -121,10 +155,13 @@ struct BenchmarkManifest {
     source_artifact: PathBuf,
     prepared_dataset: PathBuf,
     subset_size: Option<usize>,
+    layout: BenchmarkLayoutKind,
     byte_size: u64,
     feature_count: usize,
     source_count: usize,
     cityobject_count: usize,
+    cityobject_relationship_count: usize,
+    multi_geometry_cityobject_count: usize,
     dataset_bbox: BBox,
     representative_feature_ids: Vec<String>,
     query_windows: Vec<QueryWindow>,
@@ -169,14 +206,17 @@ pub fn run(cli: &BenchmarkCli) -> Result<BenchmarkReport> {
         cli.case.clone()
     };
     let worker_counts = worker_counts(cli.workers.clone());
+    let layouts = benchmark_layouts(&cli.layout);
 
     let mut runs = Vec::new();
     for case in cases {
-        for dataset in prepare_case(cli, case, &artifact)? {
-            for worker_count in &worker_counts {
-                runs.extend(with_worker_count_env(*worker_count, || {
-                    run_dataset(&dataset)
-                })?);
+        for layout in &layouts {
+            for dataset in prepare_case(cli, case, *layout, &artifact)? {
+                for worker_count in &worker_counts {
+                    runs.extend(with_worker_count_env(*worker_count, || {
+                        run_dataset(&dataset)
+                    })?);
+                }
             }
         }
     }
@@ -224,12 +264,14 @@ pub fn print_report(report: &BenchmarkReport, json: bool) -> Result<()> {
 fn prepare_case(
     cli: &BenchmarkCli,
     case: BenchmarkCaseKind,
+    layout: BenchmarkLayoutKind,
     artifact: &Path,
 ) -> Result<Vec<PreparedDataset>> {
     match case {
         BenchmarkCaseKind::SingleTileFull => Ok(vec![prepare_single_tile_dataset(
             cli,
             "single-tile-full",
+            layout,
             artifact,
             None,
         )?]),
@@ -239,59 +281,68 @@ fn prepare_case(
                 prepare_single_tile_dataset(
                     cli,
                     &format!("single-tile-subset-{subset_size}"),
+                    layout,
                     artifact,
                     Some(*subset_size),
                 )
             })
             .collect(),
-        BenchmarkCaseKind::MultiSource => Ok(vec![prepare_multi_source_dataset(cli, artifact)?]),
-        BenchmarkCaseKind::MultiTile => prepare_multi_tile_dataset(cli),
+        BenchmarkCaseKind::MultiSource => {
+            Ok(vec![prepare_multi_source_dataset(cli, layout, artifact)?])
+        }
+        BenchmarkCaseKind::MultiTile => prepare_multi_tile_dataset(cli, layout),
     }
 }
 
 fn prepare_single_tile_dataset(
     cli: &BenchmarkCli,
     label: &str,
+    layout: BenchmarkLayoutKind,
     artifact: &Path,
     subset_size: Option<usize>,
 ) -> Result<PreparedDataset> {
-    let prepared_root = cli.work_root.join(label);
+    let prepared_root = cli.work_root.join(layout.as_label()).join(label);
     reset_dir(&prepared_root)?;
     fs::create_dir_all(&prepared_root)?;
 
-    let prepared_dataset = prepared_root.join("dataset.city.json");
-    let (manifest, bytes) = match subset_size {
-        None => {
-            let bytes = fs::read(artifact)?;
-            let manifest =
-                manifest_for_cityjson_bytes(label, artifact, &prepared_root, None, &bytes)?;
-            (manifest, bytes)
-        }
-        Some(limit) => {
-            let bytes = fs::read(artifact)?;
-            let mut document: Value =
-                serde_json::from_slice(&bytes).map_err(|error| Error::Import(error.to_string()))?;
-            let subset = subset_cityjson_document(&mut document, limit)?;
-            let bytes = serde_json::to_vec_pretty(&subset)
-                .map_err(|error| Error::Import(error.to_string()))?;
-            let manifest = manifest_for_cityjson_bytes(
-                label,
-                artifact,
-                &prepared_root,
-                Some(extract_root_ids(&subset)?.len()),
-                &bytes,
-            )?;
-            (manifest, bytes)
-        }
+    let bytes = fs::read(artifact)?;
+    let mut document: Value =
+        serde_json::from_slice(&bytes).map_err(|error| Error::Import(error.to_string()))?;
+    let original_bytes = if subset_size.is_none() {
+        Some(bytes.clone())
+    } else {
+        None
     };
-
-    fs::write(&prepared_dataset, &bytes)?;
+    if let Some(limit) = subset_size {
+        document = subset_cityjson_document(&mut document, limit)?;
+    }
+    let feature_count = extract_root_ids(&document)?.len();
+    let byte_size = u64::try_from(bytes.len())
+        .map_err(|_| Error::Import("prepared dataset size does not fit in u64".to_owned()))?;
+    let source = CityJsonSourceDocument {
+        file_stem: "dataset".to_owned(),
+        document,
+        original_bytes,
+    };
+    let manifest = materialize_layout_dataset(
+        label,
+        layout,
+        artifact,
+        &prepared_root,
+        subset_size.map(|_| feature_count),
+        &[source],
+        byte_size,
+    )?;
     write_manifest(&prepared_root.join("benchmark-manifest.json"), &manifest)?;
     Ok(PreparedDataset { manifest })
 }
 
-fn prepare_multi_source_dataset(cli: &BenchmarkCli, artifact: &Path) -> Result<PreparedDataset> {
-    let prepared_root = cli.work_root.join("multi-source");
+fn prepare_multi_source_dataset(
+    cli: &BenchmarkCli,
+    layout: BenchmarkLayoutKind,
+    artifact: &Path,
+) -> Result<PreparedDataset> {
+    let prepared_root = cli.work_root.join(layout.as_label()).join("multi-source");
     reset_dir(&prepared_root)?;
     fs::create_dir_all(&prepared_root)?;
 
@@ -312,24 +363,37 @@ fn prepare_multi_source_dataset(cli: &BenchmarkCli, artifact: &Path) -> Result<P
         .into_iter()
         .take(total_feature_count)
         .collect::<Vec<_>>();
-    let mut copied = Vec::with_capacity(shard_count);
+    let mut sources = Vec::with_capacity(shard_count);
     for shard_index in 0..shard_count {
         let start = shard_index * total_feature_count / shard_count;
         let end = (shard_index + 1) * total_feature_count / shard_count;
         let subset = subset_cityjson_document_by_roots(&document, &selected_root_ids[start..end])?;
-        let path = prepared_root.join(format!("source-{shard_index:02}.city.json"));
-        let bytes =
-            serde_json::to_vec_pretty(&subset).map_err(|error| Error::Import(error.to_string()))?;
-        fs::write(&path, bytes)?;
-        copied.push(path);
+        sources.push(CityJsonSourceDocument {
+            file_stem: format!("source-{shard_index:02}"),
+            document: subset,
+            original_bytes: None,
+        });
     }
 
-    let manifest = multi_tile_manifest("multi-source", &prepared_root, artifact, &copied)?;
+    let byte_size = u64::try_from(bytes.len())
+        .map_err(|_| Error::Import("prepared dataset size does not fit in u64".to_owned()))?;
+    let manifest = materialize_layout_dataset(
+        "multi-source",
+        layout,
+        artifact,
+        &prepared_root,
+        None,
+        &sources,
+        byte_size,
+    )?;
     write_manifest(&prepared_root.join("benchmark-manifest.json"), &manifest)?;
     Ok(PreparedDataset { manifest })
 }
 
-fn prepare_multi_tile_dataset(cli: &BenchmarkCli) -> Result<Vec<PreparedDataset>> {
+fn prepare_multi_tile_dataset(
+    cli: &BenchmarkCli,
+    layout: BenchmarkLayoutKind,
+) -> Result<Vec<PreparedDataset>> {
     let multi_root = cli.multi_tile_root.as_ref().ok_or_else(|| {
         Error::Import(
             "multi-tile benchmarking requires --multi-tile-root pointing at extra Basisvoorziening tiles"
@@ -343,11 +407,12 @@ fn prepare_multi_tile_dataset(cli: &BenchmarkCli) -> Result<Vec<PreparedDataset>
         )));
     }
 
-    let prepared_root = cli.work_root.join("multi-tile");
+    let prepared_root = cli.work_root.join(layout.as_label()).join("multi-tile");
     reset_dir(&prepared_root)?;
     fs::create_dir_all(&prepared_root)?;
 
-    let mut copied = Vec::new();
+    let mut sources = Vec::new();
+    let mut byte_size = 0u64;
     for entry in WalkBuilder::new(multi_root)
         .hidden(false)
         .follow_links(true)
@@ -360,29 +425,337 @@ fn prepare_multi_tile_dataset(cli: &BenchmarkCli) -> Result<Vec<PreparedDataset>
         if entry.path().extension().and_then(|ext| ext.to_str()) != Some("json") {
             continue;
         }
-        let rel = entry
+        let bytes = fs::read(entry.path())?;
+        let document: Value =
+            serde_json::from_slice(&bytes).map_err(|error| Error::Import(error.to_string()))?;
+        byte_size = byte_size
+            .checked_add(u64::try_from(bytes.len()).map_err(|_| {
+                Error::Import("prepared dataset size does not fit in u64".to_owned())
+            })?)
+            .ok_or_else(|| Error::Import("prepared dataset size overflowed u64".to_owned()))?;
+        let stem = entry
             .path()
             .strip_prefix(multi_root)
-            .unwrap_or(entry.path());
-        let dest = prepared_root.join(rel);
-        if let Some(parent) = dest.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        fs::copy(entry.path(), &dest)?;
-        copied.push(dest);
+            .unwrap_or(entry.path())
+            .with_extension("")
+            .to_string_lossy()
+            .replace(std::path::MAIN_SEPARATOR, "-");
+        sources.push(CityJsonSourceDocument {
+            file_stem: stem,
+            document,
+            original_bytes: Some(bytes),
+        });
     }
-    if copied.is_empty() {
+    if sources.is_empty() {
         return Err(Error::Import(format!(
             "multi-tile root {} did not contain any CityJSON tiles",
             multi_root.display()
         )));
     }
 
-    let manifest = multi_tile_manifest("multi-tile", &prepared_root, multi_root, &copied)?;
+    let manifest = materialize_layout_dataset(
+        "multi-tile",
+        layout,
+        multi_root,
+        &prepared_root,
+        None,
+        &sources,
+        byte_size,
+    )?;
     write_manifest(&prepared_root.join("benchmark-manifest.json"), &manifest)?;
     Ok(vec![PreparedDataset { manifest }])
 }
 
+#[derive(Debug, Clone)]
+struct CityJsonSourceDocument {
+    file_stem: String,
+    document: Value,
+    original_bytes: Option<Vec<u8>>,
+}
+
+fn benchmark_layouts(requested: &[BenchmarkLayoutKind]) -> Vec<BenchmarkLayoutKind> {
+    if requested.is_empty() {
+        return BenchmarkLayoutKind::ALL.to_vec();
+    }
+    let mut layouts = requested.to_vec();
+    layouts.sort_by_key(|layout| match layout {
+        BenchmarkLayoutKind::CityJson => 0,
+        BenchmarkLayoutKind::CityJsonSeq => 1,
+        BenchmarkLayoutKind::FeatureFiles => 2,
+    });
+    layouts.dedup();
+    layouts
+}
+
+fn materialize_layout_dataset(
+    label: &str,
+    layout: BenchmarkLayoutKind,
+    source_artifact: &Path,
+    prepared_root: &Path,
+    subset_size: Option<usize>,
+    sources: &[CityJsonSourceDocument],
+    _source_byte_size: u64,
+) -> Result<BenchmarkManifest> {
+    match layout {
+        BenchmarkLayoutKind::CityJson => materialize_cityjson_dataset(sources, prepared_root)?,
+        BenchmarkLayoutKind::CityJsonSeq => {
+            materialize_cityjson_seq_dataset(sources, prepared_root)?;
+        }
+        BenchmarkLayoutKind::FeatureFiles => {
+            materialize_feature_files_dataset(sources, prepared_root)?;
+        }
+    }
+
+    let mut feature_count = 0usize;
+    let mut cityobject_count = 0usize;
+    let mut relationship_count = 0usize;
+    let mut multi_geometry_count = 0usize;
+    let mut all_ids = Vec::new();
+    let mut bbox: Option<BBox> = None;
+
+    for source in sources {
+        let ids = extract_root_ids(&source.document)?;
+        feature_count += ids.len();
+        cityobject_count += count_cityobjects(&source.document)?;
+        relationship_count += count_cityobject_relationships(&source.document)?;
+        multi_geometry_count += count_multi_geometry_cityobjects(&source.document)?;
+        all_ids.extend(ids);
+        bbox = Some(match bbox {
+            None => bbox_for_cityjson_document(&source.document)?,
+            Some(existing) => existing.union(&bbox_for_cityjson_document(&source.document)?),
+        });
+    }
+
+    let dataset_bbox = bbox.unwrap_or(BBox {
+        min_x: 0.0,
+        max_x: 0.0,
+        min_y: 0.0,
+        max_y: 0.0,
+    });
+
+    Ok(BenchmarkManifest {
+        dataset_label: format!("{label}-{}", layout.as_label()),
+        source_artifact: source_artifact.to_path_buf(),
+        prepared_dataset: prepared_root.to_path_buf(),
+        subset_size,
+        layout,
+        byte_size: total_file_size(prepared_root)?,
+        feature_count,
+        source_count: sources.len(),
+        cityobject_count,
+        cityobject_relationship_count: relationship_count,
+        multi_geometry_cityobject_count: multi_geometry_count,
+        dataset_bbox,
+        representative_feature_ids: representative_feature_ids(&all_ids),
+        query_windows: build_query_windows(dataset_bbox),
+    })
+}
+
+fn materialize_cityjson_dataset(
+    sources: &[CityJsonSourceDocument],
+    prepared_root: &Path,
+) -> Result<()> {
+    for source in sources {
+        let path = prepared_root.join(format!("{}.city.json", source.file_stem));
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        if let Some(bytes) = &source.original_bytes {
+            fs::write(path, bytes)?;
+        } else {
+            let bytes = serde_json::to_vec(&source.document)
+                .map_err(|error| Error::Import(error.to_string()))?;
+            fs::write(path, bytes)?;
+        }
+    }
+    Ok(())
+}
+
+fn materialize_cityjson_seq_dataset(
+    sources: &[CityJsonSourceDocument],
+    prepared_root: &Path,
+) -> Result<()> {
+    for source in sources {
+        let path = prepared_root.join(format!("{}.city.jsonl", source.file_stem));
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let mut file = fs::File::create(path)?;
+        write_json_line(&mut file, &cityjson_base_document(&source.document)?)?;
+        for feature in feature_documents_for_roots(&source.document)? {
+            write_json_line(&mut file, &feature)?;
+        }
+    }
+    Ok(())
+}
+
+fn materialize_feature_files_dataset(
+    sources: &[CityJsonSourceDocument],
+    prepared_root: &Path,
+) -> Result<()> {
+    for source in sources {
+        let source_root = if sources.len() == 1 {
+            prepared_root.to_path_buf()
+        } else {
+            prepared_root.join(&source.file_stem)
+        };
+        fs::create_dir_all(source_root.join("features"))?;
+        let metadata_path = source_root.join("metadata.json");
+        let metadata = cityjson_base_document(&source.document)?;
+        fs::write(
+            metadata_path,
+            serde_json::to_vec(&metadata).map_err(|error| Error::Import(error.to_string()))?,
+        )?;
+        for feature in feature_documents_for_roots(&source.document)? {
+            let feature_id = feature
+                .get("id")
+                .and_then(Value::as_str)
+                .ok_or_else(|| Error::Import("CityJSONFeature is missing id".to_owned()))?;
+            let path = source_root
+                .join("features")
+                .join(format!("{}.city.jsonl", safe_file_stem(feature_id)));
+            write_json_line(&mut fs::File::create(path)?, &feature)?;
+        }
+    }
+    Ok(())
+}
+
+fn write_json_line(file: &mut fs::File, value: &Value) -> Result<()> {
+    serde_json::to_writer(&mut *file, value).map_err(|error| Error::Import(error.to_string()))?;
+    file.write_all(b"\n")?;
+    Ok(())
+}
+
+fn cityjson_base_document(document: &Value) -> Result<Value> {
+    let mut metadata = document.clone();
+    let root = metadata
+        .as_object_mut()
+        .ok_or_else(|| Error::Import("CityJSON document must be an object".to_owned()))?;
+    root.insert(
+        "CityObjects".to_owned(),
+        Value::Object(serde_json::Map::new()),
+    );
+    root.insert("vertices".to_owned(), Value::Array(Vec::new()));
+    Ok(metadata)
+}
+
+fn feature_documents_for_roots(document: &Value) -> Result<Vec<Value>> {
+    extract_root_ids(document)?
+        .into_iter()
+        .map(|root_id| cityjson_feature_for_root(document, &root_id))
+        .collect()
+}
+
+fn cityjson_feature_for_root(document: &Value, root_id: &str) -> Result<Value> {
+    let cityobjects = document
+        .get("CityObjects")
+        .and_then(Value::as_object)
+        .ok_or_else(|| Error::Import("CityJSON document is missing CityObjects".to_owned()))?;
+    let vertices = document
+        .get("vertices")
+        .and_then(Value::as_array)
+        .ok_or_else(|| Error::Import("CityJSON document is missing vertices".to_owned()))?;
+
+    let mut selected_ids = BTreeSet::new();
+    collect_cityobject_closure(root_id, cityobjects, &mut selected_ids)?;
+
+    let mut selected_cityobjects = BTreeMap::new();
+    for id in &selected_ids {
+        let object = cityobjects
+            .get(id)
+            .ok_or_else(|| Error::Import(format!("CityObject {id} was not found")))?;
+        let mut object = object.clone();
+        filter_cityobject_relationships(&mut object, &selected_ids)?;
+        selected_cityobjects.insert(id.clone(), object);
+    }
+
+    let mut referenced_vertices = BTreeSet::new();
+    let mut visited = BTreeSet::new();
+    collect_object_vertex_indices(
+        &selected_cityobjects,
+        root_id,
+        &mut referenced_vertices,
+        &mut visited,
+    )?;
+
+    let mut remap = HashMap::new();
+    let mut local_vertices = Vec::with_capacity(referenced_vertices.len());
+    for (new_index, old_index) in referenced_vertices.iter().enumerate() {
+        remap.insert(*old_index, new_index);
+        let vertex = vertices
+            .get(*old_index)
+            .ok_or_else(|| Error::Import(format!("vertex index {old_index} is out of bounds")))?;
+        local_vertices.push(vertex.clone());
+    }
+
+    for object in selected_cityobjects.values_mut() {
+        if let Some(geometries) = object
+            .as_object_mut()
+            .and_then(|object| object.get_mut("geometry"))
+            .and_then(Value::as_array_mut)
+        {
+            for geometry in geometries {
+                if let Some(boundaries) = geometry.get_mut("boundaries") {
+                    remap_vertex_indices(boundaries, &remap)?;
+                }
+            }
+        }
+    }
+
+    let mut feature = serde_json::Map::new();
+    feature.insert(
+        "type".to_owned(),
+        Value::String("CityJSONFeature".to_owned()),
+    );
+    feature.insert("id".to_owned(), Value::String(root_id.to_owned()));
+    feature.insert(
+        "CityObjects".to_owned(),
+        Value::Object(selected_cityobjects.into_iter().collect()),
+    );
+    feature.insert("vertices".to_owned(), Value::Array(local_vertices));
+    Ok(Value::Object(feature))
+}
+
+fn safe_file_stem(value: &str) -> String {
+    value
+        .chars()
+        .map(|ch| match ch {
+            'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_' | '.' => ch,
+            _ => '_',
+        })
+        .collect()
+}
+
+fn total_file_size(root: &Path) -> Result<u64> {
+    let mut total = 0u64;
+    for entry in WalkBuilder::new(root)
+        .hidden(false)
+        .follow_links(true)
+        .build()
+    {
+        let entry = entry.map_err(|error| Error::Import(error.to_string()))?;
+        if !entry
+            .file_type()
+            .is_some_and(|file_type| file_type.is_file())
+        {
+            continue;
+        }
+        total = total
+            .checked_add(
+                entry
+                    .metadata()
+                    .map_err(|error| Error::Import(error.to_string()))?
+                    .len(),
+            )
+            .ok_or_else(|| Error::Import("prepared dataset size overflowed u64".to_owned()))?;
+    }
+    Ok(total)
+}
+
+#[allow(
+    clippy::too_many_lines,
+    reason = "benchmark orchestration keeps measured run order explicit"
+)]
 fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord>> {
     let manifest = &dataset.manifest;
     let worker_count = crate::configured_worker_count()?;
@@ -402,9 +775,10 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
         .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
     let index_ended = profile::current_memory_snapshot()?;
 
-    let feature_count = index.feature_ref_count()?;
+    let feature_count = index.package_count()?;
     let source_count = index.source_count()?;
     let cityobject_count = index.cityobject_count()?;
+    let sidecar_byte_size = fs::metadata(&resolved.index_path).map_or(0, |metadata| metadata.len());
 
     let mut runs = vec![
         build_record(BenchmarkRecordInput {
@@ -412,15 +786,20 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
             source_artifact: manifest.source_artifact.clone(),
             prepared_dataset: manifest.prepared_dataset.clone(),
             subset_size: manifest.subset_size,
+            layout: manifest.layout,
             byte_size: manifest.byte_size,
+            sidecar_byte_size,
             worker_count,
             operation: "dataset_open".to_owned(),
             variant: None,
             elapsed_ns: open_elapsed,
             memory: open_ended,
             feature_count,
+            package_count: feature_count,
             source_count,
             cityobject_count,
+            cityobject_relationship_count: manifest.cityobject_relationship_count,
+            multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
             query_hit_count: None,
         }),
         build_record(BenchmarkRecordInput {
@@ -428,23 +807,38 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
             source_artifact: manifest.source_artifact.clone(),
             prepared_dataset: manifest.prepared_dataset.clone(),
             subset_size: manifest.subset_size,
+            layout: manifest.layout,
             byte_size: manifest.byte_size,
+            sidecar_byte_size,
             worker_count,
             operation: "index_reindex".to_owned(),
             variant: None,
             elapsed_ns: index_elapsed,
             memory: index_ended,
             feature_count,
+            package_count: feature_count,
             source_count,
             cityobject_count,
+            cityobject_relationship_count: manifest.cityobject_relationship_count,
+            multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
             query_hit_count: None,
         }),
     ];
 
-    let all_refs = index.feature_ref_page(0, feature_count.min(256))?;
+    let all_refs = index.package_ref_page_after_record_id(None, feature_count.min(256))?;
     let sampled_refs = all_refs.into_iter().take(256).collect::<Vec<_>>();
+    let sampled_cityobjects =
+        index.cityobject_ref_page_after_record_id(None, cityobject_count.min(256))?;
 
     runs.extend(run_full_scan(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+    )?);
+    runs.extend(run_cityobject_full_scan(
         &index,
         manifest,
         worker_count,
@@ -460,6 +854,31 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
         source_count,
         cityobject_count,
     )?);
+    runs.push(run_cityobject_id_lookup(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+        &sampled_cityobjects,
+    )?);
+    runs.extend(run_package_bbox_lookup_only(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+    )?);
+    runs.extend(run_cityobject_queries(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+    )?);
     runs.extend(run_queries(
         &index,
         manifest,
@@ -468,7 +887,16 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
         source_count,
         cityobject_count,
     )?);
-    runs.push(run_read_feature(
+    runs.push(run_read_package(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+        &sampled_refs,
+    )?);
+    runs.push(run_read_packages(
         &index,
         manifest,
         worker_count,
@@ -512,8 +940,14 @@ fn run_full_scan(
 ) -> Result<Vec<BenchmarkOperationRecord>> {
     let started = Instant::now();
     let mut count = 0usize;
-    for page in index.iter_all_feature_ref_pages(512)? {
-        count += page?.len();
+    let mut after_record_id = None;
+    loop {
+        let page = index.package_ref_page_after_record_id(after_record_id, 512)?;
+        if page.is_empty() {
+            break;
+        }
+        after_record_id = page.last().map(|package| package.record_id);
+        count += page.len();
     }
     let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
         .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
@@ -524,14 +958,74 @@ fn run_full_scan(
         prepared_dataset: manifest.prepared_dataset.clone(),
         subset_size: manifest.subset_size,
         byte_size: manifest.byte_size,
+        layout: manifest.layout,
+        sidecar_byte_size: fs::metadata(
+            manifest
+                .prepared_dataset
+                .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+        )
+        .map_or(0, |metadata| metadata.len()),
         worker_count,
         operation: "full_scan_reference_iteration".to_owned(),
         variant: None,
         elapsed_ns,
         memory,
         feature_count,
+        package_count: feature_count,
         source_count,
         cityobject_count,
+        cityobject_relationship_count: manifest.cityobject_relationship_count,
+        multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+        query_hit_count: Some(count),
+    })])
+}
+
+fn run_cityobject_full_scan(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+) -> Result<Vec<BenchmarkOperationRecord>> {
+    let started = Instant::now();
+    let mut count = 0usize;
+    let mut after_record_id = None;
+    loop {
+        let page = index.cityobject_ref_page_after_record_id(after_record_id, 512)?;
+        if page.is_empty() {
+            break;
+        }
+        after_record_id = page.last().map(|cityobject| cityobject.record_id);
+        count += page.len();
+    }
+    let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+        .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+    let memory = profile::current_memory_snapshot()?;
+    Ok(vec![build_record(BenchmarkRecordInput {
+        dataset_label: manifest.dataset_label.clone(),
+        source_artifact: manifest.source_artifact.clone(),
+        prepared_dataset: manifest.prepared_dataset.clone(),
+        subset_size: manifest.subset_size,
+        byte_size: manifest.byte_size,
+        layout: manifest.layout,
+        sidecar_byte_size: fs::metadata(
+            manifest
+                .prepared_dataset
+                .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+        )
+        .map_or(0, |metadata| metadata.len()),
+        worker_count,
+        operation: "cityobject_full_scan_reference_iteration".to_owned(),
+        variant: None,
+        elapsed_ns,
+        memory,
+        feature_count,
+        package_count: feature_count,
+        source_count,
+        cityobject_count,
+        cityobject_relationship_count: manifest.cityobject_relationship_count,
+        multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
         query_hit_count: Some(count),
     })])
 }
@@ -547,7 +1041,7 @@ fn run_gets(
     let mut runs = Vec::new();
     for feature_id in representative_ids(manifest, feature_count) {
         let started = Instant::now();
-        let hit = index.get(&feature_id)?;
+        let hit = index.get_packages(&feature_id)?;
         let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
             .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
         let memory = profile::current_memory_snapshot()?;
@@ -556,16 +1050,162 @@ fn run_gets(
             source_artifact: manifest.source_artifact.clone(),
             prepared_dataset: manifest.prepared_dataset.clone(),
             subset_size: manifest.subset_size,
+            layout: manifest.layout,
             byte_size: manifest.byte_size,
+            sidecar_byte_size: fs::metadata(
+                manifest
+                    .prepared_dataset
+                    .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+            )
+            .map_or(0, |metadata| metadata.len()),
             worker_count,
             operation: "get".to_owned(),
             variant: Some(feature_id),
             elapsed_ns,
             memory,
             feature_count,
+            package_count: feature_count,
             source_count,
             cityobject_count,
-            query_hit_count: Some(usize::from(hit.is_some())),
+            cityobject_relationship_count: manifest.cityobject_relationship_count,
+            multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+            query_hit_count: Some(hit.len()),
+        }));
+    }
+    Ok(runs)
+}
+
+fn run_cityobject_id_lookup(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+    refs: &[crate::IndexedCityObjectRef],
+) -> Result<BenchmarkOperationRecord> {
+    let ids = refs
+        .iter()
+        .map(|cityobject| cityobject.external_id.as_str())
+        .collect::<Vec<_>>();
+    let started = Instant::now();
+    let hits = index.lookup_cityobject_refs_for_ids(&ids)?;
+    let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+        .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+    let memory = profile::current_memory_snapshot()?;
+    Ok(build_record(BenchmarkRecordInput {
+        dataset_label: manifest.dataset_label.clone(),
+        source_artifact: manifest.source_artifact.clone(),
+        prepared_dataset: manifest.prepared_dataset.clone(),
+        subset_size: manifest.subset_size,
+        layout: manifest.layout,
+        byte_size: manifest.byte_size,
+        sidecar_byte_size: fs::metadata(
+            manifest
+                .prepared_dataset
+                .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+        )
+        .map_or(0, |metadata| metadata.len()),
+        worker_count,
+        operation: "cityobject_id_lookup".to_owned(),
+        variant: Some(format!("sample-{}", ids.len())),
+        elapsed_ns,
+        memory,
+        feature_count,
+        package_count: feature_count,
+        source_count,
+        cityobject_count,
+        cityobject_relationship_count: manifest.cityobject_relationship_count,
+        multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+        query_hit_count: Some(hits.len()),
+    }))
+}
+
+fn run_package_bbox_lookup_only(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+) -> Result<Vec<BenchmarkOperationRecord>> {
+    let mut runs = Vec::new();
+    for window in &manifest.query_windows {
+        let started = Instant::now();
+        let hits = index.query_package_refs(&window.bbox)?;
+        let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+            .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+        let memory = profile::current_memory_snapshot()?;
+        runs.push(build_record(BenchmarkRecordInput {
+            dataset_label: manifest.dataset_label.clone(),
+            source_artifact: manifest.source_artifact.clone(),
+            prepared_dataset: manifest.prepared_dataset.clone(),
+            subset_size: manifest.subset_size,
+            layout: manifest.layout,
+            byte_size: manifest.byte_size,
+            sidecar_byte_size: fs::metadata(
+                manifest
+                    .prepared_dataset
+                    .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+            )
+            .map_or(0, |metadata| metadata.len()),
+            worker_count,
+            operation: "package_bbox_lookup_only".to_owned(),
+            variant: Some(window.label.clone()),
+            elapsed_ns,
+            memory,
+            feature_count,
+            package_count: feature_count,
+            source_count,
+            cityobject_count,
+            cityobject_relationship_count: manifest.cityobject_relationship_count,
+            multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+            query_hit_count: Some(hits.len()),
+        }));
+    }
+    Ok(runs)
+}
+
+fn run_cityobject_queries(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+) -> Result<Vec<BenchmarkOperationRecord>> {
+    let mut runs = Vec::new();
+    for window in &manifest.query_windows {
+        let started = Instant::now();
+        let hits = index.query_cityobject_refs(&window.bbox)?;
+        let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+            .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+        let memory = profile::current_memory_snapshot()?;
+        runs.push(build_record(BenchmarkRecordInput {
+            dataset_label: manifest.dataset_label.clone(),
+            source_artifact: manifest.source_artifact.clone(),
+            prepared_dataset: manifest.prepared_dataset.clone(),
+            subset_size: manifest.subset_size,
+            layout: manifest.layout,
+            byte_size: manifest.byte_size,
+            sidecar_byte_size: fs::metadata(
+                manifest
+                    .prepared_dataset
+                    .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+            )
+            .map_or(0, |metadata| metadata.len()),
+            worker_count,
+            operation: "cityobject_bbox_query".to_owned(),
+            variant: Some(window.label.clone()),
+            elapsed_ns,
+            memory,
+            feature_count,
+            package_count: feature_count,
+            source_count,
+            cityobject_count,
+            cityobject_relationship_count: manifest.cityobject_relationship_count,
+            multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+            query_hit_count: Some(hits.len()),
         }));
     }
     Ok(runs)
@@ -582,7 +1222,8 @@ fn run_queries(
     let mut runs = Vec::new();
     for window in &manifest.query_windows {
         let started = Instant::now();
-        let hits = index.query(&window.bbox)?;
+        let hits = index.query_package_refs(&window.bbox)?;
+        let _packages = index.read_packages(&hits)?;
         let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
             .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
         let memory = profile::current_memory_snapshot()?;
@@ -591,34 +1232,44 @@ fn run_queries(
             source_artifact: manifest.source_artifact.clone(),
             prepared_dataset: manifest.prepared_dataset.clone(),
             subset_size: manifest.subset_size,
+            layout: manifest.layout,
             byte_size: manifest.byte_size,
+            sidecar_byte_size: fs::metadata(
+                manifest
+                    .prepared_dataset
+                    .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+            )
+            .map_or(0, |metadata| metadata.len()),
             worker_count,
             operation: "bbox_query".to_owned(),
             variant: Some(window.label.clone()),
             elapsed_ns,
             memory,
             feature_count,
+            package_count: feature_count,
             source_count,
             cityobject_count,
+            cityobject_relationship_count: manifest.cityobject_relationship_count,
+            multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
             query_hit_count: Some(hits.len()),
         }));
     }
     Ok(runs)
 }
 
-fn run_read_feature(
+fn run_read_package(
     index: &CityIndex,
     manifest: &BenchmarkManifest,
     worker_count: usize,
     feature_count: usize,
     source_count: usize,
     cityobject_count: usize,
-    refs: &[crate::IndexedFeatureRef],
+    refs: &[crate::IndexedPackageRef],
 ) -> Result<BenchmarkOperationRecord> {
     let started = Instant::now();
     let mut reconstructed = 0usize;
-    for feature in refs {
-        let _model = index.read_feature(feature)?;
+    for package in refs {
+        let _model = index.read_package(package)?;
         reconstructed += 1;
     }
     let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
@@ -630,15 +1281,67 @@ fn run_read_feature(
         prepared_dataset: manifest.prepared_dataset.clone(),
         subset_size: manifest.subset_size,
         byte_size: manifest.byte_size,
+        layout: manifest.layout,
+        sidecar_byte_size: fs::metadata(
+            manifest
+                .prepared_dataset
+                .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+        )
+        .map_or(0, |metadata| metadata.len()),
         worker_count,
-        operation: "read_feature".to_owned(),
+        operation: "read_package".to_owned(),
         variant: Some(format!("sample-{}", refs.len())),
         elapsed_ns,
         memory,
         feature_count,
+        package_count: feature_count,
         source_count,
         cityobject_count,
+        cityobject_relationship_count: manifest.cityobject_relationship_count,
+        multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
         query_hit_count: Some(reconstructed),
+    }))
+}
+
+fn run_read_packages(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+    refs: &[crate::IndexedPackageRef],
+) -> Result<BenchmarkOperationRecord> {
+    let started = Instant::now();
+    let packages = index.read_packages(refs)?;
+    let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+        .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+    let memory = profile::current_memory_snapshot()?;
+    Ok(build_record(BenchmarkRecordInput {
+        dataset_label: manifest.dataset_label.clone(),
+        source_artifact: manifest.source_artifact.clone(),
+        prepared_dataset: manifest.prepared_dataset.clone(),
+        subset_size: manifest.subset_size,
+        byte_size: manifest.byte_size,
+        layout: manifest.layout,
+        sidecar_byte_size: fs::metadata(
+            manifest
+                .prepared_dataset
+                .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+        )
+        .map_or(0, |metadata| metadata.len()),
+        worker_count,
+        operation: "read_packages".to_owned(),
+        variant: Some(format!("sample-{}", refs.len())),
+        elapsed_ns,
+        memory,
+        feature_count,
+        package_count: feature_count,
+        source_count,
+        cityobject_count,
+        cityobject_relationship_count: manifest.cityobject_relationship_count,
+        multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+        query_hit_count: Some(packages.len()),
     }))
 }
 
@@ -648,7 +1351,9 @@ fn build_record(input: BenchmarkRecordInput) -> BenchmarkOperationRecord {
         source_artifact: input.source_artifact,
         prepared_dataset: input.prepared_dataset,
         subset_size: input.subset_size,
+        layout: input.layout,
         byte_size: input.byte_size,
+        sidecar_byte_size: input.sidecar_byte_size,
         worker_count: input.worker_count,
         operation: input.operation,
         variant: input.variant,
@@ -657,8 +1362,11 @@ fn build_record(input: BenchmarkRecordInput) -> BenchmarkOperationRecord {
         process_peak_rss_bytes: input.memory.process_peak_rss_bytes,
         peak_rss_bytes: input.memory.peak_rss_bytes,
         feature_count: input.feature_count,
+        package_count: input.package_count,
         source_count: input.source_count,
         cityobject_count: input.cityobject_count,
+        cityobject_relationship_count: input.cityobject_relationship_count,
+        multi_geometry_cityobject_count: input.multi_geometry_cityobject_count,
         query_hit_count: input.query_hit_count,
     }
 }
@@ -723,86 +1431,6 @@ fn reset_dir(path: &Path) -> Result<()> {
 fn write_manifest(path: &Path, manifest: &BenchmarkManifest) -> Result<()> {
     let file = fs::File::create(path)?;
     serde_json::to_writer_pretty(file, manifest).map_err(|error| Error::Import(error.to_string()))
-}
-
-fn manifest_for_cityjson_bytes(
-    label: &str,
-    source_artifact: &Path,
-    prepared_root: &Path,
-    subset_size: Option<usize>,
-    bytes: &[u8],
-) -> Result<BenchmarkManifest> {
-    let document: Value =
-        serde_json::from_slice(bytes).map_err(|error| Error::Import(error.to_string()))?;
-    let feature_ids = extract_root_ids(&document)?;
-    let dataset_bbox = bbox_for_cityjson_document(&document)?;
-    let query_windows = build_query_windows(dataset_bbox);
-
-    Ok(BenchmarkManifest {
-        dataset_label: label.to_owned(),
-        source_artifact: source_artifact.to_path_buf(),
-        prepared_dataset: prepared_root.to_path_buf(),
-        subset_size,
-        byte_size: u64::try_from(bytes.len())
-            .map_err(|_| Error::Import("prepared dataset size does not fit in u64".to_owned()))?,
-        feature_count: feature_ids.len(),
-        source_count: 1,
-        cityobject_count: count_cityobjects(&document)?,
-        dataset_bbox,
-        representative_feature_ids: representative_feature_ids(&feature_ids),
-        query_windows,
-    })
-}
-
-fn multi_tile_manifest(
-    label: &str,
-    prepared_root: &Path,
-    source_root: &Path,
-    copied: &[PathBuf],
-) -> Result<BenchmarkManifest> {
-    let mut feature_count = 0usize;
-    let mut cityobject_count = 0usize;
-    let mut all_ids = Vec::new();
-    let mut bbox: Option<BBox> = None;
-
-    for tile in copied {
-        let bytes = fs::read(tile)?;
-        let document: Value =
-            serde_json::from_slice(&bytes).map_err(|error| Error::Import(error.to_string()))?;
-        let ids = extract_root_ids(&document)?;
-        feature_count += ids.len();
-        cityobject_count += count_cityobjects(&document)?;
-        all_ids.extend(ids);
-        bbox = Some(match bbox {
-            None => bbox_for_cityjson_document(&document)?,
-            Some(existing) => existing.union(&bbox_for_cityjson_document(&document)?),
-        });
-    }
-
-    let dataset_bbox = bbox.unwrap_or(BBox {
-        min_x: 0.0,
-        max_x: 0.0,
-        min_y: 0.0,
-        max_y: 0.0,
-    });
-
-    Ok(BenchmarkManifest {
-        dataset_label: label.to_owned(),
-        source_artifact: source_root.to_path_buf(),
-        prepared_dataset: prepared_root.to_path_buf(),
-        subset_size: None,
-        byte_size: copied.iter().try_fold(0u64, |sum, path| {
-            let len = fs::metadata(path)?.len();
-            sum.checked_add(len)
-                .ok_or_else(|| Error::Import("prepared dataset size overflowed u64".to_owned()))
-        })?,
-        feature_count,
-        source_count: copied.len(),
-        cityobject_count,
-        dataset_bbox,
-        representative_feature_ids: representative_feature_ids(&all_ids),
-        query_windows: build_query_windows(dataset_bbox),
-    })
 }
 
 fn build_query_windows(bbox: BBox) -> Vec<QueryWindow> {
@@ -897,6 +1525,47 @@ fn count_cityobjects(document: &Value) -> Result<usize> {
         .and_then(Value::as_object)
         .ok_or_else(|| Error::Import("CityJSON document is missing CityObjects".to_owned()))?;
     Ok(cityobjects.len())
+}
+
+fn count_cityobject_relationships(document: &Value) -> Result<usize> {
+    let cityobjects = document
+        .get("CityObjects")
+        .and_then(Value::as_object)
+        .ok_or_else(|| Error::Import("CityJSON document is missing CityObjects".to_owned()))?;
+    let mut relationships = BTreeSet::new();
+    for (object_id, object) in cityobjects {
+        if let Some(children) = object.get("children").and_then(Value::as_array) {
+            for child in children {
+                if let Some(child_id) = child.as_str() {
+                    relationships.insert((object_id.clone(), child_id.to_owned()));
+                }
+            }
+        }
+        if let Some(parents) = object.get("parents").and_then(Value::as_array) {
+            for parent in parents {
+                if let Some(parent_id) = parent.as_str() {
+                    relationships.insert((parent_id.to_owned(), object_id.clone()));
+                }
+            }
+        }
+    }
+    Ok(relationships.len())
+}
+
+fn count_multi_geometry_cityobjects(document: &Value) -> Result<usize> {
+    let cityobjects = document
+        .get("CityObjects")
+        .and_then(Value::as_object)
+        .ok_or_else(|| Error::Import("CityJSON document is missing CityObjects".to_owned()))?;
+    Ok(cityobjects
+        .values()
+        .filter(|object| {
+            object
+                .get("geometry")
+                .and_then(Value::as_array)
+                .is_some_and(|geometries| geometries.len() > 1)
+        })
+        .count())
 }
 
 fn bbox_for_cityjson_document(document: &Value) -> Result<BBox> {
@@ -1213,6 +1882,135 @@ mod tests {
     use super::*;
 
     #[test]
+    fn single_tile_preparation_materializes_every_benchmark_layout() -> Result<()> {
+        let root = temp_dir("benchmark-layouts");
+        let artifact = root.join("basisvoorziening.city.json");
+        fs::write(
+            &artifact,
+            serde_json::to_vec_pretty(&synthetic_cityjson_document(3))
+                .map_err(|error| Error::Import(error.to_string()))?,
+        )?;
+        let cli = BenchmarkCli {
+            json: false,
+            corpus_root: root.clone(),
+            work_root: root.join("work"),
+            artifact: Some(artifact.clone()),
+            case: Vec::new(),
+            layout: Vec::new(),
+            workers: vec![1],
+            multi_tile_root: None,
+        };
+
+        for layout in BenchmarkLayoutKind::ALL {
+            let prepared =
+                prepare_case(&cli, BenchmarkCaseKind::SingleTileFull, layout, &artifact)?;
+            assert_eq!(prepared.len(), 1);
+            let manifest = &prepared[0].manifest;
+            assert_eq!(manifest.layout, layout);
+            assert_eq!(manifest.feature_count, 3);
+            assert_eq!(manifest.source_count, 1);
+            assert!(manifest.byte_size > 0);
+            assert!(manifest.dataset_label.ends_with(layout.as_label()));
+
+            let resolved = resolve_dataset(&manifest.prepared_dataset, None)?;
+            assert_eq!(resolved.source_paths().len(), 1);
+
+            let index_path = fresh_benchmark_index_path(manifest, 1)?;
+            let resolved = resolve_dataset(&manifest.prepared_dataset, Some(index_path))?;
+            let mut index = CityIndex::open(resolved.storage_layout(), &resolved.index_path)?;
+            index.reindex()?;
+            assert_eq!(index.package_count()?, manifest.feature_count);
+            assert_eq!(index.cityobject_count()?, manifest.cityobject_count);
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn single_tile_cityjson_preparation_preserves_unmodified_artifact_bytes() -> Result<()> {
+        // Input: a minified CityJSON artifact prepared as the full single-tile CityJSON layout.
+        // Assertions: the prepared dataset file is byte-for-byte identical to the source artifact
+        // and the manifest records that exact prepared size.
+        let root = temp_dir("benchmark-cityjson-raw-bytes");
+        let artifact = root.join("basisvoorziening.city.json");
+        let artifact_bytes = serde_json::to_vec(&synthetic_cityjson_document(3))
+            .map_err(|error| Error::Import(error.to_string()))?;
+        fs::write(&artifact, &artifact_bytes)?;
+        let cli = BenchmarkCli {
+            json: false,
+            corpus_root: root.clone(),
+            work_root: root.join("work"),
+            artifact: Some(artifact.clone()),
+            case: Vec::new(),
+            layout: vec![BenchmarkLayoutKind::CityJson],
+            workers: vec![1],
+            multi_tile_root: None,
+        };
+
+        let prepared = prepare_case(
+            &cli,
+            BenchmarkCaseKind::SingleTileFull,
+            BenchmarkLayoutKind::CityJson,
+            &artifact,
+        )?;
+        let manifest = &prepared[0].manifest;
+        let prepared_bytes = fs::read(manifest.prepared_dataset.join("dataset.city.json"))?;
+
+        assert_eq!(prepared_bytes, artifact_bytes);
+        assert_eq!(
+            manifest.byte_size,
+            u64::try_from(artifact_bytes.len())
+                .map_err(|_| Error::Import("test artifact size overflowed u64".to_owned()))?
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn subset_cityjson_preparation_writes_compact_valid_json() -> Result<()> {
+        // Input: a pretty-printed CityJSON artifact prepared as a two-package CityJSON subset.
+        // Assertions: the transformed prepared file is valid CityJSON JSON, contains the requested
+        // package count, and is serialized compactly without pretty-print newlines.
+        let root = temp_dir("benchmark-cityjson-compact-subset");
+        let artifact = root.join("basisvoorziening.city.json");
+        fs::write(
+            &artifact,
+            serde_json::to_vec_pretty(&synthetic_cityjson_document(4))
+                .map_err(|error| Error::Import(error.to_string()))?,
+        )?;
+        let cli = BenchmarkCli {
+            json: false,
+            corpus_root: root.clone(),
+            work_root: root.join("work"),
+            artifact: Some(artifact.clone()),
+            case: Vec::new(),
+            layout: vec![BenchmarkLayoutKind::CityJson],
+            workers: vec![1],
+            multi_tile_root: None,
+        };
+
+        let prepared = prepare_single_tile_dataset(
+            &cli,
+            "single-tile-subset-2",
+            BenchmarkLayoutKind::CityJson,
+            &artifact,
+            Some(2),
+        )?;
+        let prepared_bytes =
+            fs::read(prepared.manifest.prepared_dataset.join("dataset.city.json"))?;
+        let prepared_document: Value = serde_json::from_slice(&prepared_bytes)
+            .map_err(|error| Error::Import(error.to_string()))?;
+
+        assert_eq!(extract_root_ids(&prepared_document)?.len(), 2);
+        assert!(
+            !prepared_bytes.contains(&b'\n'),
+            "transformed CityJSON benchmark fixtures should not be pretty-printed"
+        );
+
+        Ok(())
+    }
+
+    #[test]
     fn multi_source_preparation_creates_parallel_source_shards() -> Result<()> {
         let root = temp_dir("benchmark-multi-source");
         let artifact = root.join("basisvoorziening.city.json");
@@ -1227,11 +2025,17 @@ mod tests {
             work_root: root.join("work"),
             artifact: Some(artifact.clone()),
             case: Vec::new(),
+            layout: vec![BenchmarkLayoutKind::CityJson],
             workers: vec![4],
             multi_tile_root: None,
         };
 
-        let prepared = prepare_case(&cli, BenchmarkCaseKind::MultiSource, &artifact)?;
+        let prepared = prepare_case(
+            &cli,
+            BenchmarkCaseKind::MultiSource,
+            BenchmarkLayoutKind::CityJson,
+            &artifact,
+        )?;
         assert_eq!(prepared.len(), 1);
         let manifest = &prepared[0].manifest;
         assert!(
@@ -1244,6 +2048,19 @@ mod tests {
             resolved.source_paths().len() > 1,
             "resolved prepared dataset should expose multiple source shards"
         );
+        for source_path in resolved.source_paths() {
+            let shard_bytes = fs::read(source_path)?;
+            let shard_document: Value = serde_json::from_slice(&shard_bytes)
+                .map_err(|error| Error::Import(error.to_string()))?;
+            assert!(
+                !shard_bytes.contains(&b'\n'),
+                "derived multi-source CityJSON shards should be compact JSON"
+            );
+            assert!(
+                !extract_root_ids(&shard_document)?.is_empty(),
+                "each benchmark shard should contain at least one package"
+            );
+        }
         assert!(
             resolved.source_paths().len().min(4) > 1,
             "a worker count greater than one should be able to reach multiple shards"

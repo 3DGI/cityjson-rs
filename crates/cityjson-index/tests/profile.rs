@@ -1,3 +1,7 @@
+#![allow(
+    clippy::doc_markdown,
+    reason = "test docstrings use domain terminology plainly"
+)]
 #![allow(clippy::let_and_return)]
 
 mod common;

@@ -1,5 +1,10 @@
 #![allow(dead_code)]
 
+mod normalized;
+
+#[allow(unused_imports)]
+pub use normalized::*;
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -18,12 +23,12 @@ pub fn data_root() -> PathBuf {
     repo_root().join("tests/data")
 }
 
-pub fn cityjson_corpus_root() -> Option<PathBuf> {
-    std::env::var_os("CITYJSON_CORPUS").map(PathBuf::from)
+pub fn shared_corpus_root() -> Option<PathBuf> {
+    std::env::var_os("CITYJSON_SHARED_CORPUS_ROOT").map(PathBuf::from)
 }
 
 pub fn basisvoorziening_artifact() -> Option<PathBuf> {
-    cityjson_corpus_root().map(|root| {
+    shared_corpus_root().map(|root| {
         root.join("artifacts/acquired/basisvoorziening-3d/2022/3d_volledig_84000_450000.city.json")
     })
 }
@@ -32,8 +37,8 @@ pub fn feature_files_root() -> PathBuf {
     data_root().join("feature-files")
 }
 
-pub fn ndjson_root() -> PathBuf {
-    data_root().join("ndjson")
+pub fn cityjsonseq_root() -> PathBuf {
+    data_root().join("cityjsonseq")
 }
 
 pub fn cityjson_root() -> PathBuf {

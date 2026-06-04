@@ -31,27 +31,28 @@ Python 3.11, 3.12, and 3.13 are supported.
 from cityjson_index import OpenedIndex
 
 with OpenedIndex.open("city.idx") as index:
-    feature = index.get("building-42")
-    print(feature.id, len(feature.payload))
+    package = index.get("building-42")
+    print(package.id, len(package.payload))
 ```
 
 ## Filtered reads
 
 ```python
-from cityjson_index import FeatureFilter, FeatureFilterSummary, LodSelection, OpenedIndex
+from cityjson_index import PackageFilter, PackageFilterSummary, LodSelection, OpenedIndex
 
 with OpenedIndex.open("dataset") as index:
-    refs = index.feature_ref_page(0, 100)
-    filter = FeatureFilter(
+    cityobjects = index.lookup_cityobject_refs("building-42")
+    refs = index.package_refs_for_cityobject(cityobjects[0])
+    filter = PackageFilter(
         cityobject_types={"Building"},
         default_lod=LodSelection.HIGHEST,
         lods_by_type={"Building": LodSelection.Exact("2.0")},
     )
 
-    summary = FeatureFilterSummary()
-    for feature in index.read_filtered_features(refs, filter):
-        summary.add(feature.diagnostics)
-        print(feature.model.summary().model_type)
+    summary = PackageFilterSummary()
+    for package in index.read_filtered_packages(refs, filter):
+        summary.add(package.diagnostics)
+        print(package.model.summary().model_type)
 
     summary.ensure_requested_lods_available(filter)
 ```

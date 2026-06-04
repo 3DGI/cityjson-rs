@@ -4,7 +4,8 @@ use std::path::PathBuf;
 
 use cityjson_index::profile;
 use cityjson_index::{
-    BBox, CityIndex, DatasetInspection, StorageLayout, ValidationReport, resolve_dataset,
+    BBox, CityIndex, DatasetInspection, IndexedPackage, StorageLayout, ValidationReport,
+    resolve_dataset,
 };
 use cityjson_lib::{CityModel, Error, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
@@ -222,7 +223,7 @@ struct StorageArgs {
     #[arg(long, value_enum)]
     layout: Option<LayoutKind>,
 
-    /// Source paths for `ndjson` and `cityjson` layouts.
+    /// Source paths for `cityjson-seq` and `cityjson` layouts.
     #[arg(long, value_name = "PATH", num_args = 1..)]
     paths: Vec<PathBuf>,
 
@@ -241,7 +242,8 @@ struct StorageArgs {
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum LayoutKind {
-    Ndjson,
+    #[value(name = "cityjson-seq")]
+    CityjsonSeq,
     Cityjson,
     FeatureFiles,
 }
@@ -252,7 +254,7 @@ impl StorageArgs {
             .layout
             .ok_or_else(|| Error::Import("explicit layout mode requires --layout".to_owned()))?;
         match layout {
-            LayoutKind::Ndjson => Ok(StorageLayout::Ndjson { paths: self.paths }),
+            LayoutKind::CityjsonSeq => Ok(StorageLayout::Ndjson { paths: self.paths }),
             LayoutKind::Cityjson => Ok(StorageLayout::CityJson { paths: self.paths }),
             LayoutKind::FeatureFiles => {
                 let root = self.root.ok_or_else(|| {
@@ -330,22 +332,30 @@ fn run_get(args: FeatureCommand) -> Result<()> {
             let index = recorder.measure("sqlite open", || {
                 CityIndex::open(input.storage, &input.index_path)
             })?;
-            let feature_ref = recorder
-                .measure("bbox lookup or id lookup", || index.lookup_feature_ref(&id))?
-                .ok_or_else(|| Error::Import(format!("feature {id} was not found")))?;
-            let metadata = recorder.measure("metadata lookup/cache", || {
-                index.metadata_for_source(feature_ref.source_id)
+            let package_refs = recorder.measure("bbox lookup or id lookup", || {
+                let cityobjects = index.lookup_cityobject_refs(&id)?;
+                let mut seen = std::collections::BTreeSet::new();
+                let mut packages = Vec::new();
+                for cityobject in &cityobjects {
+                    for package in index.package_refs_for_cityobject(cityobject)? {
+                        if seen.insert(package.record_id) {
+                            packages.push(package);
+                        }
+                    }
+                }
+                packages.sort_by_key(|package| package.record_id);
+                Ok::<_, Error>(packages)
             })?;
-            let _bytes = recorder.measure("feature byte read", || {
-                index.read_feature_bytes(&feature_ref)
-            })?;
-            let model = recorder.measure("feature reconstruction", || {
-                index.read_feature(&feature_ref)
+            if package_refs.is_empty() {
+                return Err(Error::Import(format!("feature {id} was not found")));
+            }
+            let packages = recorder.measure("feature reconstruction", || {
+                index.read_packages(&package_refs)
             })?;
             let writer = open_writer(output)?;
             let mut writer = BufWriter::new(writer);
             recorder.measure("output serialization/write", || {
-                write_model_stream(&mut writer, metadata.as_ref(), &model)
+                write_package_stream(&mut writer, &packages)
             })?;
             writer.flush()?;
             Ok(())
@@ -388,33 +398,24 @@ fn run_query(args: QueryCommand) -> Result<()> {
             };
             let writer = open_writer(output)?;
             let mut writer = BufWriter::new(writer);
-            let mut results = recorder.measure("bbox lookup or id lookup", || {
-                index.query_iter_with_metadata(&bbox)
-            })?;
-            let mut current_metadata: Option<Value> = None;
-            recorder.measure("metadata lookup/cache", || {
-                if let Some(first_result) = results.next() {
-                    let (metadata, model) = first_result?;
-                    current_metadata = Some(metadata.as_ref().clone());
-                    write_model_stream_item(&mut writer, metadata.as_ref(), &model)?;
+            let mut after_package_id = None;
+            let mut stream_metadata = None;
+            loop {
+                let package_refs = recorder.measure("bbox lookup or id lookup", || {
+                    index.query_package_refs_page(&bbox, after_package_id, 512)
+                })?;
+                if package_refs.is_empty() {
+                    break;
                 }
-                Ok(())
-            })?;
-            recorder.measure("feature reconstruction", || {
-                for result in results {
-                    let (metadata, model) = result?;
-                    if current_metadata
-                        .as_ref()
-                        .is_some_and(|current| current != metadata.as_ref())
-                    {
-                        return Err(Error::Import(
-                            "query results span incompatible metadata roots".to_string(),
-                        ));
-                    }
-                    write_feature_line(&mut writer, &model)?;
-                }
-                Ok(())
-            })?;
+                after_package_id = package_refs.last().map(|package| package.record_id);
+                let packages = recorder.measure("feature reconstruction", || {
+                    index.read_packages(&package_refs)
+                })?;
+                recorder.measure("output serialization/write", || {
+                    write_package_stream_page(&mut writer, &packages, &mut stream_metadata)
+                })?;
+            }
+            recorder.measure("metadata lookup/cache", || Ok::<_, Error>(()))?;
             recorder.measure("output serialization/write", || {
                 writer.flush()?;
                 Ok(())
@@ -589,14 +590,26 @@ fn print_dataset_inspection(report: &DatasetInspection) -> Result<()> {
             report.detected_feature_file_count
         )?;
     }
+    if let Some(schema_version) = report.index.schema_version {
+        writeln!(writer, "schema version: {schema_version}")?;
+    }
     if let Some(indexed_source_count) = report.index.indexed_source_count {
         writeln!(writer, "indexed sources: {indexed_source_count}")?;
     }
     if let Some(indexed_feature_count) = report.index.indexed_feature_count {
-        writeln!(writer, "indexed feature packages: {indexed_feature_count}")?;
+        writeln!(writer, "indexed feature aliases: {indexed_feature_count}")?;
+    }
+    if let Some(indexed_package_count) = report.index.indexed_package_count {
+        writeln!(writer, "indexed packages: {indexed_package_count}")?;
     }
     if let Some(indexed_cityobject_count) = report.index.indexed_cityobject_count {
         writeln!(writer, "indexed CityObjects: {indexed_cityobject_count}")?;
+    }
+    if let Some(indexed_relationship_count) = report.index.indexed_cityobject_relationship_count {
+        writeln!(
+            writer,
+            "indexed CityObject relationships: {indexed_relationship_count}"
+        )?;
     }
     writeln!(
         writer,
@@ -663,19 +676,51 @@ fn open_writer(output: Option<PathBuf>) -> Result<Box<dyn Write>> {
     }
 }
 
-fn write_model_stream<W>(writer: &mut W, metadata: &Value, model: &CityModel) -> Result<()>
+fn write_package_stream_page<W>(
+    writer: &mut W,
+    packages: &[IndexedPackage],
+    stream_metadata: &mut Option<Value>,
+) -> Result<()>
 where
     W: Write,
 {
-    write_model_stream_item(writer, metadata, model)
+    for package in packages {
+        match stream_metadata {
+            Some(metadata) if metadata != package.metadata.as_ref() => {
+                return Err(Error::Import(
+                    "query results span incompatible metadata roots".to_string(),
+                ));
+            }
+            Some(_) => {}
+            None => {
+                let metadata = package.metadata.as_ref().clone();
+                write_model_stream_header(writer, &metadata)?;
+                *stream_metadata = Some(metadata);
+            }
+        }
+        write_feature_line(writer, &package.model)?;
+    }
+    Ok(())
 }
 
-fn write_model_stream_item<W>(writer: &mut W, metadata: &Value, model: &CityModel) -> Result<()>
+fn write_package_stream<W>(writer: &mut W, packages: &[IndexedPackage]) -> Result<()>
 where
     W: Write,
 {
+    let Some(first) = packages.first() else {
+        return Ok(());
+    };
+    let metadata = first.metadata.as_ref();
     write_model_stream_header(writer, metadata)?;
-    write_feature_line(writer, model)
+    for package in packages {
+        if package.metadata.as_ref() != metadata {
+            return Err(Error::Import(
+                "query results span incompatible metadata roots".to_string(),
+            ));
+        }
+        write_feature_line(writer, &package.model)?;
+    }
+    Ok(())
 }
 
 fn write_model_stream_header<W>(writer: &mut W, metadata: &Value) -> Result<()>
