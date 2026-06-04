@@ -18,6 +18,9 @@ use common::{
 };
 use serde_json::{Value, json};
 
+type CityObjectBBoxPageFn =
+    fn(&CityIndex, &BBox, Option<i64>, usize) -> cityjson_lib::Result<Vec<IndexedCityObjectRef>>;
+
 /// Input: the expected future public Rust API types and method names are referenced as function pointers.
 /// Assertions: plural CityObject lookup, package membership lookup, and package retrieval signatures compile exactly as planned.
 #[test]
@@ -25,6 +28,9 @@ fn plural_package_api_signatures_are_stable() {
     let _: Option<Bounds3D> = None;
     let _: fn(&CityIndex, &str) -> cityjson_lib::Result<Vec<IndexedCityObjectRef>> =
         CityIndex::lookup_cityobject_refs;
+    let _: fn(&CityIndex, Option<i64>, usize) -> cityjson_lib::Result<Vec<IndexedCityObjectRef>> =
+        CityIndex::cityobject_ref_page_after_record_id;
+    let _: CityObjectBBoxPageFn = CityIndex::query_cityobject_refs_page;
     let _: fn(&CityIndex, &IndexedCityObjectRef) -> cityjson_lib::Result<Vec<IndexedPackageRef>> =
         CityIndex::package_refs_for_cityobject;
     let _: fn(&CityIndex, &str) -> cityjson_lib::Result<Vec<cityjson_lib::CityModel>> =
@@ -44,6 +50,20 @@ fn lookup_cityobject_refs_returns_all_duplicate_occurrences() {
     assert!(refs[0].record_id < refs[1].record_id);
     assert_eq!(refs[0].external_id, "duplicate");
     assert_eq!(refs[1].external_id, "duplicate");
+}
+
+/// Input: duplicate and missing external ids in one batch lookup.
+/// Assertions: batch lookup deduplicates input ids, returns all physical matches, and keeps record-id order.
+#[test]
+fn lookup_cityobject_refs_for_ids_batches_duplicates_and_missing_ids() {
+    let index = duplicate_cityjson_seq_index();
+    let refs = index
+        .lookup_cityobject_refs_for_ids(&["missing", "duplicate", "duplicate"])
+        .expect("batch CityObject lookup should succeed");
+
+    assert_eq!(refs.len(), 2);
+    assert!(refs[0].record_id < refs[1].record_id);
+    assert!(refs.iter().all(|item| item.external_id == "duplicate"));
 }
 
 /// Input: a CityJSON index with two root packages sharing one child CityObject.
@@ -191,6 +211,58 @@ fn cityobject_query_returns_granular_hits() {
     );
 }
 
+/// Input: a CityObject bbox query collected through one-row pages.
+/// Assertions: paged CityObject bbox refs are identical to the eager query result.
+#[test]
+fn cityobject_bbox_pages_match_eager_query() {
+    let index = hierarchy_index();
+    let eager = index
+        .query_cityobject_refs(&query_bounds())
+        .expect("eager CityObject query should succeed");
+    let mut paged = Vec::new();
+    let mut after_record_id = None;
+    loop {
+        let page = index
+            .query_cityobject_refs_page(&query_bounds(), after_record_id, 1)
+            .expect("paged CityObject query should succeed");
+        if page.is_empty() {
+            break;
+        }
+        after_record_id = page.last().map(|cityobject| cityobject.record_id);
+        paged.extend(page);
+    }
+
+    assert_eq!(paged, eager);
+}
+
+/// Input: a full CityObject scan collected through one-row pages.
+/// Assertions: keyset paging returns every indexed CityObject exactly once in record-id order.
+#[test]
+fn cityobject_ref_pages_iterate_large_sets_by_record_id() {
+    let index = hierarchy_index();
+    let mut refs = Vec::new();
+    let mut after_record_id = None;
+    loop {
+        let page = index
+            .cityobject_ref_page_after_record_id(after_record_id, 1)
+            .expect("CityObject ref page should succeed");
+        if page.is_empty() {
+            break;
+        }
+        after_record_id = page.last().map(|cityobject| cityobject.record_id);
+        refs.extend(page);
+    }
+
+    assert_eq!(
+        refs.len(),
+        index.cityobject_count().expect("CityObject count")
+    );
+    assert!(
+        refs.windows(2)
+            .all(|pair| pair[0].record_id < pair[1].record_id)
+    );
+}
+
 /// Input: a root CityObject ref in a deterministic multi-level hierarchy.
 /// Assertions: descendant traversal is stable across calls, breadth-first, and deduplicated.
 #[test]
@@ -238,6 +310,33 @@ fn read_packages_decodes_duplicate_request_once_per_package() {
         packages.len(),
         2,
         "batch output remains aligned with requested refs"
+    );
+}
+
+/// Input: two distinct regular CityJSON package refs from the same source.
+/// Assertions: batch package reads preserve request order while reconstructing both packages.
+#[test]
+fn read_packages_batches_distinct_cityjson_packages_from_one_source() {
+    let index = shared_child_index();
+    let refs = index
+        .lookup_cityobject_refs_for_ids(&["building-b", "building-a"])
+        .expect("batch lookup")
+        .into_iter()
+        .flat_map(|cityobject| {
+            index
+                .package_refs_for_cityobject(&cityobject)
+                .expect("package refs")
+        })
+        .collect::<Vec<_>>();
+    let packages = index.read_packages(&refs).expect("batch package read");
+
+    assert_eq!(packages.len(), 2);
+    assert_eq!(packages[0].reference.record_id, refs[0].record_id);
+    assert_eq!(packages[1].reference.record_id, refs[1].record_id);
+    assert!(
+        packages
+            .iter()
+            .all(|package| model_contains_id(&package.model, "shared-part"))
     );
 }
 

@@ -752,6 +752,10 @@ fn total_file_size(root: &Path) -> Result<u64> {
     Ok(total)
 }
 
+#[allow(
+    clippy::too_many_lines,
+    reason = "benchmark orchestration keeps measured run order explicit"
+)]
 fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord>> {
     let manifest = &dataset.manifest;
     let worker_count = crate::configured_worker_count()?;
@@ -823,6 +827,8 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
 
     let all_refs = index.package_ref_page_after_record_id(None, feature_count.min(256))?;
     let sampled_refs = all_refs.into_iter().take(256).collect::<Vec<_>>();
+    let sampled_cityobjects =
+        index.cityobject_ref_page_after_record_id(None, cityobject_count.min(256))?;
 
     runs.extend(run_full_scan(
         &index,
@@ -832,7 +838,40 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
         source_count,
         cityobject_count,
     )?);
+    runs.extend(run_cityobject_full_scan(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+    )?);
     runs.extend(run_gets(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+    )?);
+    runs.push(run_cityobject_id_lookup(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+        &sampled_cityobjects,
+    )?);
+    runs.extend(run_package_bbox_lookup_only(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+    )?);
+    runs.extend(run_cityobject_queries(
         &index,
         manifest,
         worker_count,
@@ -849,6 +888,15 @@ fn run_dataset(dataset: &PreparedDataset) -> Result<Vec<BenchmarkOperationRecord
         cityobject_count,
     )?);
     runs.push(run_read_package(
+        &index,
+        manifest,
+        worker_count,
+        feature_count,
+        source_count,
+        cityobject_count,
+        &sampled_refs,
+    )?);
+    runs.push(run_read_packages(
         &index,
         manifest,
         worker_count,
@@ -932,6 +980,56 @@ fn run_full_scan(
     })])
 }
 
+fn run_cityobject_full_scan(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+) -> Result<Vec<BenchmarkOperationRecord>> {
+    let started = Instant::now();
+    let mut count = 0usize;
+    let mut after_record_id = None;
+    loop {
+        let page = index.cityobject_ref_page_after_record_id(after_record_id, 512)?;
+        if page.is_empty() {
+            break;
+        }
+        after_record_id = page.last().map(|cityobject| cityobject.record_id);
+        count += page.len();
+    }
+    let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+        .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+    let memory = profile::current_memory_snapshot()?;
+    Ok(vec![build_record(BenchmarkRecordInput {
+        dataset_label: manifest.dataset_label.clone(),
+        source_artifact: manifest.source_artifact.clone(),
+        prepared_dataset: manifest.prepared_dataset.clone(),
+        subset_size: manifest.subset_size,
+        byte_size: manifest.byte_size,
+        layout: manifest.layout,
+        sidecar_byte_size: fs::metadata(
+            manifest
+                .prepared_dataset
+                .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+        )
+        .map_or(0, |metadata| metadata.len()),
+        worker_count,
+        operation: "cityobject_full_scan_reference_iteration".to_owned(),
+        variant: None,
+        elapsed_ns,
+        memory,
+        feature_count,
+        package_count: feature_count,
+        source_count,
+        cityobject_count,
+        cityobject_relationship_count: manifest.cityobject_relationship_count,
+        multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+        query_hit_count: Some(count),
+    })])
+}
+
 fn run_gets(
     index: &CityIndex,
     manifest: &BenchmarkManifest,
@@ -972,6 +1070,142 @@ fn run_gets(
             cityobject_relationship_count: manifest.cityobject_relationship_count,
             multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
             query_hit_count: Some(hit.len()),
+        }));
+    }
+    Ok(runs)
+}
+
+fn run_cityobject_id_lookup(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+    refs: &[crate::IndexedCityObjectRef],
+) -> Result<BenchmarkOperationRecord> {
+    let ids = refs
+        .iter()
+        .map(|cityobject| cityobject.external_id.as_str())
+        .collect::<Vec<_>>();
+    let started = Instant::now();
+    let hits = index.lookup_cityobject_refs_for_ids(&ids)?;
+    let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+        .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+    let memory = profile::current_memory_snapshot()?;
+    Ok(build_record(BenchmarkRecordInput {
+        dataset_label: manifest.dataset_label.clone(),
+        source_artifact: manifest.source_artifact.clone(),
+        prepared_dataset: manifest.prepared_dataset.clone(),
+        subset_size: manifest.subset_size,
+        layout: manifest.layout,
+        byte_size: manifest.byte_size,
+        sidecar_byte_size: fs::metadata(
+            manifest
+                .prepared_dataset
+                .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+        )
+        .map_or(0, |metadata| metadata.len()),
+        worker_count,
+        operation: "cityobject_id_lookup".to_owned(),
+        variant: Some(format!("sample-{}", ids.len())),
+        elapsed_ns,
+        memory,
+        feature_count,
+        package_count: feature_count,
+        source_count,
+        cityobject_count,
+        cityobject_relationship_count: manifest.cityobject_relationship_count,
+        multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+        query_hit_count: Some(hits.len()),
+    }))
+}
+
+fn run_package_bbox_lookup_only(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+) -> Result<Vec<BenchmarkOperationRecord>> {
+    let mut runs = Vec::new();
+    for window in &manifest.query_windows {
+        let started = Instant::now();
+        let hits = index.query_package_refs(&window.bbox)?;
+        let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+            .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+        let memory = profile::current_memory_snapshot()?;
+        runs.push(build_record(BenchmarkRecordInput {
+            dataset_label: manifest.dataset_label.clone(),
+            source_artifact: manifest.source_artifact.clone(),
+            prepared_dataset: manifest.prepared_dataset.clone(),
+            subset_size: manifest.subset_size,
+            layout: manifest.layout,
+            byte_size: manifest.byte_size,
+            sidecar_byte_size: fs::metadata(
+                manifest
+                    .prepared_dataset
+                    .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+            )
+            .map_or(0, |metadata| metadata.len()),
+            worker_count,
+            operation: "package_bbox_lookup_only".to_owned(),
+            variant: Some(window.label.clone()),
+            elapsed_ns,
+            memory,
+            feature_count,
+            package_count: feature_count,
+            source_count,
+            cityobject_count,
+            cityobject_relationship_count: manifest.cityobject_relationship_count,
+            multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+            query_hit_count: Some(hits.len()),
+        }));
+    }
+    Ok(runs)
+}
+
+fn run_cityobject_queries(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+) -> Result<Vec<BenchmarkOperationRecord>> {
+    let mut runs = Vec::new();
+    for window in &manifest.query_windows {
+        let started = Instant::now();
+        let hits = index.query_cityobject_refs(&window.bbox)?;
+        let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+            .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+        let memory = profile::current_memory_snapshot()?;
+        runs.push(build_record(BenchmarkRecordInput {
+            dataset_label: manifest.dataset_label.clone(),
+            source_artifact: manifest.source_artifact.clone(),
+            prepared_dataset: manifest.prepared_dataset.clone(),
+            subset_size: manifest.subset_size,
+            layout: manifest.layout,
+            byte_size: manifest.byte_size,
+            sidecar_byte_size: fs::metadata(
+                manifest
+                    .prepared_dataset
+                    .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+            )
+            .map_or(0, |metadata| metadata.len()),
+            worker_count,
+            operation: "cityobject_bbox_query".to_owned(),
+            variant: Some(window.label.clone()),
+            elapsed_ns,
+            memory,
+            feature_count,
+            package_count: feature_count,
+            source_count,
+            cityobject_count,
+            cityobject_relationship_count: manifest.cityobject_relationship_count,
+            multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+            query_hit_count: Some(hits.len()),
         }));
     }
     Ok(runs)
@@ -1066,6 +1300,48 @@ fn run_read_package(
         cityobject_relationship_count: manifest.cityobject_relationship_count,
         multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
         query_hit_count: Some(reconstructed),
+    }))
+}
+
+fn run_read_packages(
+    index: &CityIndex,
+    manifest: &BenchmarkManifest,
+    worker_count: usize,
+    feature_count: usize,
+    source_count: usize,
+    cityobject_count: usize,
+    refs: &[crate::IndexedPackageRef],
+) -> Result<BenchmarkOperationRecord> {
+    let started = Instant::now();
+    let packages = index.read_packages(refs)?;
+    let elapsed_ns = u64::try_from(started.elapsed().as_nanos())
+        .map_err(|_| Error::Import("benchmark elapsed time does not fit in u64".to_owned()))?;
+    let memory = profile::current_memory_snapshot()?;
+    Ok(build_record(BenchmarkRecordInput {
+        dataset_label: manifest.dataset_label.clone(),
+        source_artifact: manifest.source_artifact.clone(),
+        prepared_dataset: manifest.prepared_dataset.clone(),
+        subset_size: manifest.subset_size,
+        byte_size: manifest.byte_size,
+        layout: manifest.layout,
+        sidecar_byte_size: fs::metadata(
+            manifest
+                .prepared_dataset
+                .join(format!(".cityjson-index.worker-{worker_count}.sqlite")),
+        )
+        .map_or(0, |metadata| metadata.len()),
+        worker_count,
+        operation: "read_packages".to_owned(),
+        variant: Some(format!("sample-{}", refs.len())),
+        elapsed_ns,
+        memory,
+        feature_count,
+        package_count: feature_count,
+        source_count,
+        cityobject_count,
+        cityobject_relationship_count: manifest.cityobject_relationship_count,
+        multi_geometry_cityobject_count: manifest.multi_geometry_cityobject_count,
+        query_hit_count: Some(packages.len()),
     }))
 }
 

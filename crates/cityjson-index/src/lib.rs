@@ -13,7 +13,7 @@ use cityjson_lib::{CityModel, Error, Result};
 use globset::GlobMatcher;
 use ignore::WalkBuilder;
 use lru::LruCache;
-use rusqlite::{OptionalExtension, params};
+use rusqlite::{OptionalExtension, params, params_from_iter};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::value::RawValue;
@@ -57,6 +57,7 @@ pub struct CityIndex {
 pub const WORKER_COUNT_ENV: &str = "CITYJSON_INDEX_WORKERS";
 const DEFAULT_SCAN_PAGE_SIZE: usize = 512;
 const SCHEMA_VERSION: i64 = 2;
+const SQLITE_PARAM_CHUNK_SIZE: usize = 900;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Bounds3D {
@@ -1148,6 +1149,12 @@ fn cityobject_ref_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<IndexedC
     })
 }
 
+fn sql_placeholders(count: usize) -> String {
+    std::iter::repeat_n("?", count)
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
 impl CityIndex {
     /// Opens an index for the given storage layout.
     ///
@@ -1215,6 +1222,58 @@ impl CityIndex {
         sqlite_result(rows.collect())
     }
 
+    /// Returns every indexed `CityObject` occurrence matching any external id.
+    ///
+    /// Duplicate input ids are ignored. Results include all physical
+    /// occurrences ordered by `SQLite` `CityObject` record id.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` lookup fails.
+    pub fn lookup_cityobject_refs_for_ids<S: AsRef<str>>(
+        &self,
+        external_ids: &[S],
+    ) -> Result<Vec<IndexedCityObjectRef>> {
+        let unique_ids = external_ids
+            .iter()
+            .map(std::convert::AsRef::as_ref)
+            .collect::<BTreeSet<_>>();
+        let unique_ids = unique_ids.into_iter().collect::<Vec<_>>();
+        if unique_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut refs = Vec::new();
+        for chunk in unique_ids.chunks(SQLITE_PARAM_CHUNK_SIZE) {
+            let placeholders = sql_placeholders(chunk.len());
+            let sql = format!(
+                r"
+                SELECT
+                    c.id,
+                    c.external_id,
+                    c.cityobject_type,
+                    b.min_x,
+                    b.max_x,
+                    b.min_y,
+                    b.max_y,
+                    b.min_z,
+                    b.max_z
+                FROM cityobjects AS c
+                LEFT JOIN cityobject_bbox AS b ON b.cityobject_id = c.id
+                WHERE c.external_id IN ({placeholders})
+                ORDER BY c.id
+                "
+            );
+            let mut stmt = sqlite_result(self.index.conn.prepare(&sql))?;
+            let rows = sqlite_result(
+                stmt.query_map(params_from_iter(chunk.iter()), cityobject_ref_from_row),
+            )?;
+            refs.extend(sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())?);
+        }
+        refs.sort_by_key(|cityobject| cityobject.record_id);
+        Ok(refs)
+    }
+
     /// Returns package refs containing the given `CityObject` occurrence.
     ///
     /// # Errors
@@ -1224,28 +1283,7 @@ impl CityIndex {
         &self,
         cityobject: &IndexedCityObjectRef,
     ) -> Result<Vec<IndexedPackageRef>> {
-        let mut stmt = sqlite_result(self.index.conn.prepare(
-            r"
-            SELECT DISTINCT
-                p.id,
-                p.model_id,
-                p.package_type,
-                b.min_x,
-                b.max_x,
-                b.min_y,
-                b.max_y,
-                b.min_z,
-                b.max_z
-            FROM package_cityobjects AS pc
-            JOIN packages AS p ON p.id = pc.package_id
-            LEFT JOIN package_bbox AS b ON b.package_id = p.id
-            WHERE pc.cityobject_id = ?1
-            ORDER BY p.id
-            ",
-        ))?;
-        let rows =
-            sqlite_result(stmt.query_map(params![cityobject.record_id], package_ref_from_row))?;
-        sqlite_result(rows.collect())
+        self.package_refs_for_cityobjects(std::slice::from_ref(cityobject))
     }
 
     /// Returns every distinct package containing a `CityObject` with `external_id`.
@@ -1268,16 +1306,7 @@ impl CityIndex {
         external_id: &str,
     ) -> Result<Vec<(Arc<Meta>, CityModel)>> {
         let cityobjects = self.lookup_cityobject_refs(external_id)?;
-        let mut seen = BTreeSet::new();
-        let mut packages = Vec::new();
-        for cityobject in &cityobjects {
-            for package in self.package_refs_for_cityobject(cityobject)? {
-                if seen.insert(package.record_id) {
-                    packages.push(package);
-                }
-            }
-        }
-        packages.sort_by_key(|package| package.record_id);
+        let packages = self.package_refs_for_cityobjects(&cityobjects)?;
         self.read_packages(&packages).map(|items| {
             items
                 .into_iter()
@@ -1336,6 +1365,47 @@ impl CityIndex {
         ))?;
         let rows =
             sqlite_result(stmt.query_map(params![after_record_id, limit], package_ref_from_row))?;
+        sqlite_result(rows.collect())
+    }
+
+    /// Returns a page of `CityObject` refs ordered by `CityObject` record id.
+    ///
+    /// Passing `None` starts from the first `CityObject`. Results use keyset
+    /// pagination and are stable for large scans.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` lookup fails or `limit` is zero.
+    pub fn cityobject_ref_page_after_record_id(
+        &self,
+        after_record_id: Option<i64>,
+        limit: usize,
+    ) -> Result<Vec<IndexedCityObjectRef>> {
+        if limit == 0 {
+            return Err(import_error("limit must be greater than zero"));
+        }
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT
+                c.id,
+                c.external_id,
+                c.cityobject_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM cityobjects AS c
+            LEFT JOIN cityobject_bbox AS b ON b.cityobject_id = c.id
+            WHERE (?1 IS NULL OR c.id > ?1)
+            ORDER BY c.id
+            LIMIT ?2
+            ",
+        ))?;
+        let rows = sqlite_result(
+            stmt.query_map(params![after_record_id, limit], cityobject_ref_from_row),
+        )?;
         sqlite_result(rows.collect())
     }
 
@@ -1420,6 +1490,34 @@ impl CityIndex {
     ///
     /// Returns an error if the `SQLite` query fails.
     pub fn query_cityobject_refs(&self, bbox: &BBox) -> Result<Vec<IndexedCityObjectRef>> {
+        let mut refs = Vec::new();
+        let mut after_record_id = None;
+        loop {
+            let page =
+                self.query_cityobject_refs_page(bbox, after_record_id, DEFAULT_SCAN_PAGE_SIZE)?;
+            if page.is_empty() {
+                break;
+            }
+            after_record_id = page.last().map(|cityobject| cityobject.record_id);
+            refs.extend(page);
+        }
+        Ok(refs)
+    }
+
+    /// Returns a page of `CityObject` refs whose `CityObject` bbox intersects `bbox`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the `SQLite` query fails or `limit` is zero.
+    pub fn query_cityobject_refs_page(
+        &self,
+        bbox: &BBox,
+        after_record_id: Option<i64>,
+        limit: usize,
+    ) -> Result<Vec<IndexedCityObjectRef>> {
+        if limit == 0 {
+            return Err(import_error("limit must be greater than zero"));
+        }
         let mut stmt = sqlite_result(self.index.conn.prepare(
             r"
             SELECT
@@ -1438,11 +1536,20 @@ impl CityIndex {
               AND b.max_x >= ?1
               AND b.min_y <= ?4
               AND b.max_y >= ?3
+              AND (?5 IS NULL OR c.id > ?5)
             ORDER BY c.id
+            LIMIT ?6
             ",
         ))?;
         let rows = sqlite_result(stmt.query_map(
-            params![bbox.min_x, bbox.max_x, bbox.min_y, bbox.max_y],
+            params![
+                bbox.min_x,
+                bbox.max_x,
+                bbox.min_y,
+                bbox.max_y,
+                after_record_id,
+                limit
+            ],
             cityobject_ref_from_row,
         ))?;
         sqlite_result(rows.collect())
@@ -1533,14 +1640,40 @@ impl CityIndex {
     ///
     /// Returns an error if any package cannot be found, read, or reconstructed.
     pub fn read_packages(&self, packages: &[IndexedPackageRef]) -> Result<Vec<IndexedPackage>> {
-        let mut decoded = BTreeMap::new();
-        for package in packages {
-            if let std::collections::btree_map::Entry::Vacant(entry) =
-                decoded.entry(package.record_id)
-            {
-                entry.insert(self.read_indexed_package(package)?);
-            }
+        if packages.is_empty() {
+            return Ok(Vec::new());
         }
+
+        let record_ids = packages
+            .iter()
+            .map(|package| package.record_id)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let locations = self.package_locations_for_record_ids(&record_ids)?;
+        let cityjson_package_ids = locations
+            .values()
+            .filter(|location| location.reference.package_type == PackageType::CityJson)
+            .map(|location| location.reference.record_id)
+            .collect::<Vec<_>>();
+        let cityjson_members = self
+            .index
+            .package_members_for_package_ids(&cityjson_package_ids)?;
+        let mut source_files = HashMap::new();
+        let mut decoded = BTreeMap::new();
+
+        for record_id in record_ids {
+            let location = locations
+                .get(&record_id)
+                .ok_or_else(|| import_error(format!("package record {record_id} was not found")))?;
+            let indexed = self.read_located_package(
+                location,
+                cityjson_members.get(&record_id).map(Vec::as_slice),
+                &mut source_files,
+            )?;
+            decoded.insert(record_id, indexed);
+        }
+
         packages
             .iter()
             .map(|package| {
@@ -1602,10 +1735,19 @@ impl CityIndex {
                 package.record_id
             ))
         })?;
+        self.read_located_package(&location, None, &mut HashMap::new())
+    }
+
+    fn read_located_package(
+        &self,
+        location: &PackageLocation,
+        prefetched_members: Option<&[PackageMemberLocation]>,
+        source_files: &mut HashMap<PathBuf, fs::File>,
+    ) -> Result<IndexedPackage> {
         let metadata = self.index.get_cached_metadata(location.source_id)?;
         let model = match location.reference.package_type {
             PackageType::CityJson => {
-                self.read_cityjson_package(&location, metadata.bytes.as_ref())?
+                self.read_cityjson_package(location, prefetched_members, source_files, &metadata)?
             }
             PackageType::CityJsonSeq | PackageType::FeatureFiles => {
                 let offset = location
@@ -1614,7 +1756,22 @@ impl CityIndex {
                 let length = location
                     .length
                     .ok_or_else(|| import_error("package length is missing"))?;
-                let bytes = read_exact_range(&location.path, offset, length)?;
+                if !source_files.contains_key(&location.path) {
+                    let file = fs::File::open(&location.path).map_err(|error| {
+                        import_error(format!(
+                            "failed to open {}: {error}",
+                            location.path.display()
+                        ))
+                    })?;
+                    source_files.insert(location.path.clone(), file);
+                }
+                let file = source_files.get_mut(&location.path).ok_or_else(|| {
+                    import_error(format!(
+                        "source file {} was not opened",
+                        location.path.display()
+                    ))
+                })?;
+                let bytes = read_exact_range_from_file(file, &location.path, offset, length)?;
                 feature_slice_with_preserved_package_id(
                     &bytes,
                     &location.reference.model_id,
@@ -1623,7 +1780,7 @@ impl CityIndex {
             }
         };
         Ok(IndexedPackage {
-            reference: location.reference,
+            reference: location.reference.clone(),
             metadata: metadata.value,
             model,
         })
@@ -1632,17 +1789,41 @@ impl CityIndex {
     fn read_cityjson_package(
         &self,
         location: &PackageLocation,
-        metadata_bytes: &[u8],
+        prefetched_members: Option<&[PackageMemberLocation]>,
+        source_files: &mut HashMap<PathBuf, fs::File>,
+        metadata: &CachedMetadata,
     ) -> Result<CityModel> {
-        let members = self.index.package_members(location.reference.record_id)?;
+        let fallback_members;
+        let members = if let Some(members) = prefetched_members {
+            members
+        } else {
+            fallback_members = self.index.package_members(location.reference.record_id)?;
+            &fallback_members
+        };
         let backend = self.backend.as_cityjson().ok_or_else(|| {
             import_error("regular CityJSON package read requires CityJSON backend")
         })?;
-        backend.read_package_members(
+        if !source_files.contains_key(&location.path) {
+            let file = fs::File::open(&location.path).map_err(|error| {
+                import_error(format!(
+                    "failed to open {}: {error}",
+                    location.path.display()
+                ))
+            })?;
+            source_files.insert(location.path.clone(), file);
+        }
+        let source_file = source_files.get_mut(&location.path).ok_or_else(|| {
+            import_error(format!(
+                "source file {} was not opened",
+                location.path.display()
+            ))
+        })?;
+        backend.read_package_members_from_file(
             &location.reference.model_id,
             &location.path,
-            &members,
-            metadata_bytes,
+            source_file,
+            members,
+            metadata.bytes.as_ref(),
         )
     }
 
@@ -1688,6 +1869,104 @@ impl CityIndex {
                 )
                 .optional(),
         )
+    }
+
+    fn package_locations_for_record_ids(
+        &self,
+        record_ids: &[i64],
+    ) -> Result<BTreeMap<i64, PackageLocation>> {
+        let mut locations = BTreeMap::new();
+        for chunk in record_ids.chunks(SQLITE_PARAM_CHUNK_SIZE) {
+            let placeholders = sql_placeholders(chunk.len());
+            let sql = format!(
+                r"
+                SELECT
+                    p.id,
+                    p.model_id,
+                    p.package_type,
+                    b.min_x,
+                    b.max_x,
+                    b.min_y,
+                    b.max_y,
+                    b.min_z,
+                    b.max_z,
+                    p.source_id,
+                    p.path,
+                    p.offset,
+                    p.length
+                FROM packages AS p
+                LEFT JOIN package_bbox AS b ON b.package_id = p.id
+                WHERE p.id IN ({placeholders})
+                ORDER BY p.id
+                "
+            );
+            let mut stmt = sqlite_result(self.index.conn.prepare(&sql))?;
+            let rows = sqlite_result(stmt.query_map(params_from_iter(chunk.iter()), |row| {
+                let reference = package_ref_from_row(row)?;
+                let source_id = row.get::<_, i64>(9)?;
+                let path = PathBuf::from(row.get::<_, String>(10)?);
+                let offset = row.get::<_, Option<i64>>(11)?.map(i64_to_u64).transpose()?;
+                let length = row.get::<_, Option<i64>>(12)?.map(i64_to_u64).transpose()?;
+                Ok(PackageLocation {
+                    reference,
+                    source_id,
+                    path,
+                    offset,
+                    length,
+                })
+            }))?;
+            for location in sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())? {
+                locations.insert(location.reference.record_id, location);
+            }
+        }
+        Ok(locations)
+    }
+
+    fn package_refs_for_cityobjects(
+        &self,
+        cityobjects: &[IndexedCityObjectRef],
+    ) -> Result<Vec<IndexedPackageRef>> {
+        let cityobject_ids = cityobjects
+            .iter()
+            .map(|cityobject| cityobject.record_id)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        if cityobject_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut refs = BTreeMap::new();
+        for chunk in cityobject_ids.chunks(SQLITE_PARAM_CHUNK_SIZE) {
+            let placeholders = sql_placeholders(chunk.len());
+            let sql = format!(
+                r"
+                SELECT DISTINCT
+                    p.id,
+                    p.model_id,
+                    p.package_type,
+                    b.min_x,
+                    b.max_x,
+                    b.min_y,
+                    b.max_y,
+                    b.min_z,
+                    b.max_z
+                FROM package_cityobjects AS pc
+                JOIN packages AS p ON p.id = pc.package_id
+                LEFT JOIN package_bbox AS b ON b.package_id = p.id
+                WHERE pc.cityobject_id IN ({placeholders})
+                ORDER BY p.id
+                "
+            );
+            let mut stmt = sqlite_result(self.index.conn.prepare(&sql))?;
+            let rows = sqlite_result(
+                stmt.query_map(params_from_iter(chunk.iter()), package_ref_from_row),
+            )?;
+            for reference in sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())? {
+                refs.insert(reference.record_id, reference);
+            }
+        }
+        Ok(refs.into_values().collect())
     }
 
     /// Returns the total number of indexed packages.
@@ -2023,6 +2302,60 @@ impl Index {
             })
         }))?;
         sqlite_result(rows.collect())
+    }
+
+    fn package_members_for_package_ids(
+        &self,
+        package_ids: &[i64],
+    ) -> Result<BTreeMap<i64, Vec<PackageMemberLocation>>> {
+        let mut members = BTreeMap::<i64, Vec<PackageMemberLocation>>::new();
+        for chunk in package_ids.chunks(SQLITE_PARAM_CHUNK_SIZE) {
+            let placeholders = sql_placeholders(chunk.len());
+            let sql = format!(
+                r"
+                SELECT
+                    pc.package_id,
+                    c.external_id,
+                    c.source_id,
+                    c.path,
+                    c.offset,
+                    c.length,
+                    s.vertices_offset,
+                    s.vertices_length
+                FROM package_cityobjects AS pc
+                JOIN cityobjects AS c ON c.id = pc.cityobject_id
+                JOIN sources AS s ON s.id = c.source_id
+                WHERE pc.package_id IN ({placeholders})
+                ORDER BY pc.package_id, pc.ordinal
+                "
+            );
+            let mut stmt = sqlite_result(self.conn.prepare(&sql))?;
+            let rows = sqlite_result(stmt.query_map(params_from_iter(chunk.iter()), |row| {
+                Ok((
+                    row.get::<_, i64>(0)?,
+                    PackageMemberLocation {
+                        external_id: row.get(1)?,
+                        source_id: row.get(2)?,
+                        source_path: PathBuf::from(row.get::<_, String>(3)?),
+                        offset: i64_to_u64(row.get::<_, i64>(4)?)?,
+                        length: i64_to_u64(row.get::<_, i64>(5)?)?,
+                        vertices_offset: row
+                            .get::<_, Option<i64>>(6)?
+                            .map(i64_to_u64)
+                            .transpose()?,
+                        vertices_length: row
+                            .get::<_, Option<i64>>(7)?
+                            .map(i64_to_u64)
+                            .transpose()?,
+                    },
+                ))
+            }))?;
+            for row in sqlite_result(rows.collect::<rusqlite::Result<Vec<_>>>())? {
+                let (package_id, member) = row;
+                members.entry(package_id).or_default().push(member);
+            }
+        }
+        Ok(members)
     }
 
     fn get_cached_metadata(&self, source_id: i64) -> Result<CachedMetadata> {
@@ -2689,10 +3022,11 @@ impl StorageBackend for CityJsonBackend {
 }
 
 impl CityJsonBackend {
-    fn read_package_members(
+    fn read_package_members_from_file(
         &self,
         model_id: &str,
         source_path: &Path,
+        source_file: &mut fs::File,
         members: &[PackageMemberLocation],
         metadata_bytes: &[u8],
     ) -> Result<CityModel> {
@@ -2710,7 +3044,6 @@ impl CityJsonBackend {
             )
         })?;
 
-        let mut source_file = fs::File::open(source_path)?;
         let mut object_entries = Vec::with_capacity(members.len());
         for member in members {
             if member.source_id != first_member.source_id
@@ -2720,12 +3053,8 @@ impl CityJsonBackend {
                     "package {model_id} spans multiple CityJSON sources"
                 )));
             }
-            let object_fragment = read_exact_range_from_file(
-                &mut source_file,
-                source_path,
-                member.offset,
-                member.length,
-            )?;
+            let object_fragment =
+                read_exact_range_from_file(source_file, source_path, member.offset, member.length)?;
             let (object_id, object_value) = parse_cityobject_entry(&object_fragment)?;
             if object_id != member.external_id {
                 return Err(import_error(format!(
@@ -2735,12 +3064,8 @@ impl CityJsonBackend {
             }
             object_entries.push((object_id, object_value));
         }
-        let shared_vertices = self.load_shared_vertices(
-            source_path,
-            &mut source_file,
-            vertices_offset,
-            vertices_length,
-        )?;
+        let shared_vertices =
+            self.load_shared_vertices(source_path, source_file, vertices_offset, vertices_length)?;
         let feature_parts =
             build_feature_parts(model_id, object_entries, shared_vertices.as_ref())?;
         let cityobjects = feature_parts
@@ -3311,12 +3636,6 @@ fn parse_json_value<T: DeserializeOwned>(value: Value) -> Result<T> {
 
 fn json_string<T: Serialize + ?Sized>(value: &T) -> Result<String> {
     serde_json::to_string(value).map_err(|error| serde_json_error(&error))
-}
-
-fn read_exact_range(path: &Path, offset: u64, length: u64) -> Result<Vec<u8>> {
-    let mut file = fs::File::open(path)
-        .map_err(|error| import_error(format!("failed to open {}: {error}", path.display())))?;
-    read_exact_range_from_file(&mut file, path, offset, length)
 }
 
 fn feature_slice_with_preserved_package_id(

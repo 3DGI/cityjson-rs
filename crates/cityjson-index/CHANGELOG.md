@@ -8,10 +8,11 @@
   package-membership, relationship, and 3D bbox tables so every supported
   storage layout can expose stable package-level reads and spatial queries.
 - Added package-oriented Rust APIs, including `lookup_cityobject_refs()`,
-  `package_refs_for_cityobject()`, `get_packages()`, `read_package()`,
-  `read_packages()`, `query_package_refs()`, `query_packages()`,
-  `query_cityobject_refs()`, descendant traversal, rowid lookup helpers, and
-  keyset package-reference pagination.
+  `lookup_cityobject_refs_for_ids()`, `package_refs_for_cityobject()`,
+  `get_packages()`, `read_package()`, `read_packages()`,
+  `query_package_refs()`, `query_packages()`, `query_cityobject_refs()`,
+  `query_cityobject_refs_page()`, descendant traversal, rowid lookup helpers,
+  and keyset package and CityObject-reference pagination.
 - Added package filter types and APIs for CityObject type and LoD selection,
   with mergeable diagnostics for missing LoDs and filtered package counts.
 - Added matching C FFI and Python package bindings for plural CityObject lookup,
@@ -19,7 +20,8 @@
   diagnostics.
 - Added normalized schema/API tests, CityJSONSeq terminology tests, FFI contract
   tests, and benchmark artifacts documenting baseline, implementation,
-  previous-vs-current, and scan-normalized performance comparisons.
+  previous-vs-current, scan-normalized, and CityObject workload performance
+  comparisons.
 
 ### Changed
 
@@ -48,6 +50,12 @@
   rebuild. Release-mode subset benchmarks show `index_reindex` averaging
   `0.603x` of the previous optimized implementation across `city-json`,
   `city-json-seq`, and `feature-files` layouts.
+- Optimized package and CityObject reference workflows with batched CityObject
+  id lookup, paged CityObject bbox queries, batched package membership lookup,
+  and source-file reuse during `read_packages()`. Release-mode subset
+  benchmarks show matched `bbox_query` rows averaging `0.875x` of the previous
+  implementation, with new CityObject lookup and paging rows recorded as
+  current baselines.
 
 ### Removed
 
