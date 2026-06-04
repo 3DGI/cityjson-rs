@@ -843,7 +843,7 @@ pub extern "C" fn cjx_index_package_refs_for_cityobject(
 #[unsafe(no_mangle)]
 /// # Safety
 ///
-/// `refs` must either be null or point to `count` CityObject refs allocated by this ABI.
+/// `refs` must either be null or point to `count` `CityObject` refs allocated by this ABI.
 pub unsafe extern "C" fn cjx_cityobject_refs_free(
     refs: *mut cjx_cityobject_ref_t,
     count: usize,
