@@ -62,6 +62,11 @@
   columns. Release-mode subset benchmarks against `8208c8e` show `get`
   averaging `0.928x` and `read_package` averaging `0.923x` of the previous
   implementation.
+- Reworked sidecar rebuilds to stream scanned source headers and feature
+  batches into a single SQLite writer instead of holding all scanned data and a
+  cloned insertion vector in memory. Direct 25k-subset CLI checks show peak RSS
+  dropping from `132124 KB` to `33004 KB` for `city-json-seq` and from
+  `73072 KB` to `42904 KB` for `feature-files`.
 
 ### Removed
 

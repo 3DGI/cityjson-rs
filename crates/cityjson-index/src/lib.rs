@@ -3,8 +3,9 @@ pub mod profile;
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fs;
-use std::io::{ErrorKind, Read, Seek, SeekFrom};
+use std::io::{BufRead, BufReader, ErrorKind, Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
+use std::sync::mpsc::{SyncSender, sync_channel};
 use std::sync::{Arc, Mutex};
 use std::time::UNIX_EPOCH;
 
@@ -56,6 +57,7 @@ pub struct CityIndex {
 
 pub const WORKER_COUNT_ENV: &str = "CITYJSON_INDEX_WORKERS";
 const DEFAULT_SCAN_PAGE_SIZE: usize = 512;
+const REBUILD_FEATURE_BATCH_SIZE: usize = 512;
 const SCHEMA_VERSION: i64 = 2;
 const SQLITE_PARAM_CHUNK_SIZE: usize = 900;
 
@@ -1190,8 +1192,8 @@ impl CityIndex {
     /// Returns an error if backend scanning or index population fails.
     pub fn reindex(&mut self) -> Result<()> {
         let worker_count = configured_worker_count()?;
-        let scans = self.backend.scan(worker_count)?;
-        self.index.rebuild(&scans)
+        self.index
+            .rebuild_from_backend(self.backend.as_ref(), worker_count)
     }
 
     /// Returns every indexed `CityObject` occurrence with the given external id.
@@ -2111,21 +2113,6 @@ struct PackageMemberLocation {
     vertices_length: Option<u64>,
 }
 
-struct FeatureIndexEntry {
-    root_id: String,
-    model_id: String,
-    package_type: PackageType,
-    source_id: i64,
-    path: PathBuf,
-    file_size: u64,
-    file_mtime_ns: i64,
-    offset: u64,
-    length: u64,
-    bounds: FeatureBounds,
-    spatial: bool,
-    cityobjects: Vec<NormalizedCityObjectScan>,
-}
-
 struct IndexedSourceRecord {
     path: PathBuf,
     source_size: Option<u64>,
@@ -2300,39 +2287,22 @@ impl Index {
         Ok(())
     }
 
-    fn rebuild(&mut self, scans: &[SourceScan]) -> Result<()> {
+    fn rebuild_from_backend(
+        &mut self,
+        backend: &dyn StorageBackend,
+        worker_count: usize,
+    ) -> Result<()> {
         let tx = sqlite_result(self.conn.transaction())?;
         Self::clear_tables(&tx)?;
+        Self::drop_rebuild_indexes(&tx)?;
 
-        let mut feature_entries = Vec::new();
-        for scan in scans {
-            let source_id = Self::insert_source_in_tx(
-                &tx,
-                scan.path.as_path(),
-                &scan.metadata,
-                scan.vertices_offset,
-                scan.vertices_length,
-                scan.source_size,
-                scan.source_mtime_ns,
-            )?;
-            for feature in &scan.features {
-                feature_entries.push(FeatureIndexEntry {
-                    root_id: feature.root_id.clone(),
-                    model_id: feature.model_id.clone(),
-                    package_type: feature.package_type,
-                    source_id,
-                    path: feature.path.clone(),
-                    file_size: feature.file_size,
-                    file_mtime_ns: feature.file_mtime_ns,
-                    offset: feature.offset,
-                    length: feature.length,
-                    bounds: feature.bounds,
-                    spatial: feature.spatial,
-                    cityobjects: feature.cityobjects.clone(),
-                });
-            }
+        {
+            let mut inserter = NormalizedFeatureInserter::new(&tx)?;
+            let mut sink = RebuildSink::new(&tx, &mut inserter);
+            backend.scan_into(worker_count, &mut sink)?;
         }
-        Self::insert_normalized_features_in_tx(&tx, &feature_entries)?;
+
+        Self::create_rebuild_indexes(&tx)?;
         sqlite_result(tx.execute(
             "UPDATE schema_state SET schema_version = ?1, needs_reindex = 0 WHERE id = 1",
             params![SCHEMA_VERSION],
@@ -2547,6 +2517,41 @@ impl Index {
         sqlite_result(rows.collect())
     }
 
+    fn drop_rebuild_indexes(tx: &rusqlite::Transaction<'_>) -> Result<()> {
+        sqlite_result(tx.execute_batch(
+            r"
+            DROP INDEX IF EXISTS packages_source_id_idx;
+            DROP INDEX IF EXISTS packages_model_id_idx;
+            DROP INDEX IF EXISTS cityobjects_external_id_idx;
+            DROP INDEX IF EXISTS cityobjects_type_idx;
+            DROP INDEX IF EXISTS cityobjects_source_id_idx;
+            DROP INDEX IF EXISTS package_cityobjects_package_order_idx;
+            DROP INDEX IF EXISTS package_cityobjects_cityobject_id_idx;
+            DROP INDEX IF EXISTS cityobject_relationships_child_idx;
+            ",
+        ))?;
+        Ok(())
+    }
+
+    fn create_rebuild_indexes(tx: &rusqlite::Transaction<'_>) -> Result<()> {
+        sqlite_result(tx.execute_batch(
+            r"
+            CREATE INDEX IF NOT EXISTS packages_source_id_idx ON packages(source_id);
+            CREATE INDEX IF NOT EXISTS packages_model_id_idx ON packages(model_id);
+            CREATE INDEX IF NOT EXISTS cityobjects_external_id_idx ON cityobjects(external_id);
+            CREATE INDEX IF NOT EXISTS cityobjects_type_idx ON cityobjects(cityobject_type);
+            CREATE INDEX IF NOT EXISTS cityobjects_source_id_idx ON cityobjects(source_id);
+            CREATE INDEX IF NOT EXISTS package_cityobjects_package_order_idx
+                ON package_cityobjects(package_id, ordinal, cityobject_id);
+            CREATE INDEX IF NOT EXISTS package_cityobjects_cityobject_id_idx
+                ON package_cityobjects(cityobject_id, package_id);
+            CREATE INDEX IF NOT EXISTS cityobject_relationships_child_idx
+                ON cityobject_relationships(child_cityobject_id);
+            ",
+        ))?;
+        Ok(())
+    }
+
     fn clear_tables(tx: &rusqlite::Transaction<'_>) -> Result<()> {
         sqlite_result(tx.execute_batch(
             r"
@@ -2601,89 +2606,106 @@ impl Index {
         ))?;
         Ok(tx.last_insert_rowid())
     }
+}
+
+struct NormalizedFeatureInserter<'tx, 'conn> {
+    tx: &'tx rusqlite::Transaction<'conn>,
+    inserted_physical_packages: BTreeSet<(PathBuf, u64, u64)>,
+    cityobject_ids_by_range: HashMap<(PathBuf, u64, u64), i64>,
+    insert_package: rusqlite::Statement<'tx>,
+    insert_package_bbox: rusqlite::Statement<'tx>,
+    insert_cityobject: rusqlite::Statement<'tx>,
+    lookup_cityobject: rusqlite::Statement<'tx>,
+    insert_package_cityobject: rusqlite::Statement<'tx>,
+    insert_cityobject_bbox: rusqlite::Statement<'tx>,
+    insert_relationship: rusqlite::Statement<'tx>,
+}
+
+impl<'tx, 'conn> NormalizedFeatureInserter<'tx, 'conn> {
+    fn new(tx: &'tx rusqlite::Transaction<'conn>) -> Result<Self> {
+        Ok(Self {
+            tx,
+            inserted_physical_packages: BTreeSet::new(),
+            cityobject_ids_by_range: HashMap::new(),
+            insert_package: sqlite_result(tx.prepare(
+                r"
+                INSERT INTO packages (
+                    source_id,
+                    package_type,
+                    model_id,
+                    path,
+                    offset,
+                    length,
+                    file_size,
+                    file_mtime_ns
+                )
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+                ",
+            ))?,
+            insert_package_bbox: sqlite_result(tx.prepare(
+                r"
+                INSERT OR REPLACE INTO package_bbox (
+                    package_id, min_x, max_x, min_y, max_y, min_z, max_z
+                )
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+                ",
+            ))?,
+            insert_cityobject: sqlite_result(tx.prepare(
+                r"
+                INSERT OR IGNORE INTO cityobjects (
+                    source_id,
+                    external_id,
+                    cityobject_type,
+                    path,
+                    offset,
+                    length
+                )
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+                ",
+            ))?,
+            lookup_cityobject: sqlite_result(tx.prepare(
+                "SELECT id FROM cityobjects WHERE path = ?1 AND offset = ?2 AND length = ?3",
+            ))?,
+            insert_package_cityobject: sqlite_result(tx.prepare(
+                r"
+                INSERT OR IGNORE INTO package_cityobjects (
+                    package_id,
+                    cityobject_id,
+                    ordinal,
+                    is_root
+                )
+                VALUES (?1, ?2, ?3, ?4)
+                ",
+            ))?,
+            insert_cityobject_bbox: sqlite_result(tx.prepare(
+                r"
+                INSERT OR REPLACE INTO cityobject_bbox (
+                    cityobject_id, min_x, max_x, min_y, max_y, min_z, max_z
+                )
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+                ",
+            ))?,
+            insert_relationship: sqlite_result(tx.prepare(
+                r"
+                INSERT OR IGNORE INTO cityobject_relationships (
+                    parent_cityobject_id,
+                    child_cityobject_id
+                )
+                VALUES (?1, ?2)
+                ",
+            ))?,
+        })
+    }
 
     #[allow(
         clippy::too_many_lines,
         reason = "transactional normalized schema writes are kept together"
     )]
-    fn insert_normalized_features_in_tx(
-        tx: &rusqlite::Transaction<'_>,
-        entries: &[FeatureIndexEntry],
-    ) -> Result<()> {
-        let mut inserted_physical_packages = BTreeSet::new();
-        let mut cityobject_ids_by_range = HashMap::new();
-        let mut insert_package = sqlite_result(tx.prepare(
-            r"
-            INSERT INTO packages (
-                source_id,
-                package_type,
-                model_id,
-                path,
-                offset,
-                length,
-                file_size,
-                file_mtime_ns
-            )
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-            ",
-        ))?;
-        let mut insert_package_bbox = sqlite_result(tx.prepare(
-            r"
-            INSERT OR REPLACE INTO package_bbox (
-                package_id, min_x, max_x, min_y, max_y, min_z, max_z
-            )
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-            ",
-        ))?;
-        let mut insert_cityobject = sqlite_result(tx.prepare(
-            r"
-            INSERT OR IGNORE INTO cityobjects (
-                source_id,
-                external_id,
-                cityobject_type,
-                path,
-                offset,
-                length
-            )
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-            ",
-        ))?;
-        let mut lookup_cityobject = sqlite_result(tx.prepare(
-            "SELECT id FROM cityobjects WHERE path = ?1 AND offset = ?2 AND length = ?3",
-        ))?;
-        let mut insert_package_cityobject = sqlite_result(tx.prepare(
-            r"
-            INSERT OR IGNORE INTO package_cityobjects (
-                package_id,
-                cityobject_id,
-                ordinal,
-                is_root
-            )
-            VALUES (?1, ?2, ?3, ?4)
-            ",
-        ))?;
-        let mut insert_cityobject_bbox = sqlite_result(tx.prepare(
-            r"
-            INSERT OR REPLACE INTO cityobject_bbox (
-                cityobject_id, min_x, max_x, min_y, max_y, min_z, max_z
-            )
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-            ",
-        ))?;
-        let mut insert_relationship = sqlite_result(tx.prepare(
-            r"
-            INSERT OR IGNORE INTO cityobject_relationships (
-                parent_cityobject_id,
-                child_cityobject_id
-            )
-            VALUES (?1, ?2)
-            ",
-        ))?;
-
+    fn insert_features(&mut self, source_id: i64, entries: &[ScannedFeature]) -> Result<()> {
         for entry in entries {
             let package_type = entry.package_type.as_storage_str();
             if entry.package_type != PackageType::CityJson
-                && !inserted_physical_packages.insert((
+                && !self.inserted_physical_packages.insert((
                     entry.path.clone(),
                     entry.offset,
                     entry.length,
@@ -2701,8 +2723,8 @@ impl Index {
                     Some(sqlite_result(u64_to_i64(entry.length))?),
                 )
             };
-            sqlite_result(insert_package.execute(params![
-                entry.source_id,
+            sqlite_result(self.insert_package.execute(params![
+                source_id,
                 package_type,
                 &entry.model_id,
                 entry.path.to_string_lossy(),
@@ -2711,9 +2733,13 @@ impl Index {
                 file_size,
                 file_mtime_ns,
             ]))?;
-            let package_id = tx.last_insert_rowid();
+            let package_id = self.tx.last_insert_rowid();
             if entry.spatial {
-                insert_package_bbox_with_stmt(&mut insert_package_bbox, package_id, entry.bounds)?;
+                insert_package_bbox_with_stmt(
+                    &mut self.insert_package_bbox,
+                    package_id,
+                    entry.bounds,
+                )?;
             }
 
             validate_normalized_relationships(&entry.cityobjects)?;
@@ -2721,14 +2747,14 @@ impl Index {
 
             for (ordinal, object) in entry.cityobjects.iter().enumerate() {
                 let cityobject_id = insert_or_lookup_cityobject(
-                    &mut insert_cityobject,
-                    &mut lookup_cityobject,
-                    &mut cityobject_ids_by_range,
-                    entry.source_id,
+                    &mut self.insert_cityobject,
+                    &mut self.lookup_cityobject,
+                    &mut self.cityobject_ids_by_range,
+                    source_id,
                     object,
                 )?;
                 object_ids_by_external_id.insert(object.external_id.clone(), cityobject_id);
-                sqlite_result(insert_package_cityobject.execute(params![
+                sqlite_result(self.insert_package_cityobject.execute(params![
                     package_id,
                     cityobject_id,
                     i64::try_from(ordinal).map_err(|_| {
@@ -2738,7 +2764,7 @@ impl Index {
                 ]))?;
                 if entry.spatial {
                     insert_cityobject_bbox_with_stmt(
-                        &mut insert_cityobject_bbox,
+                        &mut self.insert_cityobject_bbox,
                         cityobject_id,
                         entry.bounds,
                     )?;
@@ -2768,7 +2794,10 @@ impl Index {
                             object.external_id
                         )));
                     }
-                    sqlite_result(insert_relationship.execute(params![parent_id, child_id]))?;
+                    sqlite_result(
+                        self.insert_relationship
+                            .execute(params![parent_id, child_id]),
+                    )?;
                 }
             }
         }
@@ -2990,12 +3019,27 @@ fn insert_cityobject_bbox_with_stmt(
     Ok(())
 }
 
+trait ScanSink {
+    fn add_source(&mut self, source_index: usize, header: SourceScanHeader) -> Result<()>;
+
+    fn add_features(&mut self, source_index: usize, features: Vec<ScannedFeature>) -> Result<()>;
+}
+
 trait StorageBackend: Send + Sync {
-    fn scan(&self, worker_count: usize) -> Result<Vec<SourceScan>>;
+    fn scan_into(&self, worker_count: usize, sink: &mut dyn ScanSink) -> Result<()>;
 
     fn as_cityjson(&self) -> Option<&CityJsonBackend> {
         None
     }
+}
+
+struct SourceScanHeader {
+    path: PathBuf,
+    metadata: Meta,
+    vertices_offset: Option<u64>,
+    vertices_length: Option<u64>,
+    source_size: u64,
+    source_mtime_ns: i64,
 }
 
 struct SourceScan {
@@ -3022,6 +3066,208 @@ struct ScannedFeature {
     cityobjects: Vec<NormalizedCityObjectScan>,
 }
 
+impl SourceScan {
+    fn header(&self) -> SourceScanHeader {
+        SourceScanHeader {
+            path: self.path.clone(),
+            metadata: self.metadata.clone(),
+            vertices_offset: self.vertices_offset,
+            vertices_length: self.vertices_length,
+            source_size: self.source_size,
+            source_mtime_ns: self.source_mtime_ns,
+        }
+    }
+}
+
+struct RebuildSink<'tx, 'conn, 'inserter> {
+    tx: &'tx rusqlite::Transaction<'conn>,
+    inserter: &'inserter mut NormalizedFeatureInserter<'tx, 'conn>,
+    source_ids: HashMap<usize, i64>,
+}
+
+impl<'tx, 'conn, 'inserter> RebuildSink<'tx, 'conn, 'inserter> {
+    fn new(
+        tx: &'tx rusqlite::Transaction<'conn>,
+        inserter: &'inserter mut NormalizedFeatureInserter<'tx, 'conn>,
+    ) -> Self {
+        Self {
+            tx,
+            inserter,
+            source_ids: HashMap::new(),
+        }
+    }
+}
+
+impl ScanSink for RebuildSink<'_, '_, '_> {
+    fn add_source(&mut self, source_index: usize, header: SourceScanHeader) -> Result<()> {
+        let source_id = Index::insert_source_in_tx(
+            self.tx,
+            header.path.as_path(),
+            &header.metadata,
+            header.vertices_offset,
+            header.vertices_length,
+            header.source_size,
+            header.source_mtime_ns,
+        )?;
+        if self.source_ids.insert(source_index, source_id).is_some() {
+            return Err(import_error(format!(
+                "scan source {source_index} was registered more than once"
+            )));
+        }
+        Ok(())
+    }
+
+    fn add_features(&mut self, source_index: usize, features: Vec<ScannedFeature>) -> Result<()> {
+        if features.is_empty() {
+            return Ok(());
+        }
+        let source_id = self.source_ids.get(&source_index).copied().ok_or_else(|| {
+            import_error(format!("scan source {source_index} was not registered"))
+        })?;
+        self.inserter.insert_features(source_id, &features)
+    }
+}
+
+enum ScanEvent {
+    Source {
+        source_index: usize,
+        header: SourceScanHeader,
+    },
+    Features {
+        source_index: usize,
+        features: Vec<ScannedFeature>,
+    },
+}
+
+fn apply_scan_event(sink: &mut dyn ScanSink, event: ScanEvent) -> Result<()> {
+    match event {
+        ScanEvent::Source {
+            source_index,
+            header,
+        } => sink.add_source(source_index, header),
+        ScanEvent::Features {
+            source_index,
+            features,
+        } => sink.add_features(source_index, features),
+    }
+}
+
+fn send_scan_event(sender: &SyncSender<ScanEvent>, event: ScanEvent) -> Result<()> {
+    sender
+        .send(event)
+        .map_err(|_| import_error("scan result receiver was dropped"))
+}
+
+fn send_feature_batch(
+    sender: &SyncSender<ScanEvent>,
+    source_index: usize,
+    batch: &mut Vec<ScannedFeature>,
+) -> Result<()> {
+    if batch.is_empty() {
+        return Ok(());
+    }
+    let features = std::mem::take(batch);
+    send_scan_event(
+        sender,
+        ScanEvent::Features {
+            source_index,
+            features,
+        },
+    )
+}
+
+fn emit_source_scan(
+    source_index: usize,
+    scan: SourceScan,
+    sender: &SyncSender<ScanEvent>,
+) -> Result<()> {
+    send_scan_event(
+        sender,
+        ScanEvent::Source {
+            source_index,
+            header: scan.header(),
+        },
+    )?;
+    let mut batch = Vec::with_capacity(REBUILD_FEATURE_BATCH_SIZE);
+    for feature in scan.features {
+        batch.push(feature);
+        if batch.len() == REBUILD_FEATURE_BATCH_SIZE {
+            send_feature_batch(sender, source_index, &mut batch)?;
+        }
+    }
+    send_feature_batch(sender, source_index, &mut batch)
+}
+
+fn parallel_scan_sources_into<T, F>(
+    items: &[T],
+    worker_count: usize,
+    sink: &mut dyn ScanSink,
+    scan: F,
+) -> Result<()>
+where
+    T: Sync,
+    F: Fn(usize, &T, &SyncSender<ScanEvent>) -> Result<()> + Sync,
+{
+    if items.is_empty() {
+        return Ok(());
+    }
+
+    let shard_count = worker_count.max(1).min(items.len());
+    let chunk_size = items.len().div_ceil(shard_count);
+    let channel_capacity = worker_count.max(1).saturating_mul(2).max(2);
+    let (sender, receiver) = sync_channel(channel_capacity);
+
+    std::thread::scope(|scope| -> Result<()> {
+        let mut handles = Vec::with_capacity(shard_count);
+        let scan = &scan;
+        for (shard_index, shard) in items.chunks(chunk_size).enumerate() {
+            let sender = sender.clone();
+            let source_index_offset = shard_index * chunk_size;
+            handles.push(scope.spawn(move || {
+                for (offset, item) in shard.iter().enumerate() {
+                    scan(source_index_offset + offset, item, &sender)?;
+                }
+                Ok::<(), Error>(())
+            }));
+        }
+        drop(sender);
+
+        let mut sink_error = None;
+        while let Ok(event) = receiver.recv() {
+            if sink_error.is_none()
+                && let Err(error) = apply_scan_event(sink, event)
+            {
+                sink_error = Some(error);
+            }
+        }
+
+        let mut worker_error = None;
+        for handle in handles {
+            match handle.join() {
+                Ok(Ok(())) => {}
+                Ok(Err(error)) => {
+                    if worker_error.is_none() {
+                        worker_error = Some(error);
+                    }
+                }
+                Err(_) => {
+                    if worker_error.is_none() {
+                        worker_error = Some(import_error("parallel scan worker panicked"));
+                    }
+                }
+            }
+        }
+
+        if let Some(error) = sink_error {
+            Err(error)
+        } else if let Some(error) = worker_error {
+            Err(error)
+        } else {
+            Ok(())
+        }
+    })
+}
+
 struct LocalizedFeatureParts {
     feature_id: String,
     cityobjects: Vec<LocalizedFeatureObject>,
@@ -3038,10 +3284,10 @@ struct NdjsonBackend {
 }
 
 impl StorageBackend for NdjsonBackend {
-    fn scan(&self, worker_count: usize) -> Result<Vec<SourceScan>> {
+    fn scan_into(&self, worker_count: usize, sink: &mut dyn ScanSink) -> Result<()> {
         let paths = collect_layout_files(&self.paths, ".jsonl")?;
-        parallel_scan_items(&paths, worker_count, |path| {
-            scan_ndjson_source(path.as_path())
+        parallel_scan_sources_into(&paths, worker_count, sink, |source_index, path, sender| {
+            scan_ndjson_source_into(source_index, path.as_path(), sender)
         })
     }
 }
@@ -3082,11 +3328,12 @@ impl CityJsonBackend {
 }
 
 impl StorageBackend for CityJsonBackend {
-    fn scan(&self, worker_count: usize) -> Result<Vec<SourceScan>> {
+    fn scan_into(&self, worker_count: usize, sink: &mut dyn ScanSink) -> Result<()> {
         let _ = &self.vertices_cache;
         let paths = collect_layout_files(&self.paths, ".city.json")?;
-        parallel_scan_items(&paths, worker_count, |path| {
-            scan_cityjson_source(path.as_path())
+        parallel_scan_sources_into(&paths, worker_count, sink, |source_index, path, sender| {
+            let scan = scan_cityjson_source(path.as_path())?;
+            emit_source_scan(source_index, scan, sender)
         })
     }
 
@@ -3197,35 +3444,39 @@ impl FeatureFilesBackend {
 }
 
 impl StorageBackend for FeatureFilesBackend {
-    fn scan(&self, worker_count: usize) -> Result<Vec<SourceScan>> {
-        scan_feature_files_root(
+    fn scan_into(&self, worker_count: usize, sink: &mut dyn ScanSink) -> Result<()> {
+        scan_feature_files_root_into(
             &self.root,
             &self.metadata_glob,
             &self.feature_glob,
             worker_count,
+            sink,
         )
     }
 }
 
-fn scan_feature_files_root(
+fn scan_feature_files_root_into(
     root: &Path,
     metadata_glob: &GlobMatcher,
     feature_glob: &GlobMatcher,
     worker_count: usize,
-) -> Result<Vec<SourceScan>> {
+    sink: &mut dyn ScanSink,
+) -> Result<()> {
     let plans = discover_feature_file_sources(root, metadata_glob, feature_glob)?;
-    let mut sources = plans
-        .iter()
-        .map(|plan| SourceScan {
-            path: plan.path.clone(),
-            metadata: plan.metadata.clone(),
-            vertices_offset: None,
-            vertices_length: None,
-            source_size: plan.source_size,
-            source_mtime_ns: plan.source_mtime_ns,
-            features: Vec::with_capacity(plan.feature_paths.len()),
-        })
-        .collect::<Vec<_>>();
+    for (source_index, plan) in plans.iter().enumerate() {
+        sink.add_source(
+            source_index,
+            SourceScanHeader {
+                path: plan.path.clone(),
+                metadata: plan.metadata.clone(),
+                vertices_offset: None,
+                vertices_length: None,
+                source_size: plan.source_size,
+                source_mtime_ns: plan.source_mtime_ns,
+            },
+        )?;
+    }
+
     let scan_items = plans
         .iter()
         .enumerate()
@@ -3239,11 +3490,22 @@ fn scan_feature_files_root(
                 })
         })
         .collect::<Vec<_>>();
-    let features = parallel_scan_items(&scan_items, worker_count, scan_feature_file)?;
-    for (source_index, features) in features {
-        sources[source_index].features.extend(features);
-    }
-    Ok(sources)
+
+    parallel_scan_sources_into(
+        &scan_items,
+        worker_count,
+        sink,
+        |_event_index, item, sender| {
+            let (source_index, features) = scan_feature_file(item)?;
+            send_scan_event(
+                sender,
+                ScanEvent::Features {
+                    source_index,
+                    features,
+                },
+            )
+        },
+    )
 }
 
 fn discover_feature_file_sources(
@@ -3652,46 +3914,6 @@ pub fn configured_worker_count() -> Result<usize> {
     }
 }
 
-fn parallel_scan_items<T, U, F>(items: &[T], worker_count: usize, scan: F) -> Result<Vec<U>>
-where
-    T: Sync,
-    U: Send,
-    F: Fn(&T) -> Result<U> + Sync,
-{
-    if items.is_empty() {
-        return Ok(Vec::new());
-    }
-
-    let shard_count = worker_count.max(1).min(items.len());
-    if shard_count == 1 {
-        return items.iter().map(scan).collect();
-    }
-
-    let chunk_size = items.len().div_ceil(shard_count);
-    std::thread::scope(|scope| -> Result<Vec<U>> {
-        let mut handles = Vec::with_capacity(shard_count);
-        let scan = &scan;
-        for shard in items.chunks(chunk_size) {
-            handles.push(scope.spawn(move || {
-                let mut shard_results = Vec::with_capacity(shard.len());
-                for item in shard {
-                    shard_results.push(scan(item)?);
-                }
-                Ok::<Vec<U>, Error>(shard_results)
-            }));
-        }
-
-        let mut results = Vec::with_capacity(items.len());
-        for handle in handles {
-            let shard_results = handle
-                .join()
-                .map_err(|_| import_error("parallel scan worker panicked"))??;
-            results.extend(shard_results);
-        }
-        Ok(results)
-    })
-}
-
 fn serde_json_error(error: &serde_json::Error) -> Error {
     import_error(error.to_string())
 }
@@ -3796,6 +4018,7 @@ fn file_status(path: &Path) -> Result<(u64, i64)> {
     Ok((metadata.len(), nanos))
 }
 
+#[cfg(test)]
 fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
     let bytes = fs::read(path)?;
     let (source_size, source_mtime_ns) = file_status(path)?;
@@ -3852,6 +4075,94 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
         source_mtime_ns,
         features,
     })
+}
+
+fn scan_ndjson_source_into(
+    source_index: usize,
+    path: &Path,
+    sender: &SyncSender<ScanEvent>,
+) -> Result<()> {
+    let (source_size, source_mtime_ns) = file_status(path)?;
+    let file = fs::File::open(path)?;
+    let mut reader = BufReader::new(file);
+    let mut line = Vec::new();
+    let first_line_length = reader.read_until(b'\n', &mut line)?;
+    if first_line_length == 0 {
+        return Err(import_error(format!(
+            "CityJSONSeq source {} is empty",
+            path.display()
+        )));
+    }
+
+    let metadata_bytes = trim_line_ending(&line);
+    let metadata: Meta = parse_json_slice(metadata_bytes)?;
+    let (scale, translate) = parse_ndjson_transform(&metadata)?;
+    send_scan_event(
+        sender,
+        ScanEvent::Source {
+            source_index,
+            header: SourceScanHeader {
+                path: path.to_path_buf(),
+                metadata,
+                vertices_offset: None,
+                vertices_length: None,
+                source_size,
+                source_mtime_ns,
+            },
+        },
+    )?;
+
+    let mut offset = u64::try_from(first_line_length)
+        .map_err(|_| import_error("CityJSONSeq metadata line length does not fit in u64"))?;
+    let mut batch = Vec::with_capacity(REBUILD_FEATURE_BATCH_SIZE);
+    loop {
+        line.clear();
+        let line_length = reader.read_until(b'\n', &mut line)?;
+        if line_length == 0 {
+            break;
+        }
+        let line_offset = offset;
+        offset =
+            offset
+                .checked_add(u64::try_from(line_length).map_err(|_| {
+                    import_error("CityJSONSeq feature line length does not fit in u64")
+                })?)
+                .ok_or_else(|| import_error("CityJSONSeq byte offset does not fit in u64"))?;
+        let line_bytes = trim_line_ending(&line);
+        if line_bytes.iter().all(u8::is_ascii_whitespace) {
+            continue;
+        }
+
+        let feature: Value = parse_json_slice(line_bytes)?;
+        let model_id = feature_model_id(&feature, "CityJSONSeq feature")?;
+        let (_ids, bounds, spatial) = parse_ndjson_feature_bounds(&feature, scale, translate)?;
+        let length = u64::try_from(line_bytes.len())
+            .map_err(|_| import_error("CityJSONSeq feature line length does not fit in u64"))?;
+        let cityobjects = normalized_cityobjects_from_feature_bytes(
+            &feature,
+            line_bytes,
+            path,
+            line_offset,
+            "CityJSONSeq feature",
+        )?;
+        batch.push(ScannedFeature {
+            root_id: model_id.clone(),
+            model_id,
+            package_type: PackageType::CityJsonSeq,
+            path: path.to_path_buf(),
+            file_size: source_size,
+            file_mtime_ns: source_mtime_ns,
+            offset: line_offset,
+            length,
+            bounds,
+            spatial,
+            cityobjects,
+        });
+        if batch.len() == REBUILD_FEATURE_BATCH_SIZE {
+            send_feature_batch(sender, source_index, &mut batch)?;
+        }
+    }
+    send_feature_batch(sender, source_index, &mut batch)
 }
 
 fn collect_layout_files(paths: &[PathBuf], suffix: &str) -> Result<Vec<PathBuf>> {
@@ -4464,6 +4775,7 @@ fn feature_bounds_from_vertices(
     })
 }
 
+#[cfg(test)]
 fn line_spans(bytes: &[u8]) -> Vec<(u64, &[u8])> {
     let mut spans = Vec::new();
     let mut offset = 0u64;
@@ -4536,6 +4848,174 @@ mod tests {
             "CityObjects": {},
             "vertices": []
         })
+    }
+
+    struct EnvGuard {
+        previous: Option<std::ffi::OsString>,
+    }
+
+    impl Drop for EnvGuard {
+        fn drop(&mut self) {
+            // SAFETY: tests use a process-wide mutex before mutating the variable.
+            unsafe {
+                if let Some(previous) = self.previous.take() {
+                    std::env::set_var(WORKER_COUNT_ENV, previous);
+                } else {
+                    std::env::remove_var(WORKER_COUNT_ENV);
+                }
+            }
+        }
+    }
+
+    fn with_worker_count_env<T>(worker_count: usize, f: impl FnOnce() -> T) -> T {
+        static ENV_LOCK: std::sync::OnceLock<Mutex<()>> = std::sync::OnceLock::new();
+        let _lock = ENV_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .expect("env lock");
+        let previous = std::env::var_os(WORKER_COUNT_ENV);
+        let _guard = EnvGuard { previous };
+        // SAFETY: the test holds a process-wide mutex while mutating the variable.
+        unsafe {
+            std::env::set_var(WORKER_COUNT_ENV, worker_count.to_string());
+        }
+        f()
+    }
+
+    fn cityjson_feature_line(id: &str) -> String {
+        format!(
+            r#"{{"type":"CityJSONFeature","id":"{id}","CityObjects":{{"{id}":{{"type":"Building"}}}},"vertices":[]}}"#
+        )
+    }
+
+    fn write_cityjson_seq(path: &Path, start: usize, count: usize) {
+        let header = serde_json::to_string(&stream_metadata()).expect("metadata serializes");
+        let mut contents = String::new();
+        contents.push_str(&header);
+        contents.push('\n');
+        for index in start..start + count {
+            contents.push_str(&cityjson_feature_line(&format!("object-{index}")));
+            contents.push('\n');
+        }
+        fs::write(path, contents).expect("CityJSONSeq fixture should be written");
+    }
+
+    fn write_cityjson_source(path: &Path, id: &str) {
+        let document = format!(
+            r#"{{
+                "type":"CityJSON",
+                "version":"2.0",
+                "transform":{{"scale":[1.0,1.0,1.0],"translate":[0.0,0.0,0.0]}},
+                "CityObjects":{{"{id}":{{"type":"Building"}}}},
+                "vertices":[]
+            }}"#
+        );
+        fs::write(path, document).expect("CityJSON fixture should be written");
+    }
+
+    fn build_index_with_workers(
+        layout: StorageLayout,
+        index_path: &Path,
+        worker_count: usize,
+    ) -> CityIndex {
+        with_worker_count_env(worker_count, || {
+            let mut index = CityIndex::open(layout, index_path).expect("index should open");
+            index.reindex().expect("reindex should succeed");
+            index
+        })
+    }
+
+    fn package_ids(index: &CityIndex) -> BTreeSet<String> {
+        let mut ids = BTreeSet::new();
+        let mut after_record_id = None;
+        loop {
+            let page = index
+                .package_ref_page_after_record_id(after_record_id, 128)
+                .expect("package page should load");
+            if page.is_empty() {
+                break;
+            }
+            after_record_id = page.last().map(|package| package.record_id);
+            ids.extend(page.into_iter().map(|package| package.model_id));
+        }
+        ids
+    }
+
+    #[test]
+    fn cityjson_seq_reindex_streams_more_than_one_feature_batch() {
+        let root = temp_dir("seq-stream-batches");
+        let path = root.join("features.city.jsonl");
+        write_cityjson_seq(&path, 0, REBUILD_FEATURE_BATCH_SIZE + 1);
+        let index_path = root.join("index.sqlite");
+
+        let index =
+            build_index_with_workers(StorageLayout::Ndjson { paths: vec![root] }, &index_path, 1);
+
+        assert_eq!(index.source_count().expect("source count"), 1);
+        assert_eq!(
+            index.package_count().expect("package count"),
+            REBUILD_FEATURE_BATCH_SIZE + 1
+        );
+    }
+
+    #[test]
+    fn cityjson_seq_reindex_is_stable_across_worker_counts() {
+        let root = temp_dir("seq-worker-parity");
+        write_cityjson_seq(&root.join("a.city.jsonl"), 0, 2);
+        write_cityjson_seq(&root.join("b.city.jsonl"), 2, 2);
+
+        let single_index_path = root.join("single.sqlite");
+        let multi_index_path = root.join("multi.sqlite");
+        let single = build_index_with_workers(
+            StorageLayout::Ndjson {
+                paths: vec![root.clone()],
+            },
+            &single_index_path,
+            1,
+        );
+        let multi = build_index_with_workers(
+            StorageLayout::Ndjson { paths: vec![root] },
+            &multi_index_path,
+            4,
+        );
+
+        assert_eq!(single.source_count().expect("single source count"), 2);
+        assert_eq!(single.package_count().expect("single package count"), 4);
+        assert_eq!(
+            single.package_count().expect("single package count"),
+            multi.package_count().expect("multi package count")
+        );
+        assert_eq!(package_ids(&single), package_ids(&multi));
+    }
+
+    #[test]
+    fn cityjson_reindex_is_stable_across_worker_counts() {
+        let root = temp_dir("cityjson-worker-parity");
+        write_cityjson_source(&root.join("a.city.json"), "building-a");
+        write_cityjson_source(&root.join("b.city.json"), "building-b");
+
+        let single_index_path = root.join("single.sqlite");
+        let multi_index_path = root.join("multi.sqlite");
+        let single = build_index_with_workers(
+            StorageLayout::CityJson {
+                paths: vec![root.clone()],
+            },
+            &single_index_path,
+            1,
+        );
+        let multi = build_index_with_workers(
+            StorageLayout::CityJson { paths: vec![root] },
+            &multi_index_path,
+            4,
+        );
+
+        assert_eq!(single.source_count().expect("single source count"), 2);
+        assert_eq!(single.package_count().expect("single package count"), 2);
+        assert_eq!(
+            single.package_count().expect("single package count"),
+            multi.package_count().expect("multi package count")
+        );
+        assert_eq!(package_ids(&single), package_ids(&multi));
     }
 
     #[test]
