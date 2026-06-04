@@ -4,51 +4,58 @@
 
 ### Added
 
-- Added the SQLite row id to `IndexedFeatureRef` and made the type
-  serializable so downstream tools can persist row-ordered scan references.
-- Added `CityIndex::read_features()` for batch reconstruction from persisted
-  `IndexedFeatureRef` values.
-- Added decoded rowid-ordered scan APIs, including `scan_features()` and
-  `scan_feature_pages()`, that return feature references together with decoded
-  `CityModel` payloads.
-- Added rowid-keyed lookup and reconstruction helpers for callers that persist
-  SQLite feature row ids instead of feature-id strings.
-- Added `CityIndex::feature_bounds_summary()` to return whole-index 3D bounds
-  and feature count in one aggregate query, with `None` for empty indexes.
-- Added `CityIndex::lookup_feature_refs()` plus matching C FFI and Python
-  bindings for callers that need every indexed row for a duplicate feature id.
-- Added `FeatureFilter` and `CityIndex::read_filtered_features()` so callers can
-  apply explicit CityObject type and LoD selections with shared diagnostics
-  before computing extents, grid assignments, or exported tile content.
+- Added normalized package indexing with source, package, CityObject,
+  package-membership, relationship, and 3D bbox tables so every supported
+  storage layout can expose stable package-level reads and spatial queries.
+- Added package-oriented Rust APIs, including `lookup_cityobject_refs()`,
+  `package_refs_for_cityobject()`, `get_packages()`, `read_package()`,
+  `read_packages()`, `query_package_refs()`, `query_packages()`,
+  `query_cityobject_refs()`, descendant traversal, rowid lookup helpers, and
+  keyset package-reference pagination.
+- Added package filter types and APIs for CityObject type and LoD selection,
+  with mergeable diagnostics for missing LoDs and filtered package counts.
+- Added matching C FFI and Python package bindings for plural CityObject lookup,
+  package references, package reads, filtered package reads, and package filter
+  diagnostics.
+- Added normalized schema/API tests, CityJSONSeq terminology tests, FFI contract
+  tests, and benchmark artifacts documenting baseline, implementation,
+  previous-vs-current, and scan-normalized performance comparisons.
 
 ### Changed
 
-- Stopped routing core model types through `cityjson_lib::cityjson`; Rust code
-  now uses the renamed `cityjson_types` crate directly after the
-  `cityjson-types` package rename.
-- Feature-file and NDJSON indexing now derives feature ids from every key in a
-  feature package's `CityObjects` object and ignores the package's top-level
-  `id` during indexing.
-- SQLite sidecars now allow duplicate `feature_id` values. Existing sidecars
-  with the old unique constraints are migrated on open by recreating the
-  affected index tables.
-- Single-id lookup APIs continue to return one result for duplicate ids, using
-  the earliest indexed feature row deterministically.
-- Optimized ordered full-index page scans by using separate first-page and
-  later-page SQL paths. Later pages now page with `WHERE f.id > ?`, preserving
-  result order and page semantics while allowing SQLite to use the integer
-  primary-key range scan.
-- Optimized batch feature reconstruction so source metadata is loaded once per
-  source and backend reads are grouped by source file while preserving input
-  order.
-- Filtered feature reads now use `cityjson_lib::ops` selections for object-type,
-  exact LoD, and explicit highest-LoD policies, while leaving unfiltered reads
-  policy-neutral.
+- Reworked indexing around valid `CityJSONFeature` packages instead of legacy
+  feature rows. Regular `city-json` packages are synthetic root-plus-descendant
+  closures; `city-json-seq` packages are original stream feature lines; and
+  `feature-files` packages are standalone feature files.
+- CityJSONSeq and feature-file indexing now records every CityObject key in a
+  package while preserving the package's top-level `id` as the returned feature
+  id for package reads.
+- SQLite sidecars now allow duplicate external CityObject ids and preserve each
+  physical occurrence separately. Single-id convenience lookups remain
+  deterministic, while plural lookups expose every occurrence.
+- CLI, README, C FFI, and Python docs were migrated from legacy feature APIs to
+  package-oriented lookup, query, read, and filtering workflows.
+- Benchmark preparation now supports all three storage layouts, avoids
+  full-document clones when materializing CityJSONSeq and feature-file datasets,
+  and the `bench-index` just recipes run the benchmark harness in release mode.
+- Optimized `city-json-seq` and `feature-files` package reconstruction by using
+  direct staged feature-slice reconstruction instead of a local
+  parse/mutate/serialize/reparse cycle. Release-mode subset benchmarks show
+  `read_package sample-256` around `0.26x` of the previous implementation for
+  those two layouts.
 - Optimized reindexing by deriving package and normalized CityObject metadata
   during backend scans and reusing prepared SQLite insertion statements during
   rebuild. Release-mode subset benchmarks show `index_reindex` averaging
   `0.603x` of the previous optimized implementation across `city-json`,
   `city-json-seq`, and `feature-files` layouts.
+
+### Removed
+
+- Removed the legacy feature-row API surface in favor of package-oriented APIs,
+  including the old `IndexedFeatureRef` reconstruction path and stale feature
+  scan/read terminology.
+- Removed obsolete planning documents after their design decisions were captured
+  in ADRs and benchmark reports.
 
 ## 0.4.2
 
