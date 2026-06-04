@@ -55,6 +55,13 @@ reconstruction to the indexed-id direct staged API. The public package read APIs
 CLI output, FFI behavior, Python behavior, SQLite schema, and duplicate-id
 semantics remain unchanged.
 
+As a follow-up indexing optimization, backend scans now also derive package ids,
+package types, normalized CityObject rows, child relationships, and physical byte
+ranges while the source bytes and parsed JSON are already available. The SQLite
+rebuild phase consumes those precomputed scan records directly and reuses
+prepared insert statements instead of re-reading feature bytes and re-parsing
+CityObject fragments during insertion.
+
 The existing regular `cityjson` direct assembly path remains in place. Further
 optimization of regular `cityjson` fragment import can be addressed separately
 if benchmarks show the fragment-localization step is still dominant.
@@ -71,6 +78,9 @@ if benchmarks show the fragment-localization step is still dominant.
 - The staged API surface now makes direct feature-slice reconstruction explicit
   for library callers and downstream crates.
 - The change does not require an index rebuild or schema migration.
+- Reindexing avoids a second normalization pass over feature bytes. In the
+  release-mode subset benchmark, `index_reindex` averaged `0.603x` of the prior
+  optimized implementation across all three storage layouts.
 
 ### Negative
 
@@ -80,6 +90,9 @@ if benchmarks show the fragment-localization step is still dominant.
   returned feature id must resolve to a CityObject during model construction.
 - Regular `cityjson` package reads are not materially changed by this ADR
   because they were already using direct staged assembly.
+- Scan records now carry more normalized metadata in memory before SQLite
+  insertion. They still do not retain complete feature payload JSON after
+  scan-time extraction.
 
 ### Neutral tradeoff
 

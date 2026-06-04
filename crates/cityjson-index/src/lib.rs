@@ -161,6 +161,16 @@ impl From<FeatureBounds> for Bounds3D {
     }
 }
 
+impl PackageType {
+    const fn as_storage_str(self) -> &'static str {
+        match self {
+            Self::CityJson => "cityjson",
+            Self::CityJsonSeq => "cityjson-seq",
+            Self::FeatureFiles => "feature-files",
+        }
+    }
+}
+
 impl PackageFilter {
     #[must_use]
     pub fn is_active(&self) -> bool {
@@ -1749,7 +1759,9 @@ struct PackageMemberLocation {
 }
 
 struct FeatureIndexEntry {
-    id: String,
+    root_id: String,
+    model_id: String,
+    package_type: PackageType,
     source_id: i64,
     path: PathBuf,
     file_size: u64,
@@ -1758,7 +1770,7 @@ struct FeatureIndexEntry {
     length: u64,
     bounds: FeatureBounds,
     spatial: bool,
-    member_ranges_json: Option<String>,
+    cityobjects: Vec<NormalizedCityObjectScan>,
 }
 
 struct IndexedSourceRecord {
@@ -1952,7 +1964,9 @@ impl Index {
             )?;
             for feature in &scan.features {
                 feature_entries.push(FeatureIndexEntry {
-                    id: feature.id.clone(),
+                    root_id: feature.root_id.clone(),
+                    model_id: feature.model_id.clone(),
+                    package_type: feature.package_type,
                     source_id,
                     path: feature.path.clone(),
                     file_size: feature.file_size,
@@ -1961,11 +1975,7 @@ impl Index {
                     length: feature.length,
                     bounds: feature.bounds,
                     spatial: feature.spatial,
-                    member_ranges_json: feature
-                        .member_ranges
-                        .as_ref()
-                        .map(json_string)
-                        .transpose()?,
+                    cityobjects: feature.cityobjects.clone(),
                 });
             }
         }
@@ -2194,9 +2204,78 @@ impl Index {
         entries: &[FeatureIndexEntry],
     ) -> Result<()> {
         let mut inserted_physical_packages = BTreeSet::new();
+        let mut cityobject_ids_by_range = HashMap::new();
+        let mut insert_package = sqlite_result(tx.prepare(
+            r"
+            INSERT INTO packages (
+                source_id,
+                package_type,
+                model_id,
+                path,
+                offset,
+                length,
+                file_size,
+                file_mtime_ns
+            )
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+            ",
+        ))?;
+        let mut insert_package_bbox = sqlite_result(tx.prepare(
+            r"
+            INSERT OR REPLACE INTO package_bbox (
+                package_id, min_x, max_x, min_y, max_y, min_z, max_z
+            )
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+            ",
+        ))?;
+        let mut insert_cityobject = sqlite_result(tx.prepare(
+            r"
+            INSERT OR IGNORE INTO cityobjects (
+                source_id,
+                external_id,
+                cityobject_type,
+                path,
+                offset,
+                length
+            )
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+            ",
+        ))?;
+        let mut lookup_cityobject = sqlite_result(tx.prepare(
+            "SELECT id FROM cityobjects WHERE path = ?1 AND offset = ?2 AND length = ?3",
+        ))?;
+        let mut insert_package_cityobject = sqlite_result(tx.prepare(
+            r"
+            INSERT OR IGNORE INTO package_cityobjects (
+                package_id,
+                cityobject_id,
+                ordinal,
+                is_root
+            )
+            VALUES (?1, ?2, ?3, ?4)
+            ",
+        ))?;
+        let mut insert_cityobject_bbox = sqlite_result(tx.prepare(
+            r"
+            INSERT OR REPLACE INTO cityobject_bbox (
+                cityobject_id, min_x, max_x, min_y, max_y, min_z, max_z
+            )
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+            ",
+        ))?;
+        let mut insert_relationship = sqlite_result(tx.prepare(
+            r"
+            INSERT OR IGNORE INTO cityobject_relationships (
+                parent_cityobject_id,
+                child_cityobject_id
+            )
+            VALUES (?1, ?2)
+            ",
+        ))?;
+
         for entry in entries {
-            let package_type = normalized_package_type(entry);
-            if package_type != "cityjson"
+            let package_type = entry.package_type.as_storage_str();
+            if entry.package_type != PackageType::CityJson
                 && !inserted_physical_packages.insert((
                     entry.path.clone(),
                     entry.offset,
@@ -2205,10 +2284,9 @@ impl Index {
             {
                 continue;
             }
-            let model_id = normalized_package_model_id(entry, package_type)?;
             let file_size = sqlite_result(u64_to_i64(entry.file_size))?;
             let file_mtime_ns = entry.file_mtime_ns;
-            let (package_offset, package_length) = if package_type == "cityjson" {
+            let (package_offset, package_length) = if entry.package_type == PackageType::CityJson {
                 (None, None)
             } else {
                 (
@@ -2216,69 +2294,51 @@ impl Index {
                     Some(sqlite_result(u64_to_i64(entry.length))?),
                 )
             };
-            sqlite_result(tx.execute(
-                r"
-                INSERT INTO packages (
-                    source_id,
-                    package_type,
-                    model_id,
-                    path,
-                    offset,
-                    length,
-                    file_size,
-                    file_mtime_ns
-                )
-                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-                ",
-                params![
-                    entry.source_id,
-                    package_type,
-                    &model_id,
-                    entry.path.to_string_lossy(),
-                    package_offset,
-                    package_length,
-                    file_size,
-                    file_mtime_ns,
-                ],
-            ))?;
+            sqlite_result(insert_package.execute(params![
+                entry.source_id,
+                package_type,
+                &entry.model_id,
+                entry.path.to_string_lossy(),
+                package_offset,
+                package_length,
+                file_size,
+                file_mtime_ns,
+            ]))?;
             let package_id = tx.last_insert_rowid();
             if entry.spatial {
-                insert_package_bbox(tx, package_id, entry.bounds)?;
+                insert_package_bbox_with_stmt(&mut insert_package_bbox, package_id, entry.bounds)?;
             }
 
-            let objects = normalized_cityobjects_for_entry(entry)?;
-            validate_normalized_relationships(&objects)?;
-            let root_external_id = entry.id.as_str();
+            validate_normalized_relationships(&entry.cityobjects)?;
             let mut object_ids_by_external_id = BTreeMap::new();
 
-            for (ordinal, object) in objects.iter().enumerate() {
-                let cityobject_id = insert_or_lookup_cityobject(tx, entry.source_id, object)?;
+            for (ordinal, object) in entry.cityobjects.iter().enumerate() {
+                let cityobject_id = insert_or_lookup_cityobject(
+                    &mut insert_cityobject,
+                    &mut lookup_cityobject,
+                    &mut cityobject_ids_by_range,
+                    entry.source_id,
+                    object,
+                )?;
                 object_ids_by_external_id.insert(object.external_id.clone(), cityobject_id);
-                sqlite_result(tx.execute(
-                    r"
-                    INSERT OR IGNORE INTO package_cityobjects (
-                        package_id,
-                        cityobject_id,
-                        ordinal,
-                        is_root
-                    )
-                    VALUES (?1, ?2, ?3, ?4)
-                    ",
-                    params![
-                        package_id,
-                        cityobject_id,
-                        i64::try_from(ordinal).map_err(|_| {
-                            import_error("package CityObject ordinal does not fit in i64")
-                        })?,
-                        i64::from(object.external_id == root_external_id),
-                    ],
-                ))?;
+                sqlite_result(insert_package_cityobject.execute(params![
+                    package_id,
+                    cityobject_id,
+                    i64::try_from(ordinal).map_err(|_| {
+                        import_error("package CityObject ordinal does not fit in i64")
+                    })?,
+                    i64::from(object.external_id == entry.root_id),
+                ]))?;
                 if entry.spatial {
-                    insert_cityobject_bbox(tx, cityobject_id, entry.bounds)?;
+                    insert_cityobject_bbox_with_stmt(
+                        &mut insert_cityobject_bbox,
+                        cityobject_id,
+                        entry.bounds,
+                    )?;
                 }
             }
 
-            for object in &objects {
+            for object in &entry.cityobjects {
                 let parent_id = object_ids_by_external_id
                     .get(&object.external_id)
                     .copied()
@@ -2301,16 +2361,7 @@ impl Index {
                             object.external_id
                         )));
                     }
-                    sqlite_result(tx.execute(
-                        r"
-                        INSERT OR IGNORE INTO cityobject_relationships (
-                            parent_cityobject_id,
-                            child_cityobject_id
-                        )
-                        VALUES (?1, ?2)
-                        ",
-                        params![parent_id, child_id],
-                    ))?;
+                    sqlite_result(insert_relationship.execute(params![parent_id, child_id]))?;
                 }
             }
         }
@@ -2318,7 +2369,7 @@ impl Index {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct NormalizedCityObjectScan {
     external_id: String,
     cityobject_type: String,
@@ -2328,84 +2379,64 @@ struct NormalizedCityObjectScan {
     children: BTreeSet<String>,
 }
 
-fn normalized_package_type(entry: &FeatureIndexEntry) -> &'static str {
-    if entry.member_ranges_json.is_some() {
-        "cityjson"
-    } else if entry.offset == 0 && entry.length == entry.file_size {
-        "feature-files"
-    } else {
-        "cityjson-seq"
-    }
-}
-
-fn normalized_package_model_id(entry: &FeatureIndexEntry, package_type: &str) -> Result<String> {
-    if package_type == "cityjson" {
-        return Ok(entry.id.clone());
-    }
-    let bytes = read_exact_range(&entry.path, entry.offset, entry.length)?;
-    let feature: Value = parse_json_slice(&bytes)?;
+fn feature_model_id(feature: &Value, label: &str) -> Result<String> {
     feature
         .get("id")
         .and_then(Value::as_str)
         .map(ToOwned::to_owned)
-        .ok_or_else(|| {
-            import_error(format!(
-                "package {} is missing CityJSONFeature id",
-                entry.path.display()
-            ))
-        })
+        .ok_or_else(|| import_error(format!("{label} is missing CityJSONFeature id")))
 }
 
-fn normalized_cityobjects_for_entry(
-    entry: &FeatureIndexEntry,
+fn normalized_cityobjects_from_feature_bytes(
+    feature: &Value,
+    feature_bytes: &[u8],
+    path: &Path,
+    base_offset: u64,
+    label: &str,
 ) -> Result<Vec<NormalizedCityObjectScan>> {
-    if let Some(member_ranges_json) = &entry.member_ranges_json {
-        let member_ranges: Vec<IndexedObjectRange> = parse_json_str(member_ranges_json)?;
-        return member_ranges
-            .into_iter()
-            .map(|member| {
-                let fragment = read_exact_range(&entry.path, member.offset, member.length)?;
-                let (external_id, object) = parse_cityobject_entry(&fragment)?;
-                let cityobject_type = cityobject_type(&object, &external_id)?;
-                let children = normalized_children(&external_id, &object)?;
-                Ok(NormalizedCityObjectScan {
-                    external_id,
-                    cityobject_type,
-                    path: entry.path.clone(),
-                    offset: member.offset,
-                    length: member.length,
-                    children,
-                })
-            })
-            .collect();
-    }
-
-    let feature_bytes = read_exact_range(&entry.path, entry.offset, entry.length)?;
-    cityobject_entry_ranges(&feature_bytes)?
+    let cityobjects = feature
+        .get("CityObjects")
+        .and_then(Value::as_object)
+        .ok_or_else(|| import_error(format!("{label} is missing CityObjects")))?;
+    cityobject_entry_ranges(feature_bytes)?
         .into_iter()
-        .map(|(range_external_id, relative_offset, length)| {
-            let offset = entry.offset.checked_add(relative_offset).ok_or_else(|| {
-                import_error("CityObject absolute byte offset does not fit in u64")
+        .map(|(external_id, relative_offset, length)| {
+            let object = cityobjects.get(&external_id).ok_or_else(|| {
+                import_error(format!(
+                    "CityObject fragment for {external_id} could not be resolved in {}",
+                    path.display()
+                ))
             })?;
-            let fragment = read_exact_range(&entry.path, offset, length)?;
-            let (external_id, object) = parse_cityobject_entry(&fragment)?;
-            if external_id != range_external_id {
-                return Err(import_error(format!(
-                    "indexed CityObject member {range_external_id} resolved to fragment for {external_id}"
-                )));
-            }
-            let cityobject_type = cityobject_type(&object, &external_id)?;
-            let children = normalized_children(&external_id, &object)?;
-            Ok(NormalizedCityObjectScan {
+            normalized_cityobject_scan(
                 external_id,
-                cityobject_type,
-                path: entry.path.clone(),
-                offset,
+                object,
+                path,
+                base_offset.checked_add(relative_offset).ok_or_else(|| {
+                    import_error("CityObject absolute byte offset does not fit in u64")
+                })?,
                 length,
-                children,
-            })
+            )
         })
         .collect()
+}
+
+fn normalized_cityobject_scan(
+    external_id: String,
+    object: &Value,
+    path: &Path,
+    offset: u64,
+    length: u64,
+) -> Result<NormalizedCityObjectScan> {
+    let cityobject_type = cityobject_type(object, &external_id)?;
+    let children = normalized_children(&external_id, object)?;
+    Ok(NormalizedCityObjectScan {
+        external_id,
+        cityobject_type,
+        path: path.to_path_buf(),
+        offset,
+        length,
+        children,
+    })
 }
 
 fn cityobject_type(object: &Value, external_id: &str) -> Result<String> {
@@ -2489,89 +2520,66 @@ fn ensure_relationship_graph_acyclic(graph: &BTreeMap<&str, Vec<&str>>) -> Resul
 }
 
 fn insert_or_lookup_cityobject(
-    tx: &rusqlite::Transaction<'_>,
+    insert_cityobject: &mut rusqlite::Statement<'_>,
+    lookup_cityobject: &mut rusqlite::Statement<'_>,
+    cityobject_ids_by_range: &mut HashMap<(PathBuf, u64, u64), i64>,
     source_id: i64,
     object: &NormalizedCityObjectScan,
 ) -> Result<i64> {
-    sqlite_result(tx.execute(
-        r"
-        INSERT OR IGNORE INTO cityobjects (
-            source_id,
-            external_id,
-            cityobject_type,
-            path,
-            offset,
-            length
-        )
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-        ",
-        params![
-            source_id,
-            &object.external_id,
-            &object.cityobject_type,
-            object.path.to_string_lossy(),
-            sqlite_result(u64_to_i64(object.offset))?,
-            sqlite_result(u64_to_i64(object.length))?,
-        ],
-    ))?;
-    sqlite_result(tx.query_row(
-        "SELECT id FROM cityobjects WHERE path = ?1 AND offset = ?2 AND length = ?3",
-        params![
-            object.path.to_string_lossy(),
-            sqlite_result(u64_to_i64(object.offset))?,
-            sqlite_result(u64_to_i64(object.length))?,
-        ],
+    let key = (object.path.clone(), object.offset, object.length);
+    if let Some(cityobject_id) = cityobject_ids_by_range.get(&key).copied() {
+        return Ok(cityobject_id);
+    }
+
+    let offset = sqlite_result(u64_to_i64(object.offset))?;
+    let length = sqlite_result(u64_to_i64(object.length))?;
+    sqlite_result(insert_cityobject.execute(params![
+        source_id,
+        &object.external_id,
+        &object.cityobject_type,
+        object.path.to_string_lossy(),
+        offset,
+        length,
+    ]))?;
+    let cityobject_id = sqlite_result(lookup_cityobject.query_row(
+        params![object.path.to_string_lossy(), offset, length],
         |row| row.get::<_, i64>(0),
-    ))
+    ))?;
+    cityobject_ids_by_range.insert(key, cityobject_id);
+    Ok(cityobject_id)
 }
 
-fn insert_package_bbox(
-    tx: &rusqlite::Transaction<'_>,
+fn insert_package_bbox_with_stmt(
+    stmt: &mut rusqlite::Statement<'_>,
     package_id: i64,
     bounds: FeatureBounds,
 ) -> Result<()> {
-    sqlite_result(tx.execute(
-        r"
-        INSERT OR REPLACE INTO package_bbox (
-            package_id, min_x, max_x, min_y, max_y, min_z, max_z
-        )
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-        ",
-        params![
-            package_id,
-            bounds.min_x,
-            bounds.max_x,
-            bounds.min_y,
-            bounds.max_y,
-            bounds.min_z,
-            bounds.max_z,
-        ],
-    ))?;
+    sqlite_result(stmt.execute(params![
+        package_id,
+        bounds.min_x,
+        bounds.max_x,
+        bounds.min_y,
+        bounds.max_y,
+        bounds.min_z,
+        bounds.max_z,
+    ]))?;
     Ok(())
 }
 
-fn insert_cityobject_bbox(
-    tx: &rusqlite::Transaction<'_>,
+fn insert_cityobject_bbox_with_stmt(
+    stmt: &mut rusqlite::Statement<'_>,
     cityobject_id: i64,
     bounds: FeatureBounds,
 ) -> Result<()> {
-    sqlite_result(tx.execute(
-        r"
-        INSERT OR REPLACE INTO cityobject_bbox (
-            cityobject_id, min_x, max_x, min_y, max_y, min_z, max_z
-        )
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-        ",
-        params![
-            cityobject_id,
-            bounds.min_x,
-            bounds.max_x,
-            bounds.min_y,
-            bounds.max_y,
-            bounds.min_z,
-            bounds.max_z,
-        ],
-    ))?;
+    sqlite_result(stmt.execute(params![
+        cityobject_id,
+        bounds.min_x,
+        bounds.max_x,
+        bounds.min_y,
+        bounds.max_y,
+        bounds.min_z,
+        bounds.max_z,
+    ]))?;
     Ok(())
 }
 
@@ -2594,7 +2602,9 @@ struct SourceScan {
 }
 
 struct ScannedFeature {
-    id: String,
+    root_id: String,
+    model_id: String,
+    package_type: PackageType,
     path: PathBuf,
     file_size: u64,
     file_mtime_ns: i64,
@@ -2602,14 +2612,7 @@ struct ScannedFeature {
     length: u64,
     bounds: FeatureBounds,
     spatial: bool,
-    member_ranges: Option<Vec<IndexedObjectRange>>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct IndexedObjectRange {
-    id: String,
-    offset: u64,
-    length: u64,
+    cityobjects: Vec<NormalizedCityObjectScan>,
 }
 
 struct LocalizedFeatureParts {
@@ -2925,13 +2928,19 @@ fn discover_feature_file_sources(
 }
 
 fn scan_feature_file(item: &FeatureFileScanItem<'_>) -> Result<(usize, Vec<ScannedFeature>)> {
-    let feature: Value = read_json(item.path)?;
-    let (ids, bounds, spatial) = parse_feature_file_bounds(&feature, item.metadata)?;
+    let bytes = fs::read(item.path)?;
+    let feature: Value = parse_json_slice(&bytes)?;
+    let model_id = feature_model_id(&feature, "feature file")?;
+    let (_ids, bounds, spatial) = parse_feature_file_bounds(&feature, item.metadata)?;
     let (file_size, file_mtime_ns) = file_status(item.path)?;
-    let features = ids
-        .into_iter()
-        .map(|id| ScannedFeature {
-            id,
+    let cityobjects =
+        normalized_cityobjects_from_feature_bytes(&feature, &bytes, item.path, 0, "feature file")?;
+    Ok((
+        item.source_index,
+        vec![ScannedFeature {
+            root_id: model_id.clone(),
+            model_id,
+            package_type: PackageType::FeatureFiles,
             path: item.path.to_path_buf(),
             file_size,
             file_mtime_ns,
@@ -2939,10 +2948,9 @@ fn scan_feature_file(item: &FeatureFileScanItem<'_>) -> Result<(usize, Vec<Scann
             length: file_size,
             bounds,
             spatial,
-            member_ranges: None,
-        })
-        .collect();
-    Ok((item.source_index, features))
+            cityobjects,
+        }],
+    ))
 }
 
 fn resolve_feature_metadata_path(
@@ -3416,11 +3424,21 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
         }
 
         let feature: Value = parse_json_slice(line_bytes)?;
-        let (ids, bounds, spatial) = parse_ndjson_feature_bounds(&feature, scale, translate)?;
+        let model_id = feature_model_id(&feature, "CityJSONSeq feature")?;
+        let (_ids, bounds, spatial) = parse_ndjson_feature_bounds(&feature, scale, translate)?;
         let length = u64::try_from(line_bytes.len())
             .map_err(|_| import_error("CityJSONSeq feature line length does not fit in u64"))?;
-        features.extend(ids.into_iter().map(|id| ScannedFeature {
-            id,
+        let cityobjects = normalized_cityobjects_from_feature_bytes(
+            &feature,
+            line_bytes,
+            path,
+            offset,
+            "CityJSONSeq feature",
+        )?;
+        features.push(ScannedFeature {
+            root_id: model_id.clone(),
+            model_id,
+            package_type: PackageType::CityJsonSeq,
             path: path.to_path_buf(),
             file_size: source_size,
             file_mtime_ns: source_mtime_ns,
@@ -3428,8 +3446,8 @@ fn scan_ndjson_source(path: &Path) -> Result<SourceScan> {
             length,
             bounds,
             spatial,
-            member_ranges: None,
-        }));
+            cityobjects,
+        });
     }
 
     Ok(SourceScan {
@@ -3515,23 +3533,12 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
             ))
         })?;
         let member_ids = collect_cityjson_feature_members(id, cityobjects)?;
-        let member_ranges = member_ids
-            .iter()
-            .map(|member_id| {
-                let (member_offset, member_length) =
-                    cityobject_ranges.get(member_id).copied().ok_or_else(|| {
-                        import_error(format!(
-                            "CityObject fragment for {member_id} could not be located in {}",
-                            path.display()
-                        ))
-                    })?;
-                Ok(IndexedObjectRange {
-                    id: member_id.clone(),
-                    offset: member_offset,
-                    length: member_length,
-                })
-            })
-            .collect::<Result<Vec<_>>>()?;
+        let cityobjects_for_package = normalized_cityjson_package_cityobjects(
+            &member_ids,
+            cityobjects,
+            &cityobject_ranges,
+            path,
+        )?;
         let mut referenced_vertices = BTreeSet::new();
         let mut visited = BTreeSet::new();
         collect_cityjson_object_vertex_indices(
@@ -3549,7 +3556,9 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
             )
         };
         features.push(ScannedFeature {
-            id: id.clone(),
+            root_id: id.clone(),
+            model_id: id.clone(),
+            package_type: PackageType::CityJson,
             path: path.to_path_buf(),
             file_size: source_size,
             file_mtime_ns: source_mtime_ns,
@@ -3557,7 +3566,7 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
             length,
             bounds,
             spatial,
-            member_ranges: Some(member_ranges),
+            cityobjects: cityobjects_for_package,
         });
     }
 
@@ -3570,6 +3579,39 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
         source_mtime_ns,
         features,
     })
+}
+
+fn normalized_cityjson_package_cityobjects(
+    member_ids: &[String],
+    cityobjects: &Map<String, Value>,
+    cityobject_ranges: &HashMap<String, (u64, u64)>,
+    path: &Path,
+) -> Result<Vec<NormalizedCityObjectScan>> {
+    member_ids
+        .iter()
+        .map(|member_id| {
+            let (member_offset, member_length) =
+                cityobject_ranges.get(member_id).copied().ok_or_else(|| {
+                    import_error(format!(
+                        "CityObject fragment for {member_id} could not be located in {}",
+                        path.display()
+                    ))
+                })?;
+            let object = cityobjects.get(member_id).ok_or_else(|| {
+                import_error(format!(
+                    "CityObject {member_id} could not be resolved in {}",
+                    path.display()
+                ))
+            })?;
+            normalized_cityobject_scan(
+                member_id.clone(),
+                object,
+                path,
+                member_offset,
+                member_length,
+            )
+        })
+        .collect()
 }
 
 fn validate_cityjson_relationship_graph(cityobjects: &Map<String, Value>) -> Result<()> {
@@ -4071,4 +4113,110 @@ fn i64_to_u64(value: i64) -> rusqlite::Result<u64> {
             "value {value} is not representable as u64"
         ))))
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn temp_dir(label: &str) -> PathBuf {
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("system time should be after unix epoch")
+            .as_nanos();
+        let path = std::env::temp_dir().join(format!(
+            "cityjson-index-scan-{label}-{}-{nanos}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&path).expect("temp test directory should be created");
+        path
+    }
+
+    fn stream_metadata() -> Value {
+        serde_json::json!({
+            "type": "CityJSON",
+            "version": "2.0",
+            "transform": {
+                "scale": [1.0, 1.0, 1.0],
+                "translate": [0.0, 0.0, 0.0]
+            },
+            "CityObjects": {},
+            "vertices": []
+        })
+    }
+
+    #[test]
+    fn cityjson_seq_scan_uses_feature_id_as_package_model_id() {
+        let root = temp_dir("seq-model-id");
+        let path = root.join("features.city.jsonl");
+        let header = serde_json::to_string(&stream_metadata()).expect("metadata serializes");
+        let feature = r#"{"type":"CityJSONFeature","id":"feature-root","CityObjects":{"object-a":{"type":"Building"}},"vertices":[]}"#;
+        fs::write(&path, format!("{header}\n{feature}\n")).expect("fixture should be written");
+
+        let scan = scan_ndjson_source(&path).expect("CityJSONSeq scan should succeed");
+        assert_eq!(scan.features.len(), 1);
+        let scanned = &scan.features[0];
+        assert_eq!(scanned.package_type, PackageType::CityJsonSeq);
+        assert_eq!(scanned.model_id, "feature-root");
+        assert_eq!(scanned.root_id, "feature-root");
+        assert_eq!(scanned.cityobjects[0].external_id, "object-a");
+        assert!(scanned.cityobjects[0].offset >= scanned.offset);
+        assert!(scanned.cityobjects[0].offset < scanned.offset + scanned.length);
+    }
+
+    #[test]
+    fn feature_file_scan_keeps_absolute_cityobject_offsets() {
+        let root = temp_dir("feature-file-offsets");
+        let path = root.join("feature.city.jsonl");
+        let feature = r#"{"type":"CityJSONFeature","id":"feature-root","CityObjects":{"object-a":{"type":"Building"}},"vertices":[]}"#;
+        fs::write(&path, feature).expect("fixture should be written");
+        let metadata = stream_metadata();
+        let item = FeatureFileScanItem {
+            source_index: 0,
+            metadata: &metadata,
+            path: &path,
+        };
+
+        let (_source_index, features) = scan_feature_file(&item).expect("feature scan succeeds");
+        assert_eq!(features.len(), 1);
+        let scanned = &features[0];
+        assert_eq!(scanned.package_type, PackageType::FeatureFiles);
+        assert_eq!(scanned.model_id, "feature-root");
+        assert_eq!(scanned.cityobjects[0].external_id, "object-a");
+        assert!(scanned.cityobjects[0].offset < scanned.length);
+    }
+
+    #[test]
+    fn cityjson_scan_reuses_shared_child_physical_range() {
+        let root = temp_dir("cityjson-shared-child");
+        let path = root.join("tile.city.json");
+        let document = r#"{
+            "type":"CityJSON",
+            "version":"2.0",
+            "transform":{"scale":[1.0,1.0,1.0],"translate":[0.0,0.0,0.0]},
+            "CityObjects":{
+                "root-a":{"type":"Building","children":["shared"]},
+                "root-b":{"type":"Building","children":["shared"]},
+                "shared":{"type":"BuildingPart","parents":["root-a","root-b"]}
+            },
+            "vertices":[]
+        }"#;
+        fs::write(&path, document).expect("fixture should be written");
+
+        let scan = scan_cityjson_source(&path).expect("CityJSON scan should succeed");
+        assert_eq!(scan.features.len(), 2);
+        let shared_offsets = scan
+            .features
+            .iter()
+            .map(|feature| {
+                feature
+                    .cityobjects
+                    .iter()
+                    .find(|object| object.external_id == "shared")
+                    .expect("shared child should be a package member")
+                    .offset
+            })
+            .collect::<BTreeSet<_>>();
+        assert_eq!(shared_offsets.len(), 1);
+    }
 }

@@ -44,6 +44,11 @@
 - Filtered feature reads now use `cityjson_lib::ops` selections for object-type,
   exact LoD, and explicit highest-LoD policies, while leaving unfiltered reads
   policy-neutral.
+- Optimized reindexing by deriving package and normalized CityObject metadata
+  during backend scans and reusing prepared SQLite insertion statements during
+  rebuild. Release-mode subset benchmarks show `index_reindex` averaging
+  `0.603x` of the previous optimized implementation across `city-json`,
+  `city-json-seq`, and `feature-files` layouts.
 
 ## 0.4.2
 
