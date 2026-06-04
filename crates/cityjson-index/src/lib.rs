@@ -1305,8 +1305,7 @@ impl CityIndex {
         &self,
         external_id: &str,
     ) -> Result<Vec<(Arc<Meta>, CityModel)>> {
-        let cityobjects = self.lookup_cityobject_refs(external_id)?;
-        let packages = self.package_refs_for_cityobjects(&cityobjects)?;
+        let packages = self.package_refs_for_cityobject_external_id(external_id)?;
         self.read_packages(&packages).map(|items| {
             items
                 .into_iter()
@@ -1729,7 +1728,7 @@ impl CityIndex {
     }
 
     fn read_indexed_package(&self, package: &IndexedPackageRef) -> Result<IndexedPackage> {
-        let location = self.package_location(package.record_id)?.ok_or_else(|| {
+        let location = self.package_location_for_ref(package)?.ok_or_else(|| {
             import_error(format!(
                 "package record {} was not found",
                 package.record_id
@@ -1745,9 +1744,24 @@ impl CityIndex {
         source_files: &mut HashMap<PathBuf, fs::File>,
     ) -> Result<IndexedPackage> {
         let metadata = self.index.get_cached_metadata(location.source_id)?;
+        self.read_located_package_with_metadata(
+            location,
+            prefetched_members,
+            source_files,
+            &metadata,
+        )
+    }
+
+    fn read_located_package_with_metadata(
+        &self,
+        location: &PackageLocation,
+        prefetched_members: Option<&[PackageMemberLocation]>,
+        source_files: &mut HashMap<PathBuf, fs::File>,
+        metadata: &CachedMetadata,
+    ) -> Result<IndexedPackage> {
         let model = match location.reference.package_type {
             PackageType::CityJson => {
-                self.read_cityjson_package(location, prefetched_members, source_files, &metadata)?
+                self.read_cityjson_package(location, prefetched_members, source_files, metadata)?
             }
             PackageType::CityJsonSeq | PackageType::FeatureFiles => {
                 let offset = location
@@ -1781,7 +1795,7 @@ impl CityIndex {
         };
         Ok(IndexedPackage {
             reference: location.reference.clone(),
-            metadata: metadata.value,
+            metadata: Arc::clone(&metadata.value),
             model,
         })
     }
@@ -1824,6 +1838,38 @@ impl CityIndex {
             source_file,
             members,
             metadata.bytes.as_ref(),
+        )
+    }
+
+    fn package_location_for_ref(
+        &self,
+        reference: &IndexedPackageRef,
+    ) -> Result<Option<PackageLocation>> {
+        sqlite_result(
+            self.index
+                .conn
+                .query_row(
+                    r"
+                    SELECT source_id, path, offset, length
+                    FROM packages
+                    WHERE id = ?1
+                    ",
+                    params![reference.record_id],
+                    |row| {
+                        let source_id = row.get::<_, i64>(0)?;
+                        let path = PathBuf::from(row.get::<_, String>(1)?);
+                        let offset = row.get::<_, Option<i64>>(2)?.map(i64_to_u64).transpose()?;
+                        let length = row.get::<_, Option<i64>>(3)?.map(i64_to_u64).transpose()?;
+                        Ok(PackageLocation {
+                            reference: reference.clone(),
+                            source_id,
+                            path,
+                            offset,
+                            length,
+                        })
+                    },
+                )
+                .optional(),
         )
     }
 
@@ -1967,6 +2013,34 @@ impl CityIndex {
             }
         }
         Ok(refs.into_values().collect())
+    }
+
+    fn package_refs_for_cityobject_external_id(
+        &self,
+        external_id: &str,
+    ) -> Result<Vec<IndexedPackageRef>> {
+        let mut stmt = sqlite_result(self.index.conn.prepare(
+            r"
+            SELECT DISTINCT
+                p.id,
+                p.model_id,
+                p.package_type,
+                b.min_x,
+                b.max_x,
+                b.min_y,
+                b.max_y,
+                b.min_z,
+                b.max_z
+            FROM cityobjects AS c
+            JOIN package_cityobjects AS pc ON pc.cityobject_id = c.id
+            JOIN packages AS p ON p.id = pc.package_id
+            LEFT JOIN package_bbox AS b ON b.package_id = p.id
+            WHERE c.external_id = ?1
+            ORDER BY p.id
+            ",
+        ))?;
+        let rows = sqlite_result(stmt.query_map(params![external_id], package_ref_from_row))?;
+        sqlite_result(rows.collect())
     }
 
     /// Returns the total number of indexed packages.

@@ -56,6 +56,12 @@
   benchmarks show matched `bbox_query` rows averaging `0.875x` of the previous
   implementation, with new CityObject lookup and paging rows recorded as
   current baselines.
+- Optimized `get_packages()`/CLI `get` by looking up containing package refs
+  directly from CityObject external ids, and optimized scalar `read_package()`
+  by reusing the provided package ref while fetching only source-location
+  columns. Release-mode subset benchmarks against `8208c8e` show `get`
+  averaging `0.928x` and `read_package` averaging `0.923x` of the previous
+  implementation.
 
 ### Removed
 
