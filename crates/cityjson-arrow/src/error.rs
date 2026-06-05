@@ -2,7 +2,6 @@
 //!
 //! When operations go wrong.
 use arrow::error::ArrowError;
-use parquet::errors::ParquetError;
 use std::fmt::{Debug, Display, Formatter};
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -10,7 +9,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
     Arrow(ArrowError),
-    Parquet(ParquetError),
+    #[cfg(feature = "parquet")]
+    Parquet(parquet::errors::ParquetError),
     CityJSON(cityjson_types::error::Error),
     Json(serde_json::Error),
     Conversion(String),
@@ -24,6 +24,7 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::Arrow(e) => write!(f, "Arrow error: {e}"),
+            #[cfg(feature = "parquet")]
             Error::Parquet(e) => write!(f, "Parquet error: {e}"),
             Error::CityJSON(e) => write!(f, "CityJSON error: {e}"),
             Error::Json(e) => write!(f, "JSON error: {e}"),
@@ -44,8 +45,9 @@ impl From<ArrowError> for Error {
     }
 }
 
-impl From<ParquetError> for Error {
-    fn from(value: ParquetError) -> Self {
+#[cfg(feature = "parquet")]
+impl From<parquet::errors::ParquetError> for Error {
+    fn from(value: parquet::errors::ParquetError) -> Self {
         Self::Parquet(value)
     }
 }
