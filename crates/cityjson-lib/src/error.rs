@@ -102,6 +102,7 @@ impl From<cityjson_arrow::error::Error> for Error {
     fn from(value: cityjson_arrow::error::Error) -> Self {
         match value {
             cityjson_arrow::error::Error::Arrow(error) => Self::Import(error.to_string()),
+            #[cfg(feature = "parquet")]
             cityjson_arrow::error::Error::Parquet(error) => Self::Import(error.to_string()),
             cityjson_arrow::error::Error::CityJSON(error) => Self::CityJSON(error),
             cityjson_arrow::error::Error::Json(error) => Self::Syntax(error.to_string()),

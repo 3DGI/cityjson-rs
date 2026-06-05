@@ -24,7 +24,7 @@ authors = ["Balázs Dukai <balazs.dukai@3dgi.nl>"]
 [workspace.dependencies]
 cityjson-types          = { version = "0.9.0", path = "crates/cityjson-types" }
 cityjson-json           = { version = "0.9.0", path = "crates/cityjson-json" }
-cityjson-arrow          = { version = "0.9.0", path = "crates/cityjson-arrow" }
+cityjson-arrow          = { version = "0.9.0", path = "crates/cityjson-arrow", default-features = false }
 cityjson-parquet        = { version = "0.9.0", path = "crates/cityjson-parquet" }
 cityjson-lib            = { version = "0.9.0", path = "crates/cityjson-lib", default-features = false }
 cityjson-lib-ffi-core   = { version = "0.9.0", path = "crates/cityjson-lib/ffi/core", default-features = false }
