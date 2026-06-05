@@ -15,7 +15,10 @@ pub enum Error {
     Json(serde_json::Error),
     Conversion(String),
     Unsupported(String),
-    SchemaMismatch { expected: String, found: String },
+    SchemaMismatch {
+        expected: String,
+        found: String,
+    },
     MissingField(String),
     Io(std::io::Error),
 }
