@@ -26,7 +26,7 @@ arrow-ipc = "58.1.0"
 arrow-schema = "58.1.0"
 cityjson-types = { workspace = true }
 memmap2 = "0.9.9"
-parquet = "58.1.0"
+parquet = "=58.1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
