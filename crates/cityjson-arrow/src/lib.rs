@@ -5,7 +5,6 @@
 
 mod codec;
 mod convert;
-pub mod citydb;
 pub mod error;
 #[doc(hidden)]
 pub mod internal;
@@ -14,10 +13,6 @@ mod stream;
 #[doc(hidden)]
 pub mod transport;
 
-pub use citydb::{
-    CityDbGeometry, GeometryAppearance, GeometryProperties, ImplicitGeometry, Semantics,
-    Transformation, geometry_schema,
-};
 pub use codec::{
     ExportOptions, ImportOptions, ModelBatchDecoder, ModelBatchReader, SchemaVersion, WriteReport,
     export_reader, import_batches, read_stream, write_stream,
