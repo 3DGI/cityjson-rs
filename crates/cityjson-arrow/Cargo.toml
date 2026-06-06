@@ -47,7 +47,7 @@ parquet = { version = "=58.1.0", optional = true }
 num-traits = "0.2"
 
 [features]
-default = ["parquet"]
+default = []
 parquet = ["dep:parquet"]
 
 [dev-dependencies]
