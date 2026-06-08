@@ -141,8 +141,7 @@ fn feature_files_allow_duplicate_cityobject_keys() {
         .map(|reference| {
             index
                 .package_refs_for_cityobject(reference)
-                .expect("duplicate package lookup should succeed")
-                [0]
+                .expect("duplicate package lookup should succeed")[0]
                 .model_id
                 .clone()
         })
