@@ -9,7 +9,7 @@ mod common;
 use std::fs;
 use std::path::Path;
 
-use cityjson_index::CityIndex;
+use cityjson_index::{CityIndex, resolve_dataset};
 use common::{
     cityjson_feature, hierarchy_cityobjects, hierarchy_vertices, open_cityjson_index,
     open_cityjson_seq_index, open_feature_files_index, shared_child_cityobjects, temp_index_path,
@@ -334,6 +334,35 @@ fn legacy_sidecar_requires_reindex() {
     assert_eq!(
         scalar(&conn, "SELECT needs_reindex FROM schema_state WHERE id = 1"),
         1
+    );
+}
+
+/// Input: an existing legacy sidecar whose source metadata still matches the current dataset.
+/// Assertions: inspect reports that the persisted sidecar state requires reindexing and is not fresh.
+#[test]
+fn inspect_reports_legacy_sidecar_needs_reindex() {
+    let root = write_cityjson_fixture(
+        "inspect-legacy-sidecar",
+        hierarchy_cityobjects(),
+        hierarchy_vertices(),
+    );
+    let index_path = temp_index_path("inspect-legacy-sidecar");
+    create_legacy_sidecar(&index_path);
+    let _index = open_cityjson_index(&root, &index_path);
+
+    let resolved = resolve_dataset(&root, Some(index_path)).expect("resolve CityJSON dataset");
+    let inspection = resolved.inspect().expect("inspect legacy sidecar");
+
+    assert!(inspection.index.needs_reindex);
+    assert_eq!(inspection.index.fresh, Some(false));
+    assert!(
+        inspection
+            .index
+            .issues
+            .iter()
+            .any(|issue| issue.contains("requires reindexing")),
+        "inspect should report a reindex issue: {:?}",
+        inspection.index.issues
     );
 }
 

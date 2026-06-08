@@ -723,6 +723,7 @@ fn inspect_resolved_dataset(resolved: &ResolvedDataset) -> Result<DatasetInspect
 
         let index = Index::open(&resolved.index_path)?;
         status.schema_version = Some(index.current_schema_version()?);
+        status.needs_reindex = index.needs_reindex()?;
         status.indexed_source_count = Some(index.source_count()?);
         status.indexed_feature_count = Some(index.feature_count()?);
         status.indexed_package_count = Some(index.package_count()?);
@@ -830,9 +831,9 @@ fn inspect_resolved_dataset(resolved: &ResolvedDataset) -> Result<DatasetInspect
             ));
         }
         if status.needs_reindex {
-            status.issues.push(
-                "index is missing persisted freshness metadata; run cjindex reindex".to_owned(),
-            );
+            status
+                .issues
+                .push("index requires reindexing; run cjindex reindex".to_owned());
         }
 
         status.covered = Some(
@@ -2461,6 +2462,15 @@ impl Index {
 
     fn current_schema_version(&self) -> Result<i64> {
         Self::schema_version(&self.conn)
+    }
+
+    fn needs_reindex(&self) -> Result<bool> {
+        let value = sqlite_result(self.conn.query_row(
+            "SELECT needs_reindex FROM schema_state WHERE id = 1",
+            [],
+            |row| row.get::<_, i64>(0),
+        ))?;
+        Ok(value != 0)
     }
 
     fn package_count(&self) -> Result<usize> {
