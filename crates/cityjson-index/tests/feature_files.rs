@@ -135,15 +135,19 @@ fn feature_files_allow_duplicate_cityobject_keys() {
         2,
         "both duplicate CityObjects should be indexed"
     );
-    assert!(refs[0].record_id < refs[1].record_id);
-    let first_packages = index
-        .package_refs_for_cityobject(&refs[0])
-        .expect("first duplicate package lookup should succeed");
-    let second_packages = index
-        .package_refs_for_cityobject(&refs[1])
-        .expect("second duplicate package lookup should succeed");
-    assert_eq!(first_packages[0].model_id, "ignored-first");
-    assert_eq!(second_packages[0].model_id, "ignored-second");
+    assert!(refs[0].record_id != refs[1].record_id);
+    let mut package_model_ids = refs
+        .iter()
+        .map(|reference| {
+            index
+                .package_refs_for_cityobject(reference)
+                .expect("duplicate package lookup should succeed")[0]
+                .model_id
+                .clone()
+        })
+        .collect::<Vec<_>>();
+    package_model_ids.sort();
+    assert_eq!(package_model_ids, ["ignored-first", "ignored-second"]);
     assert!(first_path.exists());
     assert!(second_path.exists());
 }

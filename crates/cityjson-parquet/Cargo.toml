@@ -19,7 +19,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 workspace = true
 
 [dependencies]
-cityjson-arrow = { workspace = true }
+cityjson-arrow = { workspace = true, features = ["parquet"] }
 arrow = { version = "58.1.0", features = ["ipc"] }
 arrow-array = "58.1.0"
 arrow-ipc = "58.1.0"
