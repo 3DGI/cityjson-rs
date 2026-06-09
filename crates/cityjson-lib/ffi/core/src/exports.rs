@@ -27,10 +27,10 @@ use crate::abi::{
     cj_geometry_selection_spec_t, cj_geometry_template_id_t, cj_geometry_type_t,
     cj_geometry_types_t, cj_image_type_t, cj_indices_t, cj_indices_view_t, cj_json_write_options_t,
     cj_material_id_t, cj_model_capacities_t, cj_model_selection_t, cj_model_summary_t, cj_model_t,
-    cj_model_type_t, cj_probe_t, cj_rgb_t, cj_rgba_t, cj_ring_draft_t, cj_semantic_id_t,
-    cj_shell_draft_t, cj_solid_draft_t, cj_status_t, cj_string_view_t, cj_surface_draft_t,
-    cj_texture_id_t, cj_texture_type_t, cj_transform_t, cj_uv_t, cj_uvs_t, cj_value_t, cj_vertex_t,
-    cj_vertices_t, cj_wrap_mode_t,
+    cj_model_type_t, cj_probe_t, cj_proj_transformer_t, cj_rgb_t, cj_rgba_t, cj_ring_draft_t,
+    cj_semantic_id_t, cj_shell_draft_t, cj_solid_draft_t, cj_status_t, cj_string_view_t,
+    cj_surface_draft_t, cj_texture_id_t, cj_texture_type_t, cj_transform_t, cj_uv_t, cj_uvs_t,
+    cj_value_t, cj_vertex_t, cj_vertices_t, cj_wrap_mode_t,
 };
 use crate::authoring::{
     GeometryAuthoring, LineStringAuthoring, OwnedCityObject, OwnedContact, OwnedMaterial,
@@ -66,6 +66,15 @@ type OwnedGeometry = cityjson_lib::cityjson_types::v2_0::Geometry<
 
 fn invalid_argument(message: impl Into<String>) -> AbiError {
     AbiError::invalid_argument(message)
+}
+
+#[cfg_attr(feature = "proj", allow(dead_code))]
+fn unsupported(message: impl Into<String>) -> AbiError {
+    AbiError::new(
+        cj_status_t::CJ_STATUS_UNSUPPORTED,
+        cj_error_kind_t::CJ_ERROR_KIND_UNSUPPORTED,
+        message,
+    )
 }
 
 fn ffi_status(result: Result<(), cj_status_t>) -> cj_status_t {
@@ -253,6 +262,16 @@ fn required_geometry_draft_mut<'a>(
     // SAFETY: null is rejected here; valid handles originate from Rust.
     unsafe { geometry_draft_as_mut(draft) }
         .ok_or_else(|| invalid_argument("geometry draft must not be null"))
+}
+
+#[cfg(feature = "proj")]
+fn required_proj_transformer<'a>(
+    transformer: *const cj_proj_transformer_t,
+) -> Result<&'a cityjson_lib::ops::Transformer, AbiError> {
+    let ptr = NonNull::new(transformer.cast_mut())
+        .ok_or_else(|| invalid_argument("transformer must not be null"))?;
+    // SAFETY: valid transformer handles originate from `cj_proj_transformer_create`.
+    Ok(unsafe { &*ptr.as_ptr().cast::<cityjson_lib::ops::Transformer>() })
 }
 
 fn write_value<T>(out: *mut T, name: &'static str, value: T) -> Result<(), AbiError> {
@@ -1760,6 +1779,40 @@ pub extern "C" fn cj_model_add_template_vertex(
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn cj_model_set_vertex(
+    model: *mut cj_model_t,
+    index: usize,
+    vertex: cj_vertex_t,
+) -> cj_status_t {
+    ffi_status(run_ffi::<(), AbiError, _>(|| {
+        let vertices = required_model_mut(model)?.vertices_mut().as_mut_slice();
+        let slot = vertices
+            .get_mut(index)
+            .ok_or_else(|| invalid_argument(format!("vertex index {index} is out of range")))?;
+        *slot = vertex.into();
+        Ok(())
+    }))
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cj_model_set_template_vertex(
+    model: *mut cj_model_t,
+    index: usize,
+    vertex: cj_vertex_t,
+) -> cj_status_t {
+    ffi_status(run_ffi::<(), AbiError, _>(|| {
+        let vertices = required_model_mut(model)?
+            .template_vertices_mut()
+            .as_mut_slice();
+        let slot = vertices.get_mut(index).ok_or_else(|| {
+            invalid_argument(format!("template vertex index {index} is out of range"))
+        })?;
+        *slot = vertex.into();
+        Ok(())
+    }))
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn cj_model_add_uv_coordinate(
     model: *mut cj_model_t,
     uv: cj_uv_t,
@@ -1845,6 +1898,31 @@ pub extern "C" fn cj_model_clear_transform(model: *mut cj_model_t) -> cj_status_
         };
         *required_model_mut(model)? = replacement;
         Ok(())
+    }))
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cj_model_reproject(
+    model: *mut cj_model_t,
+    target_crs: cj_string_view_t,
+) -> cj_status_t {
+    ffi_status(run_ffi::<(), AbiError, _>(|| {
+        let target_crs = view_utf8(target_crs, "target_crs")?;
+        #[cfg(feature = "proj")]
+        {
+            let model_mut = required_model_mut(model)?;
+            let reprojected = cityjson_lib::ops::reproject(model_mut.clone(), &target_crs)?;
+            *model_mut = reprojected;
+            Ok(())
+        }
+        #[cfg(not(feature = "proj"))]
+        {
+            let _ = model;
+            let _ = target_crs;
+            Err(unsupported(
+                "PROJ support is not enabled; rebuild cityjson-lib-ffi-core with the proj feature",
+            ))
+        }
     }))
 }
 
@@ -3415,5 +3493,88 @@ pub extern "C" fn cj_model_add_geometry_template(
             .insert_template_into(required_model_mut(model)?)
             .map_err(AbiError::from)?;
         write_value(out_id, "out_id", handle.into())
+    }))
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cj_proj_transformer_create(
+    source_crs: cj_string_view_t,
+    target_crs: cj_string_view_t,
+    out_transformer: *mut *mut cj_proj_transformer_t,
+) -> cj_status_t {
+    ffi_status(run_ffi(|| {
+        let source_crs = view_utf8(source_crs, "source_crs")?;
+        let target_crs = view_utf8(target_crs, "target_crs")?;
+        #[cfg(feature = "proj")]
+        {
+            let transformer = cityjson_lib::ops::transformer(&source_crs, &target_crs)?;
+            let raw = Box::into_raw(Box::new(transformer)).cast::<cj_proj_transformer_t>();
+            write_value(out_transformer, "out_transformer", raw)
+        }
+        #[cfg(not(feature = "proj"))]
+        {
+            let _ = source_crs;
+            let _ = target_crs;
+            let _ = out_transformer;
+            Err(unsupported(
+                "PROJ support is not enabled; rebuild cityjson-lib-ffi-core with the proj feature",
+            ))
+        }
+    }))
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cj_proj_transformer_free(transformer: *mut cj_proj_transformer_t) -> cj_status_t {
+    ffi_status(run_ffi(|| {
+        if transformer.is_null() {
+            return Ok::<(), AbiError>(());
+        }
+        #[cfg(feature = "proj")]
+        {
+            // SAFETY: valid transformer handles originate from `cj_proj_transformer_create`.
+            unsafe {
+                drop(Box::from_raw(
+                    transformer.cast::<cityjson_lib::ops::Transformer>(),
+                ));
+            }
+        }
+        #[cfg(not(feature = "proj"))]
+        {
+            let _ = transformer;
+        }
+        Ok::<(), AbiError>(())
+    }))
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cj_proj_transformer_transform(
+    transformer: *const cj_proj_transformer_t,
+    point: cj_vertex_t,
+    out_point: *mut cj_vertex_t,
+) -> cj_status_t {
+    ffi_status(run_ffi(|| {
+        #[cfg(feature = "proj")]
+        {
+            let transformer = required_proj_transformer(transformer)?;
+            let transformed = transformer.transform([point.x, point.y, point.z])?;
+            write_value(
+                out_point,
+                "out_point",
+                cj_vertex_t {
+                    x: transformed[0],
+                    y: transformed[1],
+                    z: transformed[2],
+                },
+            )
+        }
+        #[cfg(not(feature = "proj"))]
+        {
+            let _ = transformer;
+            let _ = point;
+            let _ = out_point;
+            Err(unsupported(
+                "PROJ support is not enabled; rebuild cityjson-lib-ffi-core with the proj feature",
+            ))
+        }
     }))
 }

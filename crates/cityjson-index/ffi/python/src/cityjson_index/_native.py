@@ -83,6 +83,24 @@ class _Bounds3D(Structure):
     ]
 
 
+class _Bounds2D(Structure):
+    _fields_ = [
+        ("min_x", c_double),
+        ("max_x", c_double),
+        ("min_y", c_double),
+        ("max_y", c_double),
+    ]
+
+
+class _FeatureBoundsSummary(Structure):
+    _fields_ = [
+        ("package_count", c_size_t),
+        ("cityobject_count", c_size_t),
+        ("has_bounds", c_bool),
+        ("bounds", _Bounds3D),
+    ]
+
+
 class _CityObjectRef(Structure):
     _fields_ = [
         ("record_id", c_int64),
@@ -242,6 +260,8 @@ class FfiLibrary:
         self._lib.cjx_last_error_message_copy.restype = c_int
         self._lib.cjx_bytes_free.argtypes = [_Bytes]
         self._lib.cjx_bytes_free.restype = c_int
+        self._lib.cjx_bytes_array_free.argtypes = [POINTER(_Bytes), c_size_t]
+        self._lib.cjx_bytes_array_free.restype = c_int
         self._lib.cjx_index_open.argtypes = [c_char_p, c_size_t, c_char_p, c_size_t, POINTER(c_void_p)]
         self._lib.cjx_index_open.restype = c_int
         self._lib.cjx_index_free.argtypes = [c_void_p]
@@ -250,6 +270,53 @@ class FfiLibrary:
         self._lib.cjx_index_status.restype = c_int
         self._lib.cjx_index_reindex.argtypes = [c_void_p]
         self._lib.cjx_index_reindex.restype = c_int
+        self._lib.cjx_index_feature_bounds_summary.argtypes = [c_void_p, POINTER(_FeatureBoundsSummary)]
+        self._lib.cjx_index_feature_bounds_summary.restype = c_int
+        self._lib.cjx_index_package_ref_page_after_record_id.argtypes = [
+            c_void_p,
+            c_bool,
+            c_int64,
+            c_size_t,
+            POINTER(POINTER(_PackageRef)),
+            POINTER(c_size_t),
+        ]
+        self._lib.cjx_index_package_ref_page_after_record_id.restype = c_int
+        self._lib.cjx_index_cityobject_ref_page_after_record_id.argtypes = [
+            c_void_p,
+            c_bool,
+            c_int64,
+            c_size_t,
+            POINTER(POINTER(_CityObjectRef)),
+            POINTER(c_size_t),
+        ]
+        self._lib.cjx_index_cityobject_ref_page_after_record_id.restype = c_int
+        self._lib.cjx_index_query_package_refs_page.argtypes = [
+            c_void_p,
+            _Bounds2D,
+            c_bool,
+            c_int64,
+            c_size_t,
+            POINTER(POINTER(_PackageRef)),
+            POINTER(c_size_t),
+        ]
+        self._lib.cjx_index_query_package_refs_page.restype = c_int
+        self._lib.cjx_index_query_cityobject_refs_page.argtypes = [
+            c_void_p,
+            _Bounds2D,
+            c_bool,
+            c_int64,
+            c_size_t,
+            POINTER(POINTER(_CityObjectRef)),
+            POINTER(c_size_t),
+        ]
+        self._lib.cjx_index_query_cityobject_refs_page.restype = c_int
+        self._lib.cjx_index_lookup_package_ref_by_record_id.argtypes = [
+            c_void_p,
+            c_int64,
+            POINTER(c_bool),
+            POINTER(_PackageRef),
+        ]
+        self._lib.cjx_index_lookup_package_ref_by_record_id.restype = c_int
         self._lib.cjx_filtered_packages_free.argtypes = [POINTER(_FilteredPackage), c_size_t]
         self._lib.cjx_filtered_packages_free.restype = c_int
         self._lib.cjx_index_lookup_cityobject_refs.argtypes = [
@@ -273,6 +340,21 @@ class FfiLibrary:
             POINTER(_Bytes),
         ]
         self._lib.cjx_index_read_package_model_bytes.restype = c_int
+        self._lib.cjx_index_read_package_by_record_id_model_bytes.argtypes = [
+            c_void_p,
+            c_int64,
+            POINTER(c_bool),
+            POINTER(_Bytes),
+        ]
+        self._lib.cjx_index_read_package_by_record_id_model_bytes.restype = c_int
+        self._lib.cjx_index_read_packages_model_bytes.argtypes = [
+            c_void_p,
+            POINTER(_PackageRef),
+            c_size_t,
+            POINTER(POINTER(_Bytes)),
+            POINTER(c_size_t),
+        ]
+        self._lib.cjx_index_read_packages_model_bytes.restype = c_int
         self._lib.cjx_index_read_filtered_packages.argtypes = [
             c_void_p,
             POINTER(_PackageRef),
@@ -284,6 +366,8 @@ class FfiLibrary:
         self._lib.cjx_index_read_filtered_packages.restype = c_int
         self._lib.cjx_cityobject_refs_free.argtypes = [POINTER(_CityObjectRef), c_size_t]
         self._lib.cjx_cityobject_refs_free.restype = c_int
+        self._lib.cjx_package_ref_free.argtypes = [_PackageRef]
+        self._lib.cjx_package_ref_free.restype = c_int
         self._lib.cjx_package_refs_free.argtypes = [POINTER(_PackageRef), c_size_t]
         self._lib.cjx_package_refs_free.restype = c_int
 
@@ -347,6 +431,108 @@ class FfiLibrary:
     def reindex(self, handle: c_void_p) -> None:
         self._check_status(self._lib.cjx_index_reindex(handle))
 
+    def feature_bounds_summary(self, handle: c_void_p) -> _FeatureBoundsSummary:
+        summary = _FeatureBoundsSummary()
+        self._check_status(self._lib.cjx_index_feature_bounds_summary(handle, byref(summary)))
+        return summary
+
+    def package_ref_page_after_record_id(
+        self, handle: c_void_p, after_record_id: int | None, limit: int
+    ) -> list[object]:
+        refs = POINTER(_PackageRef)()
+        count = c_size_t()
+        self._check_status(
+            self._lib.cjx_index_package_ref_page_after_record_id(
+                handle,
+                after_record_id is not None,
+                0 if after_record_id is None else after_record_id,
+                limit,
+                byref(refs),
+                byref(count),
+            )
+        )
+        try:
+            return _package_refs_from_native(refs, count.value)
+        finally:
+            self._check_status(self._lib.cjx_package_refs_free(refs, count.value))
+
+    def cityobject_ref_page_after_record_id(
+        self, handle: c_void_p, after_record_id: int | None, limit: int
+    ) -> list[object]:
+        refs = POINTER(_CityObjectRef)()
+        count = c_size_t()
+        self._check_status(
+            self._lib.cjx_index_cityobject_ref_page_after_record_id(
+                handle,
+                after_record_id is not None,
+                0 if after_record_id is None else after_record_id,
+                limit,
+                byref(refs),
+                byref(count),
+            )
+        )
+        try:
+            return _cityobject_refs_from_native(refs, count.value)
+        finally:
+            self._check_status(self._lib.cjx_cityobject_refs_free(refs, count.value))
+
+    def query_package_refs_page(
+        self, handle: c_void_p, bbox: object, after_record_id: int | None, limit: int
+    ) -> list[object]:
+        refs = POINTER(_PackageRef)()
+        count = c_size_t()
+        self._check_status(
+            self._lib.cjx_index_query_package_refs_page(
+                handle,
+                _bbox_to_native(bbox),
+                after_record_id is not None,
+                0 if after_record_id is None else after_record_id,
+                limit,
+                byref(refs),
+                byref(count),
+            )
+        )
+        try:
+            return _package_refs_from_native(refs, count.value)
+        finally:
+            self._check_status(self._lib.cjx_package_refs_free(refs, count.value))
+
+    def query_cityobject_refs_page(
+        self, handle: c_void_p, bbox: object, after_record_id: int | None, limit: int
+    ) -> list[object]:
+        refs = POINTER(_CityObjectRef)()
+        count = c_size_t()
+        self._check_status(
+            self._lib.cjx_index_query_cityobject_refs_page(
+                handle,
+                _bbox_to_native(bbox),
+                after_record_id is not None,
+                0 if after_record_id is None else after_record_id,
+                limit,
+                byref(refs),
+                byref(count),
+            )
+        )
+        try:
+            return _cityobject_refs_from_native(refs, count.value)
+        finally:
+            self._check_status(self._lib.cjx_cityobject_refs_free(refs, count.value))
+
+    def lookup_package_ref_by_record_id(self, handle: c_void_p, record_id: int) -> object | None:
+        found = c_bool()
+        ref = _PackageRef()
+        self._check_status(
+            self._lib.cjx_index_lookup_package_ref_by_record_id(
+                handle, record_id, byref(found), byref(ref)
+            )
+        )
+        if not found.value:
+            return None
+        try:
+            return _package_ref_from_native(ref)
+        finally:
+            self._check_status(self._lib.cjx_package_ref_free(ref))
+
     def lookup_cityobject_refs(self, handle: c_void_p, external_id: str) -> list[object]:
         refs = POINTER(_CityObjectRef)()
         count = c_size_t()
@@ -357,16 +543,7 @@ class FfiLibrary:
             )
         )
         try:
-            from . import CityObjectRef
-
-            return [
-                CityObjectRef(
-                    record_id=int(refs[index].record_id),
-                    external_id=_bytes_to_py(refs[index].external_id).decode("utf-8"),
-                    cityobject_type=_bytes_to_py(refs[index].cityobject_type).decode("utf-8"),
-                )
-                for index in range(count.value)
-            ]
+            return _cityobject_refs_from_native(refs, count.value)
         finally:
             self._check_status(self._lib.cjx_cityobject_refs_free(refs, count.value))
 
@@ -392,6 +569,36 @@ class FfiLibrary:
             return _bytes_to_py(out)
         finally:
             self._check_status(self._lib.cjx_bytes_free(out))
+
+    def read_package_by_record_id_model_bytes(self, handle: c_void_p, record_id: int) -> bytes | None:
+        found = c_bool()
+        out = _Bytes()
+        self._check_status(
+            self._lib.cjx_index_read_package_by_record_id_model_bytes(
+                handle, record_id, byref(found), byref(out)
+            )
+        )
+        if not found.value:
+            return None
+        try:
+            return _bytes_to_py(out)
+        finally:
+            self._check_status(self._lib.cjx_bytes_free(out))
+
+    def read_packages_model_bytes(self, handle: c_void_p, refs: list[object]) -> list[bytes]:
+        keepalive: list[Any] = []
+        native_refs = _package_ref_array(refs, keepalive)
+        out = POINTER(_Bytes)()
+        count = c_size_t()
+        self._check_status(
+            self._lib.cjx_index_read_packages_model_bytes(
+                handle, native_refs, len(refs), byref(out), byref(count)
+            )
+        )
+        try:
+            return [_bytes_to_py(out[index]) for index in range(count.value)]
+        finally:
+            self._check_status(self._lib.cjx_bytes_array_free(out, count.value))
 
     def read_filtered_packages(self, handle: c_void_p, refs: list[object], filter: object) -> list[object]:
         keepalive: list[Any] = []
@@ -444,19 +651,47 @@ def _package_ref_array(refs: list[object], keepalive: list[Any]) -> Any:
     return array
 
 
+def _cityobject_ref_from_native(ref: _CityObjectRef) -> object:
+    from . import Bounds3D, CityObjectRef
+
+    return CityObjectRef(
+        record_id=int(ref.record_id),
+        external_id=_bytes_to_py(ref.external_id).decode("utf-8"),
+        cityobject_type=_bytes_to_py(ref.cityobject_type).decode("utf-8"),
+        bounds=Bounds3D.from_native(ref.bounds) if ref.has_bounds else None,
+    )
+
+
+def _cityobject_refs_from_native(refs: POINTER(_CityObjectRef), count: int) -> list[object]:
+    if count == 0 or not refs:
+        return []
+    return [_cityobject_ref_from_native(refs[index]) for index in range(count)]
+
+
+def _package_ref_from_native(ref: _PackageRef) -> object:
+    from . import Bounds3D, PackageRef
+
+    return PackageRef(
+        record_id=int(ref.record_id),
+        model_id=_bytes_to_py(ref.model_id).decode("utf-8"),
+        package_type=int(ref.package_type),
+        bounds=Bounds3D.from_native(ref.bounds) if ref.has_bounds else None,
+    )
+
+
 def _package_refs_from_native(refs: POINTER(_PackageRef), count: int) -> list[object]:
     if count == 0 or not refs:
         return []
-    from . import PackageRef
+    return [_package_ref_from_native(refs[index]) for index in range(count)]
 
-    return [
-        PackageRef(
-            record_id=int(refs[index].record_id),
-            model_id=_bytes_to_py(refs[index].model_id).decode("utf-8"),
-            package_type=int(refs[index].package_type),
-        )
-        for index in range(count)
-    ]
+
+def _bbox_to_native(bbox: object) -> _Bounds2D:
+    return _Bounds2D(
+        float(getattr(bbox, "min_x")),
+        float(getattr(bbox, "max_x")),
+        float(getattr(bbox, "min_y")),
+        float(getattr(bbox, "max_y")),
+    )
 
 
 def _bytes_to_py(value: _Bytes) -> bytes:
@@ -621,6 +856,30 @@ def reindex(handle: c_void_p) -> None:
     _ffi.reindex(handle)
 
 
+def feature_bounds_summary(handle: c_void_p) -> _FeatureBoundsSummary:
+    return _ffi.feature_bounds_summary(handle)
+
+
+def package_ref_page_after_record_id(handle: c_void_p, after_record_id: int | None, limit: int) -> list[object]:
+    return _ffi.package_ref_page_after_record_id(handle, after_record_id, limit)
+
+
+def cityobject_ref_page_after_record_id(handle: c_void_p, after_record_id: int | None, limit: int) -> list[object]:
+    return _ffi.cityobject_ref_page_after_record_id(handle, after_record_id, limit)
+
+
+def query_package_refs_page(handle: c_void_p, bbox: object, after_record_id: int | None, limit: int) -> list[object]:
+    return _ffi.query_package_refs_page(handle, bbox, after_record_id, limit)
+
+
+def query_cityobject_refs_page(handle: c_void_p, bbox: object, after_record_id: int | None, limit: int) -> list[object]:
+    return _ffi.query_cityobject_refs_page(handle, bbox, after_record_id, limit)
+
+
+def lookup_package_ref_by_record_id(handle: c_void_p, record_id: int) -> object | None:
+    return _ffi.lookup_package_ref_by_record_id(handle, record_id)
+
+
 def lookup_cityobject_refs(handle: c_void_p, external_id: str) -> list[object]:
     return _ffi.lookup_cityobject_refs(handle, external_id)
 
@@ -631,6 +890,14 @@ def package_refs_for_cityobject(handle: c_void_p, ref: object) -> list[object]:
 
 def read_package_model_bytes(handle: c_void_p, ref: object) -> bytes:
     return _ffi.read_package_model_bytes(handle, ref)
+
+
+def read_package_by_record_id_model_bytes(handle: c_void_p, record_id: int) -> bytes | None:
+    return _ffi.read_package_by_record_id_model_bytes(handle, record_id)
+
+
+def read_packages_model_bytes(handle: c_void_p, refs: list[object]) -> list[bytes]:
+    return _ffi.read_packages_model_bytes(handle, refs)
 
 
 def read_filtered_packages(handle: c_void_p, refs: list[object], filter: object) -> list[object]:

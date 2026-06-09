@@ -73,4 +73,5 @@ tempfile = "3.23"
 [package.metadata.release]
 pre-release-replacements = [
     { file = "ffi/python/pyproject.toml", search = "^version = \"[^\"]+\"$", replace = "version = \"{{version}}\"", exactly = 1, min = 1 },
+    { file = "ffi/cpp/CMakeLists.txt", search = "VERSION [0-9]+\\.[0-9]+\\.[0-9]+", replace = "VERSION {{version}}", exactly = 1, min = 1 },
 ]

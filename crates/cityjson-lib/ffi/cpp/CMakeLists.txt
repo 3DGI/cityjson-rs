@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(cityjson_lib_cpp VERSION 0.5.3 LANGUAGES CXX)
+project(cityjson_lib_cpp VERSION 0.10.0 LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 include(CTest)

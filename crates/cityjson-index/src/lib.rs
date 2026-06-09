@@ -50,6 +50,14 @@ impl FeatureBounds {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct FeatureBoundsSummary {
+    pub package_count: usize,
+    pub cityobject_count: usize,
+    pub has_bounds: bool,
+    pub bounds: Option<FeatureBounds>,
+}
+
 pub struct CityIndex {
     index: Index,
     backend: Box<dyn StorageBackend>,
@@ -2073,6 +2081,15 @@ impl CityIndex {
         self.index.cityobject_count()
     }
 
+    /// Returns aggregate package bounds and indexed feature counts.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the summary cannot be read from the index.
+    pub fn feature_bounds_summary(&self) -> Result<FeatureBoundsSummary> {
+        self.index.feature_bounds_summary()
+    }
+
     /// Returns cached metadata entries.
     ///
     /// # Errors
@@ -2483,6 +2500,56 @@ impl Index {
 
     fn cityobject_relationship_count(&self) -> Result<usize> {
         self.query_count("SELECT COUNT(*) FROM cityobject_relationships")
+    }
+
+    fn feature_bounds_summary(&self) -> Result<FeatureBoundsSummary> {
+        let package_count = self.package_count()?;
+        let cityobject_count = self.normalized_cityobject_count()?;
+        let bounds = sqlite_result(self.conn.query_row(
+            r"
+            SELECT
+                MIN(min_x),
+                MAX(max_x),
+                MIN(min_y),
+                MAX(max_y),
+                MIN(min_z),
+                MAX(max_z)
+            FROM package_bbox
+            ",
+            [],
+            |row| {
+                let min_x = row.get::<_, Option<f64>>(0)?;
+                let max_x = row.get::<_, Option<f64>>(1)?;
+                let min_y = row.get::<_, Option<f64>>(2)?;
+                let max_y = row.get::<_, Option<f64>>(3)?;
+                let min_z = row.get::<_, Option<f64>>(4)?;
+                let max_z = row.get::<_, Option<f64>>(5)?;
+                Ok(match (min_x, max_x, min_y, max_y, min_z, max_z) {
+                    (
+                        Some(min_x),
+                        Some(max_x),
+                        Some(min_y),
+                        Some(max_y),
+                        Some(min_z),
+                        Some(max_z),
+                    ) => Some(FeatureBounds {
+                        min_x,
+                        max_x,
+                        min_y,
+                        max_y,
+                        min_z,
+                        max_z,
+                    }),
+                    _ => None,
+                })
+            },
+        ))?;
+        Ok(FeatureBoundsSummary {
+            package_count,
+            cityobject_count,
+            has_bounds: bounds.is_some(),
+            bounds,
+        })
     }
 
     fn query_count(&self, sql: &str) -> Result<usize> {

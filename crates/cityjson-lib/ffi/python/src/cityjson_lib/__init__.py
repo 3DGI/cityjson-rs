@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from importlib.metadata import PackageNotFoundError, version as _package_version
 from typing import Self
 
 from cityjson_lib._ffi import (
@@ -36,7 +37,10 @@ from cityjson_lib._ffi import (
     WriteOptionsPayload,
 )
 
-__version__ = "0.6.1"
+try:
+    __version__ = _package_version("cityjson-lib")
+except PackageNotFoundError:
+    __version__ = "0.9.0"
 
 _ffi = FfiLibrary.load()
 
@@ -701,6 +705,24 @@ def _geometry_selection_spec_tuple(
     return spec
 
 
+class ProjTransformer(_OwnedHandle):
+    def __init__(self, handle: int) -> None:
+        super().__init__(handle)
+
+    def _free(self, handle: int) -> None:
+        _ffi.proj_transformer_free(handle)
+
+    @classmethod
+    def create(cls, source_crs: str, target_crs: str) -> Self:
+        return cls(_ffi.proj_transformer_create(source_crs, target_crs))
+
+    def transform(self, vertex: Vertex) -> Vertex:
+        transformed = _ffi.proj_transformer_transform(
+            self._require_handle(), vertex.x, vertex.y, vertex.z
+        )
+        return Vertex(x=transformed.x, y=transformed.y, z=transformed.z)
+
+
 class CityModel(_OwnedHandle):
     def __init__(self, handle: int) -> None:
         super().__init__(handle)
@@ -843,6 +865,9 @@ class CityModel(_OwnedHandle):
     def clear_transform(self) -> None:
         _ffi.clear_transform(self._require_handle())
 
+    def reproject(self, target_crs: str) -> None:
+        _ffi.reproject(self._require_handle(), target_crs)
+
     def remove_cityobject(self, cityobject_id: str) -> None:
         _ffi.remove_cityobject(self._require_handle(), cityobject_id)
 
@@ -905,6 +930,12 @@ class CityModel(_OwnedHandle):
 
     def add_template_vertex(self, vertex: Vertex) -> int:
         return _ffi.add_template_vertex(self._require_handle(), vertex.x, vertex.y, vertex.z)
+
+    def set_vertex(self, index: int, vertex: Vertex) -> None:
+        _ffi.set_vertex(self._require_handle(), index, vertex.x, vertex.y, vertex.z)
+
+    def set_template_vertex(self, index: int, vertex: Vertex) -> None:
+        _ffi.set_template_vertex(self._require_handle(), index, vertex.x, vertex.y, vertex.z)
 
     def add_uv_coordinate(self, uv: UV) -> int:
         return _ffi.add_uv_coordinate(self._require_handle(), uv.u, uv.v)
@@ -1117,6 +1148,7 @@ __all__ = [
     "ModelSelection",
     "ModelSummary",
     "ModelType",
+    "ProjTransformer",
     "Probe",
     "RGBA",
     "RGB",

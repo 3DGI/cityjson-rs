@@ -12,8 +12,9 @@ use cityjson_lib_ffi_core::{
 };
 
 use cityjson_index::{
-    CityIndex, IndexedCityObjectRef, IndexedPackageRef, LodSelection, MissingLodSelection,
-    PackageFilter, PackageFilterReport, PackageType, ResolvedDataset, resolve_dataset,
+    BBox, CityIndex, FeatureBoundsSummary, IndexedCityObjectRef, IndexedPackageRef, LodSelection,
+    MissingLodSelection, PackageFilter, PackageFilterReport, PackageType, ResolvedDataset,
+    resolve_dataset,
 };
 
 #[allow(non_camel_case_types)]
@@ -42,6 +43,26 @@ pub struct cjx_bounds3d_t {
     pub max_y: f64,
     pub min_z: f64,
     pub max_z: f64,
+}
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct cjx_bounds2d_t {
+    pub min_x: f64,
+    pub max_x: f64,
+    pub min_y: f64,
+    pub max_y: f64,
+}
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct cjx_feature_bounds_summary_t {
+    pub package_count: usize,
+    pub cityobject_count: usize,
+    pub has_bounds: bool,
+    pub bounds: cjx_bounds3d_t,
 }
 
 #[allow(non_camel_case_types)]
@@ -173,6 +194,42 @@ pub struct cjx_package_filter_report_t {
 pub struct cjx_filtered_package_t {
     pub model_json: cj_bytes_t,
     pub diagnostics: cjx_package_filter_report_t,
+}
+
+impl From<FeatureBoundsSummary> for cjx_feature_bounds_summary_t {
+    fn from(value: FeatureBoundsSummary) -> Self {
+        let (has_bounds, bounds) = value
+            .bounds
+            .map(|bounds| {
+                (
+                    true,
+                    cjx_bounds3d_t {
+                        min_x: bounds.min_x,
+                        max_x: bounds.max_x,
+                        min_y: bounds.min_y,
+                        max_y: bounds.max_y,
+                        min_z: bounds.min_z,
+                        max_z: bounds.max_z,
+                    },
+                )
+            })
+            .unwrap_or_default();
+        Self {
+            package_count: value.package_count,
+            cityobject_count: value.cityobject_count,
+            has_bounds,
+            bounds,
+        }
+    }
+}
+
+fn bbox_from_abi(value: cjx_bounds2d_t) -> BBox {
+    BBox {
+        min_x: value.min_x,
+        max_x: value.max_x,
+        min_y: value.min_y,
+        max_y: value.max_y,
+    }
 }
 
 impl From<IndexedCityObjectRef> for cjx_cityobject_ref_t {
@@ -319,6 +376,100 @@ impl OpenedIndex {
         let package = IndexedPackageRef::try_from(package)?;
         let model = self.index.read_package(&package).map_err(AbiError::from)?;
         json::to_vec(&model).map_err(AbiError::from)
+    }
+
+    fn feature_bounds_summary(&self) -> Result<cjx_feature_bounds_summary_t, AbiError> {
+        self.index
+            .feature_bounds_summary()
+            .map(Into::into)
+            .map_err(AbiError::from)
+    }
+
+    fn package_ref_page_after_record_id(
+        &self,
+        after_record_id: Option<i64>,
+        limit: usize,
+    ) -> Result<Vec<cjx_package_ref_t>, AbiError> {
+        self.index
+            .package_ref_page_after_record_id(after_record_id, limit)
+            .map(|refs| refs.into_iter().map(Into::into).collect())
+            .map_err(AbiError::from)
+    }
+
+    fn cityobject_ref_page_after_record_id(
+        &self,
+        after_record_id: Option<i64>,
+        limit: usize,
+    ) -> Result<Vec<cjx_cityobject_ref_t>, AbiError> {
+        self.index
+            .cityobject_ref_page_after_record_id(after_record_id, limit)
+            .map(|refs| refs.into_iter().map(Into::into).collect())
+            .map_err(AbiError::from)
+    }
+
+    fn query_package_refs_page(
+        &self,
+        bbox: cjx_bounds2d_t,
+        after_record_id: Option<i64>,
+        limit: usize,
+    ) -> Result<Vec<cjx_package_ref_t>, AbiError> {
+        self.index
+            .query_package_refs_page(&bbox_from_abi(bbox), after_record_id, limit)
+            .map(|refs| refs.into_iter().map(Into::into).collect())
+            .map_err(AbiError::from)
+    }
+
+    fn query_cityobject_refs_page(
+        &self,
+        bbox: cjx_bounds2d_t,
+        after_record_id: Option<i64>,
+        limit: usize,
+    ) -> Result<Vec<cjx_cityobject_ref_t>, AbiError> {
+        self.index
+            .query_cityobject_refs_page(&bbox_from_abi(bbox), after_record_id, limit)
+            .map(|refs| refs.into_iter().map(Into::into).collect())
+            .map_err(AbiError::from)
+    }
+
+    fn lookup_package_ref_by_record_id(
+        &self,
+        record_id: i64,
+    ) -> Result<Option<cjx_package_ref_t>, AbiError> {
+        self.index
+            .lookup_package_ref_by_record_id(record_id)
+            .map(|maybe| maybe.map(Into::into))
+            .map_err(AbiError::from)
+    }
+
+    fn read_package_by_record_id_model_bytes(
+        &self,
+        record_id: i64,
+    ) -> Result<Option<Vec<u8>>, AbiError> {
+        self.index
+            .read_package_by_record_id(record_id)
+            .map_err(AbiError::from)?
+            .map(|package| json::to_vec(&package.model).map_err(AbiError::from))
+            .transpose()
+    }
+
+    fn read_packages_model_bytes(
+        &self,
+        packages: &[cjx_package_ref_t],
+    ) -> Result<Vec<cj_bytes_t>, AbiError> {
+        let packages = packages
+            .iter()
+            .map(IndexedPackageRef::try_from)
+            .collect::<Result<Vec<_>, _>>()?;
+        self.index
+            .read_packages(&packages)
+            .map_err(AbiError::from)?
+            .into_iter()
+            .map(|package| {
+                json::to_vec(&package.model)
+                    .map(bytes_from_vec)
+                    .map_err(AbiError::from)
+            })
+            .collect()
     }
 
     fn read_filtered_packages(
@@ -742,6 +893,33 @@ pub extern "C" fn cjx_bytes_free(bytes: cj_bytes_t) -> cj_status_t {
 }
 
 #[unsafe(no_mangle)]
+/// # Safety
+///
+/// `items` must either be null or point to `count` byte buffers allocated by this ABI.
+pub unsafe extern "C" fn cjx_bytes_array_free(items: *mut cj_bytes_t, count: usize) -> cj_status_t {
+    match run_ffi(|| {
+        if items.is_null() || count == 0 {
+            return Ok::<(), AbiError>(());
+        }
+        // SAFETY: the caller promises `count` valid byte buffers starting at `items`.
+        let slice = unsafe { slice::from_raw_parts_mut(items, count) };
+        for item in slice.iter_mut() {
+            unsafe {
+                bytes_free(*item);
+            }
+        }
+        let raw = ptr::slice_from_raw_parts_mut(items, count);
+        unsafe {
+            drop(Box::from_raw(raw));
+        }
+        Ok::<(), AbiError>(())
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn cjx_index_open(
     dataset_dir: *const c_char,
     dataset_dir_len: usize,
@@ -796,6 +974,134 @@ pub extern "C" fn cjx_index_reindex(handle: *mut cjx_index_t) -> cj_status_t {
     match run_ffi(|| {
         let handle = required_handle_mut(handle)?;
         handle.reindex()
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_feature_bounds_summary(
+    handle: *const cjx_index_t,
+    out_summary: *mut cjx_feature_bounds_summary_t,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let summary = handle.feature_bounds_summary()?;
+        write_value(out_summary, "out_summary", summary)
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_package_ref_page_after_record_id(
+    handle: *const cjx_index_t,
+    has_after_record_id: bool,
+    after_record_id: i64,
+    limit: usize,
+    out_refs: *mut *mut cjx_package_ref_t,
+    out_count: *mut usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let refs = handle.package_ref_page_after_record_id(
+            has_after_record_id.then_some(after_record_id),
+            limit,
+        )?;
+        write_ref_slice(out_refs, out_count, refs)
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_cityobject_ref_page_after_record_id(
+    handle: *const cjx_index_t,
+    has_after_record_id: bool,
+    after_record_id: i64,
+    limit: usize,
+    out_refs: *mut *mut cjx_cityobject_ref_t,
+    out_count: *mut usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let refs = handle.cityobject_ref_page_after_record_id(
+            has_after_record_id.then_some(after_record_id),
+            limit,
+        )?;
+        write_ref_slice(out_refs, out_count, refs)
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_query_package_refs_page(
+    handle: *const cjx_index_t,
+    bbox: cjx_bounds2d_t,
+    has_after_record_id: bool,
+    after_record_id: i64,
+    limit: usize,
+    out_refs: *mut *mut cjx_package_ref_t,
+    out_count: *mut usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let refs = handle.query_package_refs_page(
+            bbox,
+            has_after_record_id.then_some(after_record_id),
+            limit,
+        )?;
+        write_ref_slice(out_refs, out_count, refs)
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_query_cityobject_refs_page(
+    handle: *const cjx_index_t,
+    bbox: cjx_bounds2d_t,
+    has_after_record_id: bool,
+    after_record_id: i64,
+    limit: usize,
+    out_refs: *mut *mut cjx_cityobject_ref_t,
+    out_count: *mut usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let refs = handle.query_cityobject_refs_page(
+            bbox,
+            has_after_record_id.then_some(after_record_id),
+            limit,
+        )?;
+        write_ref_slice(out_refs, out_count, refs)
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_lookup_package_ref_by_record_id(
+    handle: *const cjx_index_t,
+    record_id: i64,
+    out_found: *mut bool,
+    out_ref: *mut cjx_package_ref_t,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let maybe = handle.lookup_package_ref_by_record_id(record_id)?;
+        write_value(out_found, "out_found", maybe.is_some())?;
+        if let Some(reference) = maybe {
+            write_value(out_ref, "out_ref", reference)?;
+        }
+        Ok::<(), AbiError>(())
     }) {
         Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
         Err(status) => status,
@@ -868,6 +1174,12 @@ pub unsafe extern "C" fn cjx_cityobject_refs_free(
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn cjx_package_ref_free(value: cjx_package_ref_t) -> cj_status_t {
+    free_package_ref(value);
+    cj_status_t::CJ_STATUS_SUCCESS
+}
+
+#[unsafe(no_mangle)]
 /// # Safety
 ///
 /// `refs` must either be null or point to `count` package refs allocated by this ABI.
@@ -906,6 +1218,53 @@ pub extern "C" fn cjx_index_read_package_model_bytes(
             .ok_or_else(|| AbiError::invalid_argument("package must not be null"))?;
         let bytes = handle.read_package_model_bytes(unsafe { package.as_ref() })?;
         write_value(out_bytes, "out_bytes", bytes_from_vec(bytes))
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_read_package_by_record_id_model_bytes(
+    handle: *const cjx_index_t,
+    record_id: i64,
+    out_found: *mut bool,
+    out_bytes: *mut cj_bytes_t,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let maybe = handle.read_package_by_record_id_model_bytes(record_id)?;
+        write_value(out_found, "out_found", maybe.is_some())?;
+        if let Some(bytes) = maybe {
+            write_value(out_bytes, "out_bytes", bytes_from_vec(bytes))?;
+        }
+        Ok::<(), AbiError>(())
+    }) {
+        Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
+        Err(status) => status,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn cjx_index_read_packages_model_bytes(
+    handle: *const cjx_index_t,
+    refs: *const cjx_package_ref_t,
+    ref_count: usize,
+    out_items: *mut *mut cj_bytes_t,
+    out_count: *mut usize,
+) -> cj_status_t {
+    match run_ffi(|| {
+        let handle = required_handle(handle)?;
+        let refs = if ref_count == 0 {
+            &[]
+        } else {
+            let refs = NonNull::new(refs.cast_mut()).ok_or_else(|| {
+                AbiError::invalid_argument("refs must not be null when ref_count is non-zero")
+            })?;
+            unsafe { slice::from_raw_parts(refs.as_ptr(), ref_count) }
+        };
+        let items = handle.read_packages_model_bytes(refs)?;
+        write_ref_slice(out_items, out_count, items)
     }) {
         Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
         Err(status) => status,

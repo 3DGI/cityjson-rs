@@ -9,6 +9,11 @@ crate in the workspace to the same version.
 ## [Unreleased]
 
 ### Added
+- Added v0.10 binding parity coverage: `cityjson-lib` Python/C++ now expose
+  PROJ transformer/reprojection workflows and vertex/template-vertex mutation,
+  while `cityjson-index` Python exposes aggregate bounds summaries,
+  record-id pagination, bbox pages, record-id package lookup/read, and batch
+  package reads.
 - Added validated CityJSON geometry editing APIs for cloning stored geometry parts, replacing geometries while preserving handles, and building topology-aware material and semantic maps.
 - Added optional `cityjson-lib` PROJ support behind the `proj` feature, including
   cached `cityjson_lib::ops::Transformer` construction and `ops::reproject` for
@@ -23,6 +28,10 @@ crate in the workspace to the same version.
   and reconstruction helpers.
 
 ### Changed
+- `cityjson-lib` Python now derives `__version__` from installed package
+  metadata instead of a stale hard-coded runtime value.
+- `cityjson-lib` C++ package version is included in release replacement
+  automation so it stays aligned with the workspace release line.
 - Expanded the devcontainer toolchain and root `just ffi` dispatcher so FFI,
   benchmark, and coverage recipes have the required local tools and route
   crate-specific commands correctly.

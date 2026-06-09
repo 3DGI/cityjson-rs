@@ -28,6 +28,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 [features]
 default = ["native-formats"]
 native-formats = ["cityjson-lib/arrow", "cityjson-lib/parquet"]
+proj = ["cityjson-lib/proj"]
 
 [lib]
 name = "cityjson_lib_ffi_core"

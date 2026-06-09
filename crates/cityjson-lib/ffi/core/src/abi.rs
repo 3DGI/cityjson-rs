@@ -299,6 +299,14 @@ pub struct cj_model_t {
     _private: [u8; 0],
 }
 
+/// Opaque handle for a cached PROJ coordinate transformer.
+#[allow(non_camel_case_types)]
+#[repr(C)]
+#[derive(Debug)]
+pub struct cj_proj_transformer_t {
+    _private: [u8; 0],
+}
+
 /// Opaque model-selection handle type.
 ///
 /// The ABI only ever passes pointers to this marker type. The actual storage is
