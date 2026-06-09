@@ -4210,27 +4210,50 @@ fn collect_layout_files(paths: &[PathBuf], suffix: &str) -> Result<Vec<PathBuf>>
 fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
     let bytes = fs::read(path)?;
     let (source_size, source_mtime_ns) = file_status(path)?;
-    let document: Value = parse_json_slice(&bytes)?;
-    let metadata = cityjson_base_metadata(&document)?;
-    let (scale, translate) = parse_ndjson_transform(&metadata)?;
+    let mut document: Value = parse_json_slice(&bytes)?;
 
-    let cityobjects = document
-        .get("CityObjects")
-        .and_then(Value::as_object)
-        .ok_or_else(|| {
-            import_error(format!(
-                "CityJSON source {} is missing CityObjects",
-                path.display()
-            ))
-        })?;
-    validate_cityjson_relationship_graph(cityobjects)?;
-    let vertices_value = document.get("vertices").ok_or_else(|| {
+    // Swap `CityObjects` and `vertices` out of the parsed document, replacing
+    // them in place with empty placeholders. The remainder of `document` is then
+    // exactly the base metadata, so we avoid deep-cloning the whole (multi-GB)
+    // document just to blank those two fields (what `cityjson_base_metadata` did)
+    // and we get to consume the vertices array without cloning it. Replacing in
+    // place (rather than remove + re-insert) preserves the metadata's key order.
+    let root = document.as_object_mut().ok_or_else(|| {
         import_error(format!(
-            "CityJSON source {} is missing vertices",
+            "CityJSON source {} root must be a JSON object",
             path.display()
         ))
     })?;
-    let vertices: Vec<[i64; 3]> = parse_json_value(vertices_value.clone())?;
+    let cityobjects_value = match root.get_mut("CityObjects") {
+        Some(slot) => std::mem::replace(slot, Value::Object(Map::new())),
+        None => {
+            return Err(import_error(format!(
+                "CityJSON source {} is missing CityObjects",
+                path.display()
+            )))
+        }
+    };
+    let vertices_value = match root.get_mut("vertices") {
+        Some(slot) => std::mem::replace(slot, Value::Array(Vec::new())),
+        None => {
+            return Err(import_error(format!(
+                "CityJSON source {} is missing vertices",
+                path.display()
+            )))
+        }
+    };
+    let metadata: Meta = document;
+    let (scale, translate) = parse_ndjson_transform(&metadata)?;
+
+    let cityobjects = cityobjects_value.as_object().ok_or_else(|| {
+        import_error(format!(
+            "CityJSON source {} CityObjects must be a JSON object",
+            path.display()
+        ))
+    })?;
+    validate_cityjson_relationship_graph(cityobjects)?;
+    // Consume the owned vertices Value into the typed array (no clone).
+    let vertices: Vec<[i64; 3]> = parse_json_value(vertices_value)?;
     let (vertices_offset, vertices_length) = top_level_value_range(&bytes, "vertices")?;
     let cityobject_ranges = cityobject_entry_ranges(&bytes)?
         .into_iter()
@@ -4359,16 +4382,6 @@ fn empty_feature_bounds() -> FeatureBounds {
         min_z: 0.0,
         max_z: 0.0,
     }
-}
-
-fn cityjson_base_metadata(document: &Value) -> Result<Meta> {
-    let mut metadata = document.clone();
-    let root = metadata
-        .as_object_mut()
-        .ok_or_else(|| import_error("CityJSON document root must be a JSON object"))?;
-    root.insert("CityObjects".to_owned(), Value::Object(Map::new()));
-    root.insert("vertices".to_owned(), Value::Array(Vec::new()));
-    Ok(metadata)
 }
 
 fn root_cityobject_ids(cityobjects: &Map<String, Value>) -> Vec<&String> {
