@@ -4230,7 +4230,7 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
             return Err(import_error(format!(
                 "CityJSON source {} is missing CityObjects",
                 path.display()
-            )))
+            )));
         }
     };
     let vertices_value = match root.get_mut("vertices") {
@@ -4239,7 +4239,7 @@ fn scan_cityjson_source(path: &Path) -> Result<SourceScan> {
             return Err(import_error(format!(
                 "CityJSON source {} is missing vertices",
                 path.display()
-            )))
+            )));
         }
     };
     let metadata: Meta = document;
