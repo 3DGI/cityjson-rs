@@ -3302,16 +3302,182 @@ impl StorageBackend for NdjsonBackend {
     }
 }
 
+/// Environment variable that overrides the shared vertex cache budget, in MiB.
+pub const VERTEX_CACHE_MB_ENV: &str = "CITYJSON_INDEX_VERTEX_CACHE_MB";
+/// Fraction of the detected memory limit used for the cache when
+/// [`VERTEX_CACHE_MB_ENV`] is unset.
+const VERTEX_CACHE_MEMORY_FRACTION: f64 = 0.5;
+/// Last-resort cache budget (MiB) when neither the env var nor the memory limit
+/// can be determined (e.g. non-Linux platforms).
+const DEFAULT_VERTEX_CACHE_MB: usize = 4096;
+
+const fn vertices_bytes(vertices: &[[i64; 3]]) -> usize {
+    std::mem::size_of_val(vertices)
+}
+
+/// Returns the configured shared vertex cache budget in bytes.
+///
+/// Resolution order:
+/// 1. [`VERTEX_CACHE_MB_ENV`], interpreted as MiB (when a positive integer).
+/// 2. [`VERTEX_CACHE_MEMORY_FRACTION`] of the detected memory limit (the
+///    cgroup limit and/or physical RAM, whichever is smaller — so it respects
+///    container limits).
+/// 3. [`DEFAULT_VERTEX_CACHE_MB`] if the limit cannot be determined.
+fn vertex_cache_budget_bytes() -> usize {
+    let env_mb = std::env::var(VERTEX_CACHE_MB_ENV)
+        .ok()
+        .and_then(|value| value.trim().parse::<usize>().ok());
+    resolve_vertex_cache_budget_bytes(env_mb, detect_memory_limit_bytes())
+}
+
+/// Pure budget resolution, factored out so it can be tested without mutating
+/// process-wide environment or inspecting the host. See
+/// [`vertex_cache_budget_bytes`] for the resolution order.
+fn resolve_vertex_cache_budget_bytes(env_mb: Option<usize>, detected_limit: Option<usize>) -> usize {
+    if let Some(mb) = env_mb.filter(|mb| *mb > 0) {
+        return mb.saturating_mul(1024 * 1024);
+    }
+
+    if let Some(limit) = detected_limit {
+        #[allow(
+            clippy::cast_precision_loss,
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss
+        )]
+        let budget = (limit as f64 * VERTEX_CACHE_MEMORY_FRACTION) as usize;
+        return budget;
+    }
+
+    DEFAULT_VERTEX_CACHE_MB.saturating_mul(1024 * 1024)
+}
+
+/// Detects the effective memory limit in bytes: the smaller of the cgroup
+/// memory limit (v2 then v1) and physical RAM. Returns `None` if nothing can be
+/// read (e.g. non-Linux platforms), in which case the caller falls back to a
+/// fixed default.
+fn detect_memory_limit_bytes() -> Option<usize> {
+    fn first_uint(path: &str) -> Option<u64> {
+        fs::read_to_string(path)
+            .ok()?
+            .split_whitespace()
+            .next()?
+            .parse::<u64>()
+            .ok()
+    }
+
+    let mut limit = u64::MAX;
+
+    // cgroup v2: a plain byte count, or the literal "max" for unlimited.
+    if let Some(value) = fs::read_to_string("/sys/fs/cgroup/memory.max")
+        .ok()
+        .and_then(|contents| contents.trim().parse::<u64>().ok())
+    {
+        limit = limit.min(value);
+    }
+
+    // cgroup v1: a byte count; "unlimited" is a near-u64::MAX sentinel, which
+    // the min() against physical RAM below naturally discards.
+    if let Some(value) = first_uint("/sys/fs/cgroup/memory/memory.limit_in_bytes") {
+        limit = limit.min(value);
+    }
+
+    // Physical RAM from /proc/meminfo (MemTotal is reported in kB).
+    if let Some(kb) = fs::read_to_string("/proc/meminfo").ok().and_then(|meminfo| {
+        meminfo.lines().find_map(|line| {
+            let rest = line.strip_prefix("MemTotal:")?;
+            rest.split_whitespace().next()?.parse::<u64>().ok()
+        })
+    }) {
+        limit = limit.min(kb.saturating_mul(1024));
+    }
+
+    if limit == u64::MAX {
+        None
+    } else {
+        usize::try_from(limit).ok()
+    }
+}
+
+struct VertexCacheInner {
+    /// Structurally unbounded; eviction is driven by `current_bytes` against
+    /// the cache budget so we can bound by memory rather than entry count.
+    entries: LruCache<PathBuf, Arc<Vec<[i64; 3]>>>,
+    current_bytes: usize,
+}
+
+/// A memory-bounded, thread-safe cache of decoded shared vertex arrays, keyed
+/// by source file path.
+///
+/// A single instance is shared process-wide (see [`shared_vertex_cache`]) so
+/// that the resident size is bounded regardless of how many [`CityIndex`]
+/// handles (e.g. one per worker thread) are open concurrently. Eviction is
+/// least-recently-used until the total cached bytes fit within `budget_bytes`;
+/// the most recently inserted entry is always retained even if it alone
+/// exceeds the budget.
+struct SharedVertexCache {
+    inner: Mutex<VertexCacheInner>,
+    budget_bytes: usize,
+}
+
+impl SharedVertexCache {
+    fn new(budget_bytes: usize) -> Self {
+        Self {
+            inner: Mutex::new(VertexCacheInner {
+                entries: LruCache::unbounded(),
+                current_bytes: 0,
+            }),
+            budget_bytes,
+        }
+    }
+
+    fn get(&self, source_path: &Path) -> Option<Arc<Vec<[i64; 3]>>> {
+        let mut inner = self
+            .inner
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        inner.entries.get(source_path).map(Arc::clone)
+    }
+
+    fn insert(&self, source_path: PathBuf, vertices: Arc<Vec<[i64; 3]>>) {
+        let added = vertices_bytes(&vertices);
+        let mut inner = self
+            .inner
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if let Some(previous) = inner.entries.put(source_path, vertices) {
+            inner.current_bytes = inner.current_bytes.saturating_sub(vertices_bytes(&previous));
+        }
+        inner.current_bytes = inner.current_bytes.saturating_add(added);
+        // Evict least-recently-used entries until within budget, but never drop
+        // the entry we just inserted (`len() > 1`): caching the file currently
+        // being read is always preferable to re-parsing it immediately.
+        while inner.current_bytes > self.budget_bytes && inner.entries.len() > 1 {
+            let Some((_, evicted)) = inner.entries.pop_lru() else {
+                break;
+            };
+            inner.current_bytes = inner.current_bytes.saturating_sub(vertices_bytes(&evicted));
+        }
+    }
+}
+
+/// Returns the process-wide shared vertex cache, initializing it on first use.
+fn shared_vertex_cache() -> Arc<SharedVertexCache> {
+    static CACHE: std::sync::OnceLock<Arc<SharedVertexCache>> = std::sync::OnceLock::new();
+    CACHE
+        .get_or_init(|| Arc::new(SharedVertexCache::new(vertex_cache_budget_bytes())))
+        .clone()
+}
+
 struct CityJsonBackend {
     paths: Vec<PathBuf>,
-    vertices_cache: Mutex<LruCache<PathBuf, Arc<Vec<[i64; 3]>>>>,
+    vertex_cache: Arc<SharedVertexCache>,
 }
 
 impl CityJsonBackend {
     fn new(paths: Vec<PathBuf>) -> Self {
         Self {
             paths,
-            vertices_cache: Mutex::new(LruCache::unbounded()),
+            vertex_cache: shared_vertex_cache(),
         }
     }
 
@@ -3322,24 +3488,25 @@ impl CityJsonBackend {
         offset: u64,
         length: u64,
     ) -> Result<Arc<Vec<[i64; 3]>>> {
-        let mut cache = self
-            .vertices_cache
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        if let Some(vertices) = cache.get(source_path) {
-            return Ok(Arc::clone(vertices));
+        if let Some(vertices) = self.vertex_cache.get(source_path) {
+            return Ok(vertices);
         }
 
+        // Read and parse outside the cache lock so concurrent workers reading
+        // *different* source files never serialize on this cache. Two workers
+        // racing on the same cold file may each parse it once; the redundant
+        // copy is transient and dropped once the loser's `Arc` goes out of
+        // scope.
         let vertices_bytes = read_exact_range_from_file(source_file, source_path, offset, length)?;
         let vertices = Arc::new(parse_vertices_fragment(&vertices_bytes)?);
-        cache.put(source_path.to_path_buf(), Arc::clone(&vertices));
+        self.vertex_cache
+            .insert(source_path.to_path_buf(), Arc::clone(&vertices));
         Ok(vertices)
     }
 }
 
 impl StorageBackend for CityJsonBackend {
     fn scan_into(&self, worker_count: usize, sink: &mut dyn ScanSink) -> Result<()> {
-        let _ = &self.vertices_cache;
         let paths = collect_layout_files(&self.paths, ".city.json")?;
         parallel_scan_sources_into(&paths, worker_count, sink, |source_index, path, sender| {
             let scan = scan_cityjson_source(path.as_path())?;
@@ -4846,6 +5013,87 @@ fn i64_to_u64(value: i64) -> rusqlite::Result<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn vertices(count: usize) -> Arc<Vec<[i64; 3]>> {
+        Arc::new(vec![[0i64; 3]; count])
+    }
+
+    #[test]
+    fn shared_vertex_cache_evicts_least_recently_used_by_byte_budget() {
+        // Each 10-vertex entry is 240 bytes; budget holds two of them.
+        let cache = SharedVertexCache::new(500);
+        cache.insert(PathBuf::from("a"), vertices(10));
+        cache.insert(PathBuf::from("b"), vertices(10));
+        cache.insert(PathBuf::from("c"), vertices(10)); // 720 > 500 -> evict LRU "a"
+
+        assert!(
+            cache.get(Path::new("a")).is_none(),
+            "least-recently-used entry should be evicted once over budget"
+        );
+        assert!(cache.get(Path::new("b")).is_some());
+        assert!(cache.get(Path::new("c")).is_some());
+    }
+
+    #[test]
+    fn shared_vertex_cache_get_refreshes_recency() {
+        let cache = SharedVertexCache::new(500);
+        cache.insert(PathBuf::from("a"), vertices(10));
+        cache.insert(PathBuf::from("b"), vertices(10));
+        // Touch "a" so "b" becomes least-recently-used.
+        assert!(cache.get(Path::new("a")).is_some());
+        cache.insert(PathBuf::from("c"), vertices(10)); // evict LRU "b"
+
+        assert!(cache.get(Path::new("a")).is_some());
+        assert!(cache.get(Path::new("b")).is_none());
+        assert!(cache.get(Path::new("c")).is_some());
+    }
+
+    #[test]
+    fn vertex_cache_budget_prefers_env_override() {
+        // A positive env value wins over the detected limit and is read as MiB.
+        assert_eq!(
+            resolve_vertex_cache_budget_bytes(Some(7), Some(64 * 1024 * 1024 * 1024)),
+            7 * 1024 * 1024
+        );
+    }
+
+    #[test]
+    fn vertex_cache_budget_uses_half_of_detected_limit() {
+        // Zero/absent env -> half of the detected memory limit.
+        let limit = 128 * 1024 * 1024 * 1024;
+        assert_eq!(resolve_vertex_cache_budget_bytes(None, Some(limit)), limit / 2);
+        assert_eq!(resolve_vertex_cache_budget_bytes(Some(0), Some(limit)), limit / 2);
+    }
+
+    #[test]
+    fn vertex_cache_budget_falls_back_to_default() {
+        assert_eq!(
+            resolve_vertex_cache_budget_bytes(None, None),
+            DEFAULT_VERTEX_CACHE_MB * 1024 * 1024
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn detect_memory_limit_is_positive_on_linux() {
+        let limit = detect_memory_limit_bytes().expect("linux exposes a memory limit");
+        assert!(limit > 0);
+    }
+
+    #[test]
+    fn shared_vertex_cache_retains_entry_larger_than_budget() {
+        // A single entry (240 bytes) exceeds the budget; it must still be kept
+        // rather than thrash by re-parsing the file currently being read.
+        let cache = SharedVertexCache::new(100);
+        cache.insert(PathBuf::from("a"), vertices(10));
+        cache.insert(PathBuf::from("b"), vertices(10));
+
+        assert!(
+            cache.get(Path::new("b")).is_some(),
+            "most recently inserted entry is retained even when over budget"
+        );
+        assert!(cache.get(Path::new("a")).is_none());
+    }
 
     fn temp_dir(label: &str) -> PathBuf {
         let nanos = std::time::SystemTime::now()
