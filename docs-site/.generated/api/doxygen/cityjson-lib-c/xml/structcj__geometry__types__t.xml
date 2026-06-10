@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__geometry__types__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_geometry_types_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__geometry__types__t_1abb685cae9fad20b2195eb5ef9db28f9e" prot="public" static="no" mutable="no">
+        <type>enum <ref refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93" kindref="member">cj_geometry_type_t</ref> *</type>
+        <definition>enum cj_geometry_type_t* cj_geometry_types_t::data</definition>
+        <argsstring></argsstring>
+        <name>data</name>
+        <qualifiedname>cj_geometry_types_t::data</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="197" column="26" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="197" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__geometry__types__t_1acb65e67d6f7dab259898156c18183db2" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_geometry_types_t::len</definition>
+        <argsstring></argsstring>
+        <name>len</name>
+        <qualifiedname>cj_geometry_types_t::len</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="198" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="198" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Owned geometry-type list returned across the ABI. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="196" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="196" bodyend="199"/>
+    <listofallmembers>
+      <member refid="structcj__geometry__types__t_1abb685cae9fad20b2195eb5ef9db28f9e" prot="public" virt="non-virtual"><scope>cj_geometry_types_t</scope><name>data</name></member>
+      <member refid="structcj__geometry__types__t_1acb65e67d6f7dab259898156c18183db2" prot="public" virt="non-virtual"><scope>cj_geometry_types_t</scope><name>len</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

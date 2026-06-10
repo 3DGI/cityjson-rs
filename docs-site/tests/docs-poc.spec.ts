@@ -44,6 +44,7 @@ test('header language switcher persists and disables unsupported page languages'
   await expect(page.locator('[data-language-panel="python"]').first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'C++ examples' }).first()).toBeDisabled();
   await expect(page.getByRole('button', { name: 'WASM examples' }).first()).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'C FFI examples' }).first()).toBeDisabled();
 });
 
 test('API symbol links point to local generated Starlight reference pages', async ({ page }) => {
@@ -51,16 +52,45 @@ test('API symbol links point to local generated Starlight reference pages', asyn
   await page.getByRole('button', { name: 'Python examples' }).click();
 
   const pythonSymbol = page.locator('a.api-symbol', { hasText: 'CityModel.parse_document_bytes' }).first();
-  await expect(pythonSymbol).toHaveAttribute('href', /\/reference\/cityjson-lib\/python\//);
+  await expect(pythonSymbol).toHaveAttribute('href', /\/reference\/cityjson-lib\/python\/CityModel\//i);
   await pythonSymbol.click();
-  await expect(page).toHaveURL(/\/reference\/cityjson-lib\/python\/#method-citymodel-parse_document_bytes$/);
-  await expect(page.getByRole('heading', { name: 'CityModel.parse_document_bytes' })).toBeVisible();
+  await expect(page).toHaveURL(/\/reference\/cityjson-lib\/python\/citymodel\/#method-parse_document_bytes$/);
+  await expect(page.getByRole('heading', { name: 'parse_document_bytes' })).toBeVisible();
 
   await page.goto('/lib/cityjson-lib/');
   await page.getByRole('button', { name: 'Rust examples' }).click();
   const rustSymbol = page.locator('a.api-symbol', { hasText: 'query::summary' }).first();
-  await expect(rustSymbol).toHaveAttribute('href', /\/reference\/cityjson-lib\/rust\//);
+  await expect(rustSymbol).toHaveAttribute('href', /\/reference\/cityjson-lib\/rust\/cityjson_lib-query\//);
   await expect(page.locator('a.api-symbol', { hasText: 'open' })).toHaveCount(0);
+});
+
+test('owner-level reference pages group methods under their owner', async ({ page }) => {
+  await page.goto('/reference/cityjson-index/rust/cityindex/');
+  await expect(page.getByRole('heading', { name: 'CityIndex', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'reindex' })).toBeVisible();
+  await expect(page.getByRole('main').getByRole('link', { name: 'reindex', exact: true })).toHaveAttribute('href', '#method-reindex');
+
+  await page.goto('/reference/cityjson-lib/c/c-ffi/');
+  await expect(page.getByRole('heading', { name: 'C FFI' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'cj_model_parse_document_bytes' })).toBeVisible();
+});
+
+
+test('generated API docstrings preserve python and rust formatting', async ({ page }) => {
+  await page.goto('/reference/cityjson-lib/python/module-functions/#class-citymodel');
+  const cityModelSection = page.locator('section#class-citymodel');
+  await expect(cityModelSection).toContainText('class CityModel(handle)');
+  await expect(cityModelSection).not.toContainText('CityModelhandle');
+
+  await page.goto('/reference/cityjson-lib/python/citymodel/#method-parse_document_bytes');
+  const parseDocumentSection = page.locator('section#method-parse_document_bytes');
+  await expect(parseDocumentSection).toContainText('Return type: Self');
+  await expect(parseDocumentSection.locator('ul > li > code')).toHaveText('Self');
+
+  await page.goto('/reference/cityjson-lib/rust/transformer/#method-transform');
+  await expect(page.getByRole('heading', { name: 'Errors', level: 4 })).toBeVisible();
+  await expect(page.locator('section#method-transform')).toContainText('Transform one [x, y, z] point.');
+  await expect(page.locator('section#method-transform')).toContainText('Returns an error when PROJ rejects the point or the cached transformer lock is poisoned.');
 });
 
 test('search finds generated API symbols and guide/spec content', async ({ page }) => {
@@ -72,6 +102,8 @@ test('search finds generated API symbols and guide/spec content', async ({ page 
     'CityIndex::reindex',
     'cityjson_lib::Model::parse_document',
     'parse_document_summary',
+    'cj_model_parse_document_bytes',
+    'cityjson_lib::Model',
     'Arrow IPC layout',
   ]) {
     await searchFor(page, query);

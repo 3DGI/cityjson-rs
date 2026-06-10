@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="dir_91bdcab2daaad6e926d9c91f7304c7a1" kind="dir">
+    <compoundname>/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core</compoundname>
+    <innerdir refid="dir_de7daf55e160b83c665fdf0805c85d29">/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/"/>
+  </compounddef>
+</doxygen>

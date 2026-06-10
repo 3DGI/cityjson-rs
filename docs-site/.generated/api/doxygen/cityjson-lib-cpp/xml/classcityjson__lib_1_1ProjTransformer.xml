@@ -1,0 +1,233 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classcityjson__lib_1_1ProjTransformer" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>cityjson_lib::ProjTransformer</compoundname>
+    <includes refid="cityjson__lib_8hpp" local="no">cityjson_lib.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcityjson__lib_1_1ProjTransformer_1af1c172601f57afddb5dd18fe926f9b4f" prot="private" static="no" mutable="no">
+        <type>cj_proj_transformer_t *</type>
+        <definition>cj_proj_transformer_t* cityjson_lib::ProjTransformer::handle_</definition>
+        <argsstring></argsstring>
+        <name>handle_</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::handle_</qualifiedname>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="940" column="25" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="940" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1a77882f3b99f4711576fd6ce10f0d3bba" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::ProjTransformer::ProjTransformer</definition>
+        <argsstring>()=default</argsstring>
+        <name>ProjTransformer</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::ProjTransformer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="896" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1a1f5874fcce3335a8b3f6ec5954497144" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::ProjTransformer::ProjTransformer</definition>
+        <argsstring>(const ProjTransformer &amp;)=delete</argsstring>
+        <name>ProjTransformer</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::ProjTransformer</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1ProjTransformer" kindref="compound">ProjTransformer</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="898" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1abae6793717f9ff56f4be23f97d4e16a2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ProjTransformer" kindref="compound">ProjTransformer</ref> &amp;</type>
+        <definition>ProjTransformer &amp; cityjson_lib::ProjTransformer::operator=</definition>
+        <argsstring>(const ProjTransformer &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::operator=</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1ProjTransformer" kindref="compound">ProjTransformer</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="899" column="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1a4bd02d19d6ea2d1704d024c9bfccb960" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::ProjTransformer::ProjTransformer</definition>
+        <argsstring>(ProjTransformer &amp;&amp;other) noexcept</argsstring>
+        <name>ProjTransformer</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::ProjTransformer</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1ProjTransformer" kindref="compound">ProjTransformer</ref> &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="901" column="3" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="901" bodyend="902"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1a9c03df089d6e3f608b5900d6844e4f34" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ProjTransformer" kindref="compound">ProjTransformer</ref> &amp;</type>
+        <definition>ProjTransformer &amp; cityjson_lib::ProjTransformer::operator=</definition>
+        <argsstring>(ProjTransformer &amp;&amp;other) noexcept</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::operator=</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1ProjTransformer" kindref="compound">ProjTransformer</ref> &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="904" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="904" bodyend="910"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1a804170cadf4f85f35f754c6723cc2fc4" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::ProjTransformer::~ProjTransformer</definition>
+        <argsstring>()</argsstring>
+        <name>~ProjTransformer</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::~ProjTransformer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="912" column="3" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="912" bodyend="912"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1ad4bd2698552913a2104bc61185848a7c" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::ProjTransformer::reset</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>reset</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::reset</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="922" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="922" bodyend="927"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1a0ba2f5d34c2486258fe4d954502bcbb5" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool cityjson_lib::ProjTransformer::valid</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>valid</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::valid</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="929" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="929" bodyend="929"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1a9240caea77a9b0f4f81cf9595960d5ad" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacecityjson__lib_1ab64bafefdf67dabd1d3567af1b91a7ff" kindref="member">Vertex</ref></type>
+        <definition>Vertex cityjson_lib::ProjTransformer::transform</definition>
+        <argsstring>(const Vertex &amp;point) const</argsstring>
+        <name>transform</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::transform</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1ab64bafefdf67dabd1d3567af1b91a7ff" kindref="member">Vertex</ref> &amp;</type>
+          <declname>point</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="931" column="11" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="931" bodyend="935"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1a91a33d3c31fdec21d3c8d001b65bf75c" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ProjTransformer" kindref="compound">ProjTransformer</ref></type>
+        <definition>static ProjTransformer cityjson_lib::ProjTransformer::create</definition>
+        <argsstring>(std::string_view source_crs, std::string_view target_crs)</argsstring>
+        <name>create</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::create</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>source_crs</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>target_crs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="914" column="27" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="914" bodyend="920"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1ProjTransformer_1a85d03cb7d89f5f9c8fcd55a2f67af88c" prot="private" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::ProjTransformer::ProjTransformer</definition>
+        <argsstring>(cj_proj_transformer_t *handle)</argsstring>
+        <name>ProjTransformer</name>
+        <qualifiedname>cityjson_lib::ProjTransformer::ProjTransformer</qualifiedname>
+        <param>
+          <type>cj_proj_transformer_t *</type>
+          <declname>handle</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="938" column="12" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="938" bodyend="938"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="894" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="894" bodyend="941"/>
+    <listofallmembers>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1a91a33d3c31fdec21d3c8d001b65bf75c" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>create</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1af1c172601f57afddb5dd18fe926f9b4f" prot="private" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>handle_</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1abae6793717f9ff56f4be23f97d4e16a2" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1a9c03df089d6e3f608b5900d6844e4f34" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1a77882f3b99f4711576fd6ce10f0d3bba" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>ProjTransformer</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1a1f5874fcce3335a8b3f6ec5954497144" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>ProjTransformer</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1a4bd02d19d6ea2d1704d024c9bfccb960" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>ProjTransformer</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1a85d03cb7d89f5f9c8fcd55a2f67af88c" prot="private" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>ProjTransformer</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1ad4bd2698552913a2104bc61185848a7c" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>reset</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1a9240caea77a9b0f4f81cf9595960d5ad" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>transform</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1a0ba2f5d34c2486258fe4d954502bcbb5" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>valid</name></member>
+      <member refid="classcityjson__lib_1_1ProjTransformer_1a804170cadf4f85f35f754c6723cc2fc4" prot="public" virt="non-virtual"><scope>cityjson_lib::ProjTransformer</scope><name>~ProjTransformer</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__model__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_model_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__model__t_1ab678d7ea1265ae3f5e07837aac4fb981" prot="public" static="no" mutable="no">
+        <type>uint8_t</type>
+        <definition>uint8_t cj_model_t::_private[0]</definition>
+        <argsstring>[0]</argsstring>
+        <name>_private</name>
+        <qualifiedname>cj_model_t::_private</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="147" column="11" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="147" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Opaque model handle type.</para>
+<para>The ABI only ever passes pointers to this marker type. The actual storage is a boxed <computeroutput>cityjson_lib::CityModel</computeroutput> allocated by the Rust side. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="146" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="146" bodyend="148"/>
+    <listofallmembers>
+      <member refid="structcj__model__t_1ab678d7ea1265ae3f5e07837aac4fb981" prot="public" virt="non-virtual"><scope>cj_model_t</scope><name>_private</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

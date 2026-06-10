@@ -1,0 +1,1303 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="cityjson__index_8h" kind="file" language="C++">
+    <compoundname>cityjson_index.h</compoundname>
+    <includes local="no">stdarg.h</includes>
+    <includes local="no">stdbool.h</includes>
+    <includes local="no">stdint.h</includes>
+    <includes local="no">stdlib.h</includes>
+    <incdepgraph>
+      <node id="1">
+        <label>.generated/api/doxygen-input/cityjson-index-c/cityjson_index.h</label>
+        <link refid="cityjson__index_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>stdarg.h</label>
+      </node>
+      <node id="3">
+        <label>stdbool.h</label>
+      </node>
+      <node id="4">
+        <label>stdint.h</label>
+      </node>
+      <node id="5">
+        <label>stdlib.h</label>
+      </node>
+    </incdepgraph>
+    <innerclass refid="structcjx__index__t" prot="public">cjx_index_t</innerclass>
+    <innerclass refid="structcjx__index__status__t" prot="public">cjx_index_status_t</innerclass>
+    <innerclass refid="structcjx__bounds3d__t" prot="public">cjx_bounds3d_t</innerclass>
+    <innerclass refid="structcjx__feature__bounds__summary__t" prot="public">cjx_feature_bounds_summary_t</innerclass>
+    <innerclass refid="structcjx__package__ref__t" prot="public">cjx_package_ref_t</innerclass>
+    <innerclass refid="structcjx__cityobject__ref__t" prot="public">cjx_cityobject_ref_t</innerclass>
+    <innerclass refid="structcjx__bounds2d__t" prot="public">cjx_bounds2d_t</innerclass>
+    <innerclass refid="structcjx__string__list__t" prot="public">cjx_string_list_t</innerclass>
+    <innerclass refid="structcjx__lod__selection__t" prot="public">cjx_lod_selection_t</innerclass>
+    <innerclass refid="structcjx__lod__by__type__t" prot="public">cjx_lod_by_type_t</innerclass>
+    <innerclass refid="structcjx__package__filter__t" prot="public">cjx_package_filter_t</innerclass>
+    <innerclass refid="structcjx__lod__map__entry__t" prot="public">cjx_lod_map_entry_t</innerclass>
+    <innerclass refid="structcjx__lod__map__t" prot="public">cjx_lod_map_t</innerclass>
+    <innerclass refid="structcjx__missing__lod__selection__t" prot="public">cjx_missing_lod_selection_t</innerclass>
+    <innerclass refid="structcjx__missing__lod__selection__list__t" prot="public">cjx_missing_lod_selection_list_t</innerclass>
+    <innerclass refid="structcjx__package__filter__report__t" prot="public">cjx_package_filter_report_t</innerclass>
+    <innerclass refid="structcjx__filtered__package__t" prot="public">cjx_filtered_package_t</innerclass>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2" prot="public" static="no" strong="no">
+        <type></type>
+        <name>cjx_package_type_t</name>
+        <enumvalue id="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2a8d1ed4bf17d5c7da9a6bffc93c0f3edc" prot="public">
+          <name>CJX_PACKAGE_TYPE_CITYJSON</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2a11b7b51515727e1d6ce389661f3dbb6b" prot="public">
+          <name>CJX_PACKAGE_TYPE_CITYJSON_SEQ</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2af933b5d407e0bb694c0e6468ef6ee4a3" prot="public">
+          <name>CJX_PACKAGE_TYPE_FEATURE_FILES</name>
+          <initializer>= 2</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="6" column="1" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="6" bodyend="10"/>
+      </memberdef>
+      <memberdef kind="enum" id="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547" prot="public" static="no" strong="no">
+        <type></type>
+        <name>cjx_lod_selection_kind_t</name>
+        <enumvalue id="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547adda3137e134fd3027fffa0aa07ace957" prot="public">
+          <name>CJX_LOD_SELECTION_ALL</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547a886b6afef73b6d026b65c96f8af1b755" prot="public">
+          <name>CJX_LOD_SELECTION_HIGHEST</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547ae2cb3a7dc423a3f9ef8c4f4e2302e11a" prot="public">
+          <name>CJX_LOD_SELECTION_EXACT</name>
+          <initializer>= 2</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="12" column="1" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="12" bodyend="16"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="cityjson__index_8h_1af4d84a9603ea61807746407a9e0b8eb4" prot="public" static="no">
+        <type>enum <ref refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2" kindref="member">cjx_package_type_t</ref></type>
+        <definition>typedef enum cjx_package_type_t cjx_package_type_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_package_type_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="10" column="20"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a54dfb161de4cebae1ab4e095a3789d42" prot="public" static="no">
+        <type>enum <ref refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547" kindref="member">cjx_lod_selection_kind_t</ref></type>
+        <definition>typedef enum cjx_lod_selection_kind_t cjx_lod_selection_kind_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_lod_selection_kind_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="16" column="26"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1ac467b495532a797620e6d40667835311" prot="public" static="no">
+        <type>struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref></type>
+        <definition>typedef struct cjx_index_t cjx_index_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_index_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="20" column="13"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a7a41c1ecb0fadb9be2a4403a75f72390" prot="public" static="no">
+        <type>struct <ref refid="structcjx__index__status__t" kindref="compound">cjx_index_status_t</ref></type>
+        <definition>typedef struct cjx_index_status_t cjx_index_status_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_index_status_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="27" column="20"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a2c6c1797a04d12e90a4873add403022b" prot="public" static="no">
+        <type>struct <ref refid="structcjx__bounds3d__t" kindref="compound">cjx_bounds3d_t</ref></type>
+        <definition>typedef struct cjx_bounds3d_t cjx_bounds3d_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_bounds3d_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="36" column="16"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a802b5c9bef2fe267e37e7d22ec0d148b" prot="public" static="no">
+        <type>struct <ref refid="structcjx__feature__bounds__summary__t" kindref="compound">cjx_feature_bounds_summary_t</ref></type>
+        <definition>typedef struct cjx_feature_bounds_summary_t cjx_feature_bounds_summary_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_feature_bounds_summary_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="43" column="30"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a921aa1eaff258d5b64d07b63e0bced2b" prot="public" static="no">
+        <type>struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref></type>
+        <definition>typedef struct cjx_package_ref_t cjx_package_ref_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_package_ref_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="51" column="19"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1ae54170ead6cf5dfde6025645aaa8988a" prot="public" static="no">
+        <type>struct <ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref></type>
+        <definition>typedef struct cjx_cityobject_ref_t cjx_cityobject_ref_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_cityobject_ref_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="59" column="22"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a449d374cd4e634b97a1ce74a7a2716a2" prot="public" static="no">
+        <type>struct <ref refid="structcjx__bounds2d__t" kindref="compound">cjx_bounds2d_t</ref></type>
+        <definition>typedef struct cjx_bounds2d_t cjx_bounds2d_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_bounds2d_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="66" column="16"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1abadcc098b45179be34df0bc9b78a68c7" prot="public" static="no">
+        <type>struct <ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref></type>
+        <definition>typedef struct cjx_string_list_t cjx_string_list_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_string_list_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="71" column="19"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1aef96045deb9805ac1954ef83281cdd6e" prot="public" static="no">
+        <type>struct <ref refid="structcjx__lod__selection__t" kindref="compound">cjx_lod_selection_t</ref></type>
+        <definition>typedef struct cjx_lod_selection_t cjx_lod_selection_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_lod_selection_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="76" column="21"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a85013a6be6cb497b34572a54f2cc093a" prot="public" static="no">
+        <type>struct <ref refid="structcjx__lod__by__type__t" kindref="compound">cjx_lod_by_type_t</ref></type>
+        <definition>typedef struct cjx_lod_by_type_t cjx_lod_by_type_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_lod_by_type_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="81" column="19"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a5586741dfa53a090edffe331abdfb877" prot="public" static="no">
+        <type>struct <ref refid="structcjx__package__filter__t" kindref="compound">cjx_package_filter_t</ref></type>
+        <definition>typedef struct cjx_package_filter_t cjx_package_filter_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_package_filter_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="89" column="22"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a607629cf7f7d586341e85f397cf5112d" prot="public" static="no">
+        <type>struct <ref refid="structcjx__lod__map__entry__t" kindref="compound">cjx_lod_map_entry_t</ref></type>
+        <definition>typedef struct cjx_lod_map_entry_t cjx_lod_map_entry_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_lod_map_entry_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="94" column="21"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a1ebeb6f8495e1a1681973f8fc8ecea37" prot="public" static="no">
+        <type>struct <ref refid="structcjx__lod__map__t" kindref="compound">cjx_lod_map_t</ref></type>
+        <definition>typedef struct cjx_lod_map_t cjx_lod_map_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_lod_map_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="99" column="15"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a014fb68a5df297f18ed889ea5846db67" prot="public" static="no">
+        <type>struct <ref refid="structcjx__missing__lod__selection__t" kindref="compound">cjx_missing_lod_selection_t</ref></type>
+        <definition>typedef struct cjx_missing_lod_selection_t cjx_missing_lod_selection_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_missing_lod_selection_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="105" column="29"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a11b8edfc40f91d054f69047f8fa61e17" prot="public" static="no">
+        <type>struct <ref refid="structcjx__missing__lod__selection__list__t" kindref="compound">cjx_missing_lod_selection_list_t</ref></type>
+        <definition>typedef struct cjx_missing_lod_selection_list_t cjx_missing_lod_selection_list_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_missing_lod_selection_list_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="110" column="34"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1ae44fbce10d365df57bf19e68e874f4f8" prot="public" static="no">
+        <type>struct <ref refid="structcjx__package__filter__report__t" kindref="compound">cjx_package_filter_report_t</ref></type>
+        <definition>typedef struct cjx_package_filter_report_t cjx_package_filter_report_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_package_filter_report_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="120" column="29"/>
+      </memberdef>
+      <memberdef kind="typedef" id="cityjson__index_8h_1a997b5f4e9da7cf9c53f5f2d79e47bb27" prot="public" static="no">
+        <type>struct <ref refid="structcjx__filtered__package__t" kindref="compound">cjx_filtered_package_t</ref></type>
+        <definition>typedef struct cjx_filtered_package_t cjx_filtered_package_t</definition>
+        <argsstring></argsstring>
+        <name>cjx_filtered_package_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="125" column="24"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="cityjson__index_8h_1a6bfded8f5e85ebe1a19197a2cd7a3d6a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_clear_error</definition>
+        <argsstring>(void)</argsstring>
+        <name>cjx_clear_error</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="127" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="127" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a7e1587c9c4c1716dc6ce9f6fb9ba8aa2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_error_kind_t</type>
+        <definition>cj_error_kind_t cjx_last_error_kind</definition>
+        <argsstring>(void)</argsstring>
+        <name>cjx_last_error_kind</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="129" column="17" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="129" declcolumn="17"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a393a5d01f1ee4ac736f63d85ea170942" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cjx_last_error_message_len</definition>
+        <argsstring>(void)</argsstring>
+        <name>cjx_last_error_message_len</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="131" column="11" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="131" declcolumn="11"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a3af8ee04a85fdf914c807a5abcb467c7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_last_error_message_copy</definition>
+        <argsstring>(char *buffer, uintptr_t capacity, uintptr_t *out_len)</argsstring>
+        <name>cjx_last_error_message_copy</name>
+        <param>
+          <type>char *</type>
+          <declname>buffer</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>capacity</declname>
+        </param>
+        <param>
+          <type>uintptr_t *</type>
+          <declname>out_len</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<sect1 id="cityjson__index_8h_1autotoc_md0">
+<title>Safety</title>
+<para><computeroutput>buffer</computeroutput> must point to <computeroutput>capacity</computeroutput> writable bytes and <computeroutput>out_len</computeroutput> must be a valid writable pointer when non-null. </para>
+</sect1>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="139" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="139" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a9d0d9aad7b3b515690a97742fe97b879" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_bytes_free</definition>
+        <argsstring>(cj_bytes_t bytes)</argsstring>
+        <name>cjx_bytes_free</name>
+        <param>
+          <type>cj_bytes_t</type>
+          <declname>bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="141" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="141" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a916f3723d3c0063f5c95f499060d31d8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_bytes_array_free</definition>
+        <argsstring>(cj_bytes_t *items, uintptr_t count)</argsstring>
+        <name>cjx_bytes_array_free</name>
+        <param>
+          <type>cj_bytes_t *</type>
+          <declname>items</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<sect1 id="cityjson__index_8h_1autotoc_md1">
+<title>Safety</title>
+<para><computeroutput>items</computeroutput> must either be null or point to <computeroutput>count</computeroutput> byte buffers allocated by this ABI. </para>
+</sect1>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="148" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="148" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a8670ef26e702552efe08aae920cbd639" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_open</definition>
+        <argsstring>(const char *dataset_dir, uintptr_t dataset_dir_len, const char *index_path, uintptr_t index_path_len, struct cjx_index_t **out_index)</argsstring>
+        <name>cjx_index_open</name>
+        <param>
+          <type>const char *</type>
+          <declname>dataset_dir</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>dataset_dir_len</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>index_path</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>index_path_len</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> **</type>
+          <declname>out_index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="150" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="150" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1af84534cbdc923d03e8065bc411825c33" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_free</definition>
+        <argsstring>(struct cjx_index_t *handle)</argsstring>
+        <name>cjx_index_free</name>
+        <param>
+          <type>struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="156" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="156" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1aa3a18e2bf069ccafcdef30d15f5d5c1d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_status</definition>
+        <argsstring>(const struct cjx_index_t *handle, struct cjx_index_status_t *out_status)</argsstring>
+        <name>cjx_index_status</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__index__status__t" kindref="compound">cjx_index_status_t</ref> *</type>
+          <declname>out_status</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="158" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="158" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a441154b0c0b322384adf4aaaea5997b6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_reindex</definition>
+        <argsstring>(struct cjx_index_t *handle)</argsstring>
+        <name>cjx_index_reindex</name>
+        <param>
+          <type>struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="161" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="161" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a408ccf715061ee43200c63b4f80cde30" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_feature_bounds_summary</definition>
+        <argsstring>(const struct cjx_index_t *handle, struct cjx_feature_bounds_summary_t *out_summary)</argsstring>
+        <name>cjx_index_feature_bounds_summary</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__feature__bounds__summary__t" kindref="compound">cjx_feature_bounds_summary_t</ref> *</type>
+          <declname>out_summary</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="163" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="163" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a26a275d04c1a701e9012f02f92298e96" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_package_ref_page_after_record_id</definition>
+        <argsstring>(const struct cjx_index_t *handle, bool has_after_record_id, int64_t after_record_id, uintptr_t limit, struct cjx_package_ref_t **out_refs, uintptr_t *out_count)</argsstring>
+        <name>cjx_index_package_ref_page_after_record_id</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>has_after_record_id</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>after_record_id</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>limit</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref> **</type>
+          <declname>out_refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t *</type>
+          <declname>out_count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="166" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="166" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a078ca2ce25ab5bb39dabbf9d87497227" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_cityobject_ref_page_after_record_id</definition>
+        <argsstring>(const struct cjx_index_t *handle, bool has_after_record_id, int64_t after_record_id, uintptr_t limit, struct cjx_cityobject_ref_t **out_refs, uintptr_t *out_count)</argsstring>
+        <name>cjx_index_cityobject_ref_page_after_record_id</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>has_after_record_id</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>after_record_id</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>limit</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref> **</type>
+          <declname>out_refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t *</type>
+          <declname>out_count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="173" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="173" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1aef1b71208827cc9dd9858692770ddbe3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_query_package_refs_page</definition>
+        <argsstring>(const struct cjx_index_t *handle, struct cjx_bounds2d_t bbox, bool has_after_record_id, int64_t after_record_id, uintptr_t limit, struct cjx_package_ref_t **out_refs, uintptr_t *out_count)</argsstring>
+        <name>cjx_index_query_package_refs_page</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__bounds2d__t" kindref="compound">cjx_bounds2d_t</ref></type>
+          <declname>bbox</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>has_after_record_id</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>after_record_id</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>limit</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref> **</type>
+          <declname>out_refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t *</type>
+          <declname>out_count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="180" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="180" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a1514fb76fe1c931dece74edf9eaa9b5c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_query_cityobject_refs_page</definition>
+        <argsstring>(const struct cjx_index_t *handle, struct cjx_bounds2d_t bbox, bool has_after_record_id, int64_t after_record_id, uintptr_t limit, struct cjx_cityobject_ref_t **out_refs, uintptr_t *out_count)</argsstring>
+        <name>cjx_index_query_cityobject_refs_page</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__bounds2d__t" kindref="compound">cjx_bounds2d_t</ref></type>
+          <declname>bbox</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>has_after_record_id</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>after_record_id</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>limit</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref> **</type>
+          <declname>out_refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t *</type>
+          <declname>out_count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="188" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="188" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1aeb020a3b8f656dac8dad6e26e61aceed" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_lookup_package_ref_by_record_id</definition>
+        <argsstring>(const struct cjx_index_t *handle, int64_t record_id, bool *out_found, struct cjx_package_ref_t *out_ref)</argsstring>
+        <name>cjx_index_lookup_package_ref_by_record_id</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>record_id</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>out_found</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref> *</type>
+          <declname>out_ref</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="196" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="196" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a5b21b866e7ce294cc4b8b4c22747a8dd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_lookup_cityobject_refs</definition>
+        <argsstring>(const struct cjx_index_t *handle, const char *external_id, uintptr_t external_id_len, struct cjx_cityobject_ref_t **out_refs, uintptr_t *out_count)</argsstring>
+        <name>cjx_index_lookup_cityobject_refs</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>external_id</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>external_id_len</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref> **</type>
+          <declname>out_refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t *</type>
+          <declname>out_count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="201" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="201" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a184dca61b7910e14758ca3877f67f6fa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_package_refs_for_cityobject</definition>
+        <argsstring>(const struct cjx_index_t *handle, const struct cjx_cityobject_ref_t *cityobject, struct cjx_package_ref_t **out_refs, uintptr_t *out_count)</argsstring>
+        <name>cjx_index_package_refs_for_cityobject</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>const struct <ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref> *</type>
+          <declname>cityobject</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref> **</type>
+          <declname>out_refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t *</type>
+          <declname>out_count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="207" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="207" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1abe98e036a9eee5a4a1f2a2018fdfb99d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_cityobject_refs_free</definition>
+        <argsstring>(struct cjx_cityobject_ref_t *refs, uintptr_t count)</argsstring>
+        <name>cjx_cityobject_refs_free</name>
+        <param>
+          <type>struct <ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref> *</type>
+          <declname>refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<sect1 id="cityjson__index_8h_1autotoc_md2">
+<title>Safety</title>
+<para><computeroutput>refs</computeroutput> must either be null or point to <computeroutput>count</computeroutput> <computeroutput>CityObject</computeroutput> refs allocated by this ABI. </para>
+</sect1>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="217" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="217" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1ab99df6bb563fd6bcab4e523eaf0b4c61" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_package_ref_free</definition>
+        <argsstring>(struct cjx_package_ref_t value)</argsstring>
+        <name>cjx_package_ref_free</name>
+        <param>
+          <type>struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="219" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="219" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a69684fc08182f2fc58618b073bda8685" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_package_refs_free</definition>
+        <argsstring>(struct cjx_package_ref_t *refs, uintptr_t count)</argsstring>
+        <name>cjx_package_refs_free</name>
+        <param>
+          <type>struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref> *</type>
+          <declname>refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<sect1 id="cityjson__index_8h_1autotoc_md3">
+<title>Safety</title>
+<para><computeroutput>refs</computeroutput> must either be null or point to <computeroutput>count</computeroutput> package refs allocated by this ABI. </para>
+</sect1>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="226" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="226" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a438f424e914bae436f97efff86cb035e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_read_package_model_bytes</definition>
+        <argsstring>(const struct cjx_index_t *handle, const struct cjx_package_ref_t *package, cj_bytes_t *out_bytes)</argsstring>
+        <name>cjx_index_read_package_model_bytes</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>const struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref> *</type>
+          <declname>package</declname>
+        </param>
+        <param>
+          <type>cj_bytes_t *</type>
+          <declname>out_bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="228" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="228" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a09d5c4d4845c7af42fcf1d37d9978dbb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_read_package_by_record_id_model_bytes</definition>
+        <argsstring>(const struct cjx_index_t *handle, int64_t record_id, bool *out_found, cj_bytes_t *out_bytes)</argsstring>
+        <name>cjx_index_read_package_by_record_id_model_bytes</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>record_id</declname>
+        </param>
+        <param>
+          <type>bool *</type>
+          <declname>out_found</declname>
+        </param>
+        <param>
+          <type>cj_bytes_t *</type>
+          <declname>out_bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="232" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="232" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1ae16b664ec2b10f1b8c831a0bd617ee11" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_read_packages_model_bytes</definition>
+        <argsstring>(const struct cjx_index_t *handle, const struct cjx_package_ref_t *refs, uintptr_t ref_count, cj_bytes_t **out_items, uintptr_t *out_count)</argsstring>
+        <name>cjx_index_read_packages_model_bytes</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>const struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref> *</type>
+          <declname>refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>ref_count</declname>
+        </param>
+        <param>
+          <type>cj_bytes_t **</type>
+          <declname>out_items</declname>
+        </param>
+        <param>
+          <type>uintptr_t *</type>
+          <declname>out_count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="237" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="237" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1aa5f758463366fbcfd10dd5faba2e8ad4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_index_read_filtered_packages</definition>
+        <argsstring>(const struct cjx_index_t *handle, const struct cjx_package_ref_t *refs, uintptr_t ref_count, const struct cjx_package_filter_t *filter, struct cjx_filtered_package_t **out_packages, uintptr_t *out_count)</argsstring>
+        <name>cjx_index_read_filtered_packages</name>
+        <param>
+          <type>const struct <ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref> *</type>
+          <declname>handle</declname>
+        </param>
+        <param>
+          <type>const struct <ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref> *</type>
+          <declname>refs</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>ref_count</declname>
+        </param>
+        <param>
+          <type>const struct <ref refid="structcjx__package__filter__t" kindref="compound">cjx_package_filter_t</ref> *</type>
+          <declname>filter</declname>
+        </param>
+        <param>
+          <type>struct <ref refid="structcjx__filtered__package__t" kindref="compound">cjx_filtered_package_t</ref> **</type>
+          <declname>out_packages</declname>
+        </param>
+        <param>
+          <type>uintptr_t *</type>
+          <declname>out_count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="243" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="243" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="cityjson__index_8h_1a8c79d4ade90f699b4d8714f742a874b2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>cj_status_t</type>
+        <definition>cj_status_t cjx_filtered_packages_free</definition>
+        <argsstring>(struct cjx_filtered_package_t *packages, uintptr_t count)</argsstring>
+        <name>cjx_filtered_packages_free</name>
+        <param>
+          <type>struct <ref refid="structcjx__filtered__package__t" kindref="compound">cjx_filtered_package_t</ref> *</type>
+          <declname>packages</declname>
+        </param>
+        <param>
+          <type>uintptr_t</type>
+          <declname>count</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<sect1 id="cityjson__index_8h_1autotoc_md4">
+<title>Safety</title>
+<para><computeroutput>packages</computeroutput> must either be null or point to <computeroutput>count</computeroutput> filtered packages allocated by <computeroutput>cjx_index_read_filtered_packages</computeroutput>. </para>
+</sect1>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="256" column="13" declfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" declline="256" declcolumn="13"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&lt;stdarg.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdbool.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdint.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdlib.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6" refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">enum</highlight><highlight class="normal"><sp/><ref refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2" kindref="member">cjx_package_type_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="7" refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2a8d1ed4bf17d5c7da9a6bffc93c0f3edc" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2a8d1ed4bf17d5c7da9a6bffc93c0f3edc" kindref="member">CJX_PACKAGE_TYPE_CITYJSON</ref><sp/>=<sp/>0,</highlight></codeline>
+<codeline lineno="8" refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2a11b7b51515727e1d6ce389661f3dbb6b" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2a11b7b51515727e1d6ce389661f3dbb6b" kindref="member">CJX_PACKAGE_TYPE_CITYJSON_SEQ</ref><sp/>=<sp/>1,</highlight></codeline>
+<codeline lineno="9" refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2af933b5d407e0bb694c0e6468ef6ee4a3" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2af933b5d407e0bb694c0e6468ef6ee4a3" kindref="member">CJX_PACKAGE_TYPE_FEATURE_FILES</ref><sp/>=<sp/>2,</highlight></codeline>
+<codeline lineno="10" refid="cityjson__index_8h_1af4d84a9603ea61807746407a9e0b8eb4" refkind="member"><highlight class="normal">}<sp/><ref refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2" kindref="member">cjx_package_type_t</ref>;</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight></codeline>
+<codeline lineno="12" refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">enum</highlight><highlight class="normal"><sp/><ref refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547" kindref="member">cjx_lod_selection_kind_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="13" refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547adda3137e134fd3027fffa0aa07ace957" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547adda3137e134fd3027fffa0aa07ace957" kindref="member">CJX_LOD_SELECTION_ALL</ref><sp/>=<sp/>0,</highlight></codeline>
+<codeline lineno="14" refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547a886b6afef73b6d026b65c96f8af1b755" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547a886b6afef73b6d026b65c96f8af1b755" kindref="member">CJX_LOD_SELECTION_HIGHEST</ref><sp/>=<sp/>1,</highlight></codeline>
+<codeline lineno="15" refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547ae2cb3a7dc423a3f9ef8c4f4e2302e11a" refkind="member"><highlight class="normal"><sp/><sp/><ref refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547ae2cb3a7dc423a3f9ef8c4f4e2302e11a" kindref="member">CJX_LOD_SELECTION_EXACT</ref><sp/>=<sp/>2,</highlight></codeline>
+<codeline lineno="16" refid="cityjson__index_8h_1a54dfb161de4cebae1ab4e095a3789d42" refkind="member"><highlight class="normal">}<sp/><ref refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547" kindref="member">cjx_lod_selection_kind_t</ref>;</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight></codeline>
+<codeline lineno="18" refid="structcjx__index__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="19" refid="structcjx__index__t_1a2f076aa9aea311cced2b18ae60ab8fd7" refkind="member"><highlight class="normal"><sp/><sp/>uint8_t<sp/><ref refid="structcjx__index__t_1a2f076aa9aea311cced2b18ae60ab8fd7" kindref="member">_private</ref>[0];</highlight></codeline>
+<codeline lineno="20" refid="cityjson__index_8h_1ac467b495532a797620e6d40667835311" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref>;</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22" refid="structcjx__index__status__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__index__status__t" kindref="compound">cjx_index_status_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="23" refid="structcjx__index__status__t_1a4f5498369ac70b4638dc9843352f69fc" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__status__t_1a4f5498369ac70b4638dc9843352f69fc" kindref="member">exists</ref>;</highlight></codeline>
+<codeline lineno="24" refid="structcjx__index__status__t_1a3b727d43389e1996894c1e436b6e2105" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__status__t_1a3b727d43389e1996894c1e436b6e2105" kindref="member">needs_reindex</ref>;</highlight></codeline>
+<codeline lineno="25" refid="structcjx__index__status__t_1a299e040787d9c92468c0db6ba65b8f9d" refkind="member"><highlight class="normal"><sp/><sp/>uintptr_t<sp/><ref refid="structcjx__index__status__t_1a299e040787d9c92468c0db6ba65b8f9d" kindref="member">indexed_feature_count</ref>;</highlight></codeline>
+<codeline lineno="26" refid="structcjx__index__status__t_1a58585084255a4a0f7ac4acac998d642f" refkind="member"><highlight class="normal"><sp/><sp/>uintptr_t<sp/><ref refid="structcjx__index__status__t_1a58585084255a4a0f7ac4acac998d642f" kindref="member">indexed_source_count</ref>;</highlight></codeline>
+<codeline lineno="27" refid="cityjson__index_8h_1a7a41c1ecb0fadb9be2a4403a75f72390" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__index__status__t" kindref="compound">cjx_index_status_t</ref>;</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight></codeline>
+<codeline lineno="29" refid="structcjx__bounds3d__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__bounds3d__t" kindref="compound">cjx_bounds3d_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="30" refid="structcjx__bounds3d__t_1a1b0f74bd78116222fa2e52eb0f0f8d92" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds3d__t_1a1b0f74bd78116222fa2e52eb0f0f8d92" kindref="member">min_x</ref>;</highlight></codeline>
+<codeline lineno="31" refid="structcjx__bounds3d__t_1af07e9fa2f4ca57c1680f23acb416a22b" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds3d__t_1af07e9fa2f4ca57c1680f23acb416a22b" kindref="member">max_x</ref>;</highlight></codeline>
+<codeline lineno="32" refid="structcjx__bounds3d__t_1aed99fb2d802aca0ede169c9ce667c97c" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds3d__t_1aed99fb2d802aca0ede169c9ce667c97c" kindref="member">min_y</ref>;</highlight></codeline>
+<codeline lineno="33" refid="structcjx__bounds3d__t_1a8fd6fa76bd41436e77af261cc26e2201" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds3d__t_1a8fd6fa76bd41436e77af261cc26e2201" kindref="member">max_y</ref>;</highlight></codeline>
+<codeline lineno="34" refid="structcjx__bounds3d__t_1a083a320be13b0e32a60e180a879021c2" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds3d__t_1a083a320be13b0e32a60e180a879021c2" kindref="member">min_z</ref>;</highlight></codeline>
+<codeline lineno="35" refid="structcjx__bounds3d__t_1a640d7d70b0204e032e1e33a9f3a5876f" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds3d__t_1a640d7d70b0204e032e1e33a9f3a5876f" kindref="member">max_z</ref>;</highlight></codeline>
+<codeline lineno="36" refid="cityjson__index_8h_1a2c6c1797a04d12e90a4873add403022b" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__bounds3d__t" kindref="compound">cjx_bounds3d_t</ref>;</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight></codeline>
+<codeline lineno="38" refid="structcjx__feature__bounds__summary__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__feature__bounds__summary__t" kindref="compound">cjx_feature_bounds_summary_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="39" refid="structcjx__feature__bounds__summary__t_1aaadf7e3e6ad8c1522992a96ea7b17b41" refkind="member"><highlight class="normal"><sp/><sp/>uintptr_t<sp/><ref refid="structcjx__feature__bounds__summary__t_1aaadf7e3e6ad8c1522992a96ea7b17b41" kindref="member">package_count</ref>;</highlight></codeline>
+<codeline lineno="40" refid="structcjx__feature__bounds__summary__t_1aff793dc70f23cb2e1dee540b826a4ab5" refkind="member"><highlight class="normal"><sp/><sp/>uintptr_t<sp/><ref refid="structcjx__feature__bounds__summary__t_1aff793dc70f23cb2e1dee540b826a4ab5" kindref="member">cityobject_count</ref>;</highlight></codeline>
+<codeline lineno="41" refid="structcjx__feature__bounds__summary__t_1ab8f323bb16df3d2a0e91e2b348fa13ed" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="structcjx__feature__bounds__summary__t_1ab8f323bb16df3d2a0e91e2b348fa13ed" kindref="member">has_bounds</ref>;</highlight></codeline>
+<codeline lineno="42" refid="structcjx__feature__bounds__summary__t_1a33db6b2cdab22084cae1876b6a7a648b" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__bounds3d__t" kindref="compound">cjx_bounds3d_t</ref><sp/><ref refid="structcjx__feature__bounds__summary__t_1a33db6b2cdab22084cae1876b6a7a648b" kindref="member">bounds</ref>;</highlight></codeline>
+<codeline lineno="43" refid="cityjson__index_8h_1a802b5c9bef2fe267e37e7d22ec0d148b" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__feature__bounds__summary__t" kindref="compound">cjx_feature_bounds_summary_t</ref>;</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight></codeline>
+<codeline lineno="45" refid="structcjx__package__ref__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="46" refid="structcjx__package__ref__t_1ab07a38994e4e1cb5d40464747b492ec1" refkind="member"><highlight class="normal"><sp/><sp/>int64_t<sp/><ref refid="structcjx__package__ref__t_1ab07a38994e4e1cb5d40464747b492ec1" kindref="member">record_id</ref>;</highlight></codeline>
+<codeline lineno="47" refid="structcjx__package__ref__t_1a353d3f1df5add6e4a8b8e91ec765350c" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/><ref refid="structcjx__package__ref__t_1a353d3f1df5add6e4a8b8e91ec765350c" kindref="member">model_id</ref>;</highlight></codeline>
+<codeline lineno="48" refid="structcjx__package__ref__t_1a6e35b980cc8544913a450077c7fe9711" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">enum</highlight><highlight class="normal"><sp/><ref refid="cityjson__index_8h_1a07668bb9165ccb316fdf0837984728b2" kindref="member">cjx_package_type_t</ref><sp/><ref refid="structcjx__package__ref__t_1a6e35b980cc8544913a450077c7fe9711" kindref="member">package_type</ref>;</highlight></codeline>
+<codeline lineno="49" refid="structcjx__package__ref__t_1a2fbb06e047aa9dd3b8a66182245c1717" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t_1a2fbb06e047aa9dd3b8a66182245c1717" kindref="member">has_bounds</ref>;</highlight></codeline>
+<codeline lineno="50" refid="structcjx__package__ref__t_1a7863735e58975af5a5024eb4ad31f52f" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__bounds3d__t" kindref="compound">cjx_bounds3d_t</ref><sp/><ref refid="structcjx__package__ref__t_1a7863735e58975af5a5024eb4ad31f52f" kindref="member">bounds</ref>;</highlight></codeline>
+<codeline lineno="51" refid="cityjson__index_8h_1a921aa1eaff258d5b64d07b63e0bced2b" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref>;</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight></codeline>
+<codeline lineno="53" refid="structcjx__cityobject__ref__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="54" refid="structcjx__cityobject__ref__t_1ab07a2bd907ea16bab699c4aae4847c34" refkind="member"><highlight class="normal"><sp/><sp/>int64_t<sp/><ref refid="structcjx__cityobject__ref__t_1ab07a2bd907ea16bab699c4aae4847c34" kindref="member">record_id</ref>;</highlight></codeline>
+<codeline lineno="55" refid="structcjx__cityobject__ref__t_1a8debde194fba495e39451827d07d2d0c" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/><ref refid="structcjx__cityobject__ref__t_1a8debde194fba495e39451827d07d2d0c" kindref="member">external_id</ref>;</highlight></codeline>
+<codeline lineno="56" refid="structcjx__cityobject__ref__t_1a7c8d204e9b8dd49efa8beabd43af63f1" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/><ref refid="structcjx__cityobject__ref__t_1a7c8d204e9b8dd49efa8beabd43af63f1" kindref="member">cityobject_type</ref>;</highlight></codeline>
+<codeline lineno="57" refid="structcjx__cityobject__ref__t_1a16ab34dfbd6d577563f841fb0688b786" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="structcjx__cityobject__ref__t_1a16ab34dfbd6d577563f841fb0688b786" kindref="member">has_bounds</ref>;</highlight></codeline>
+<codeline lineno="58" refid="structcjx__cityobject__ref__t_1a61b65274ea1f6884ca8958a888450e63" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__bounds3d__t" kindref="compound">cjx_bounds3d_t</ref><sp/><ref refid="structcjx__cityobject__ref__t_1a61b65274ea1f6884ca8958a888450e63" kindref="member">bounds</ref>;</highlight></codeline>
+<codeline lineno="59" refid="cityjson__index_8h_1ae54170ead6cf5dfde6025645aaa8988a" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref>;</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"></highlight></codeline>
+<codeline lineno="61" refid="structcjx__bounds2d__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__bounds2d__t" kindref="compound">cjx_bounds2d_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="62" refid="structcjx__bounds2d__t_1afe0f619d4d7707ecc1d41bc9e5d90451" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds2d__t_1afe0f619d4d7707ecc1d41bc9e5d90451" kindref="member">min_x</ref>;</highlight></codeline>
+<codeline lineno="63" refid="structcjx__bounds2d__t_1ae2557511f745be86a19d1d2e15945615" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds2d__t_1ae2557511f745be86a19d1d2e15945615" kindref="member">max_x</ref>;</highlight></codeline>
+<codeline lineno="64" refid="structcjx__bounds2d__t_1ac0612040f95b8ad02b5bb8abcd9bedc2" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds2d__t_1ac0612040f95b8ad02b5bb8abcd9bedc2" kindref="member">min_y</ref>;</highlight></codeline>
+<codeline lineno="65" refid="structcjx__bounds2d__t_1a0d5897cf07ad89d8047e50c719982d0d" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds2d__t_1a0d5897cf07ad89d8047e50c719982d0d" kindref="member">max_y</ref>;</highlight></codeline>
+<codeline lineno="66" refid="cityjson__index_8h_1a449d374cd4e634b97a1ce74a7a2716a2" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__bounds2d__t" kindref="compound">cjx_bounds2d_t</ref>;</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"></highlight></codeline>
+<codeline lineno="68" refid="structcjx__string__list__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="69" refid="structcjx__string__list__t_1a3f4489499ed5577e747d2aa3b19fa2f7" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/>*<ref refid="structcjx__string__list__t_1a3f4489499ed5577e747d2aa3b19fa2f7" kindref="member">data</ref>;</highlight></codeline>
+<codeline lineno="70" refid="structcjx__string__list__t_1a35aa0773dff169b86c3e6819eb760389" refkind="member"><highlight class="normal"><sp/><sp/>uintptr_t<sp/><ref refid="structcjx__string__list__t_1a35aa0773dff169b86c3e6819eb760389" kindref="member">len</ref>;</highlight></codeline>
+<codeline lineno="71" refid="cityjson__index_8h_1abadcc098b45179be34df0bc9b78a68c7" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref>;</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"></highlight></codeline>
+<codeline lineno="73" refid="structcjx__lod__selection__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__selection__t" kindref="compound">cjx_lod_selection_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="74" refid="structcjx__lod__selection__t_1a9f6d15e7648f0643524e70efbeedb1f2" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">enum</highlight><highlight class="normal"><sp/><ref refid="cityjson__index_8h_1abe7d986a7f64ba2f88e3845b160a5547" kindref="member">cjx_lod_selection_kind_t</ref><sp/><ref refid="structcjx__lod__selection__t_1a9f6d15e7648f0643524e70efbeedb1f2" kindref="member">kind</ref>;</highlight></codeline>
+<codeline lineno="75" refid="structcjx__lod__selection__t_1a63cff434240fcb6e54526ac89fb02a12" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/><ref refid="structcjx__lod__selection__t_1a63cff434240fcb6e54526ac89fb02a12" kindref="member">exact_lod</ref>;</highlight></codeline>
+<codeline lineno="76" refid="cityjson__index_8h_1aef96045deb9805ac1954ef83281cdd6e" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__lod__selection__t" kindref="compound">cjx_lod_selection_t</ref>;</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"></highlight></codeline>
+<codeline lineno="78" refid="structcjx__lod__by__type__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__by__type__t" kindref="compound">cjx_lod_by_type_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="79" refid="structcjx__lod__by__type__t_1a67b0eae6b214ddf9455f94d22aa65d67" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/><ref refid="structcjx__lod__by__type__t_1a67b0eae6b214ddf9455f94d22aa65d67" kindref="member">cityobject_type</ref>;</highlight></codeline>
+<codeline lineno="80" refid="structcjx__lod__by__type__t_1abacd1986aff7e8f0e8681560e385bfb3" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__selection__t" kindref="compound">cjx_lod_selection_t</ref><sp/><ref refid="structcjx__lod__by__type__t_1abacd1986aff7e8f0e8681560e385bfb3" kindref="member">selection</ref>;</highlight></codeline>
+<codeline lineno="81" refid="cityjson__index_8h_1a85013a6be6cb497b34572a54f2cc093a" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__lod__by__type__t" kindref="compound">cjx_lod_by_type_t</ref>;</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"></highlight></codeline>
+<codeline lineno="83" refid="structcjx__package__filter__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__package__filter__t" kindref="compound">cjx_package_filter_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="84" refid="structcjx__package__filter__t_1a256f28bf779bdcbb2270356fdce3830b" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__filter__t_1a256f28bf779bdcbb2270356fdce3830b" kindref="member">has_cityobject_types</ref>;</highlight></codeline>
+<codeline lineno="85" refid="structcjx__package__filter__t_1ac736c3e1b0106333d91355fce71f087b" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref><sp/><ref refid="structcjx__package__filter__t_1ac736c3e1b0106333d91355fce71f087b" kindref="member">cityobject_types</ref>;</highlight></codeline>
+<codeline lineno="86" refid="structcjx__package__filter__t_1a8d03ef058468e4501edb8499f716bee8" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__selection__t" kindref="compound">cjx_lod_selection_t</ref><sp/><ref refid="structcjx__package__filter__t_1a8d03ef058468e4501edb8499f716bee8" kindref="member">default_lod</ref>;</highlight></codeline>
+<codeline lineno="87" refid="structcjx__package__filter__t_1a8a4a649569d44bbea7ed06a6ba07e675" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__by__type__t" kindref="compound">cjx_lod_by_type_t</ref><sp/>*<ref refid="structcjx__package__filter__t_1a8a4a649569d44bbea7ed06a6ba07e675" kindref="member">lods_by_type</ref>;</highlight></codeline>
+<codeline lineno="88" refid="structcjx__package__filter__t_1abde08eab47821c3ad7b07eed4a5f89c2" refkind="member"><highlight class="normal"><sp/><sp/>uintptr_t<sp/><ref refid="structcjx__package__filter__t_1abde08eab47821c3ad7b07eed4a5f89c2" kindref="member">lods_by_type_len</ref>;</highlight></codeline>
+<codeline lineno="89" refid="cityjson__index_8h_1a5586741dfa53a090edffe331abdfb877" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__package__filter__t" kindref="compound">cjx_package_filter_t</ref>;</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight></codeline>
+<codeline lineno="91" refid="structcjx__lod__map__entry__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__map__entry__t" kindref="compound">cjx_lod_map_entry_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="92" refid="structcjx__lod__map__entry__t_1adf3723b7112258067e791697f9695f6c" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/><ref refid="structcjx__lod__map__entry__t_1adf3723b7112258067e791697f9695f6c" kindref="member">cityobject_type</ref>;</highlight></codeline>
+<codeline lineno="93" refid="structcjx__lod__map__entry__t_1ab9c69d5485b5f41566869a000248397d" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref><sp/><ref refid="structcjx__lod__map__entry__t_1ab9c69d5485b5f41566869a000248397d" kindref="member">lods</ref>;</highlight></codeline>
+<codeline lineno="94" refid="cityjson__index_8h_1a607629cf7f7d586341e85f397cf5112d" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__lod__map__entry__t" kindref="compound">cjx_lod_map_entry_t</ref>;</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"></highlight></codeline>
+<codeline lineno="96" refid="structcjx__lod__map__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__map__t" kindref="compound">cjx_lod_map_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="97" refid="structcjx__lod__map__t_1abe34cf1d88d1221220d9a15a682db6dc" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__map__entry__t" kindref="compound">cjx_lod_map_entry_t</ref><sp/>*<ref refid="structcjx__lod__map__t_1abe34cf1d88d1221220d9a15a682db6dc" kindref="member">data</ref>;</highlight></codeline>
+<codeline lineno="98" refid="structcjx__lod__map__t_1a9609e4bbe6c4194e80ad908656309dc8" refkind="member"><highlight class="normal"><sp/><sp/>uintptr_t<sp/><ref refid="structcjx__lod__map__t_1a9609e4bbe6c4194e80ad908656309dc8" kindref="member">len</ref>;</highlight></codeline>
+<codeline lineno="99" refid="cityjson__index_8h_1a1ebeb6f8495e1a1681973f8fc8ecea37" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__lod__map__t" kindref="compound">cjx_lod_map_t</ref>;</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"></highlight></codeline>
+<codeline lineno="101" refid="structcjx__missing__lod__selection__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__missing__lod__selection__t" kindref="compound">cjx_missing_lod_selection_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="102" refid="structcjx__missing__lod__selection__t_1a61e9a4bc5c90e228fea01e1350977a5d" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/><ref refid="structcjx__missing__lod__selection__t_1a61e9a4bc5c90e228fea01e1350977a5d" kindref="member">cityobject_type</ref>;</highlight></codeline>
+<codeline lineno="103" refid="structcjx__missing__lod__selection__t_1a2d88ce16eb6844a9c2351e1f3abb68bb" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/><ref refid="structcjx__missing__lod__selection__t_1a2d88ce16eb6844a9c2351e1f3abb68bb" kindref="member">requested_lod</ref>;</highlight></codeline>
+<codeline lineno="104" refid="structcjx__missing__lod__selection__t_1a3b863f7b715c2f91a0bea9e263f2257c" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref><sp/><ref refid="structcjx__missing__lod__selection__t_1a3b863f7b715c2f91a0bea9e263f2257c" kindref="member">available_lods</ref>;</highlight></codeline>
+<codeline lineno="105" refid="cityjson__index_8h_1a014fb68a5df297f18ed889ea5846db67" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__missing__lod__selection__t" kindref="compound">cjx_missing_lod_selection_t</ref>;</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"></highlight></codeline>
+<codeline lineno="107" refid="structcjx__missing__lod__selection__list__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__missing__lod__selection__list__t" kindref="compound">cjx_missing_lod_selection_list_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="108" refid="structcjx__missing__lod__selection__list__t_1a111bd33b69bacd9413ce0628b548293d" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__missing__lod__selection__t" kindref="compound">cjx_missing_lod_selection_t</ref><sp/>*<ref refid="structcjx__missing__lod__selection__list__t_1a111bd33b69bacd9413ce0628b548293d" kindref="member">data</ref>;</highlight></codeline>
+<codeline lineno="109" refid="structcjx__missing__lod__selection__list__t_1a9df8d4c4dd28a2aa06d46d97a858203e" refkind="member"><highlight class="normal"><sp/><sp/>uintptr_t<sp/><ref refid="structcjx__missing__lod__selection__list__t_1a9df8d4c4dd28a2aa06d46d97a858203e" kindref="member">len</ref>;</highlight></codeline>
+<codeline lineno="110" refid="cityjson__index_8h_1a11b8edfc40f91d054f69047f8fa61e17" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__missing__lod__selection__list__t" kindref="compound">cjx_missing_lod_selection_list_t</ref>;</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"></highlight></codeline>
+<codeline lineno="112" refid="structcjx__package__filter__report__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__package__filter__report__t" kindref="compound">cjx_package_filter_report_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="113" refid="structcjx__package__filter__report__t_1a4b16c4b0608710864521f02f7bd5ddce" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref><sp/><ref refid="structcjx__package__filter__report__t_1a4b16c4b0608710864521f02f7bd5ddce" kindref="member">available_types</ref>;</highlight></codeline>
+<codeline lineno="114" refid="structcjx__package__filter__report__t_1aab503778e0656a5baa62abbcbcd5c04f" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref><sp/><ref refid="structcjx__package__filter__report__t_1aab503778e0656a5baa62abbcbcd5c04f" kindref="member">retained_types</ref>;</highlight></codeline>
+<codeline lineno="115" refid="structcjx__package__filter__report__t_1a8a18fc4cd9a36f314fef7306d1671c91" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref><sp/><ref refid="structcjx__package__filter__report__t_1a8a18fc4cd9a36f314fef7306d1671c91" kindref="member">ignored_types</ref>;</highlight></codeline>
+<codeline lineno="116" refid="structcjx__package__filter__report__t_1a8e125657a72de4e1c7d2434b649e3b33" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__map__t" kindref="compound">cjx_lod_map_t</ref><sp/><ref refid="structcjx__package__filter__report__t_1a8e125657a72de4e1c7d2434b649e3b33" kindref="member">available_lods</ref>;</highlight></codeline>
+<codeline lineno="117" refid="structcjx__package__filter__report__t_1a06af34f06c679390dd27e6866de90412" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__lod__map__t" kindref="compound">cjx_lod_map_t</ref><sp/><ref refid="structcjx__package__filter__report__t_1a06af34f06c679390dd27e6866de90412" kindref="member">retained_lods</ref>;</highlight></codeline>
+<codeline lineno="118" refid="structcjx__package__filter__report__t_1a5018302ed92035452f2fd43372659b52" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__missing__lod__selection__list__t" kindref="compound">cjx_missing_lod_selection_list_t</ref><sp/><ref refid="structcjx__package__filter__report__t_1a5018302ed92035452f2fd43372659b52" kindref="member">missing_lods</ref>;</highlight></codeline>
+<codeline lineno="119" refid="structcjx__package__filter__report__t_1a94d1086e102b70cc065afb981f2e8b5c" refkind="member"><highlight class="normal"><sp/><sp/>uintptr_t<sp/><ref refid="structcjx__package__filter__report__t_1a94d1086e102b70cc065afb981f2e8b5c" kindref="member">retained_geometry_count</ref>;</highlight></codeline>
+<codeline lineno="120" refid="cityjson__index_8h_1ae44fbce10d365df57bf19e68e874f4f8" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__package__filter__report__t" kindref="compound">cjx_package_filter_report_t</ref>;</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"></highlight></codeline>
+<codeline lineno="122" refid="structcjx__filtered__package__t" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__filtered__package__t" kindref="compound">cjx_filtered_package_t</ref><sp/>{</highlight></codeline>
+<codeline lineno="123" refid="structcjx__filtered__package__t_1a129215bfec15e8cfb1c802e050b21b4d" refkind="member"><highlight class="normal"><sp/><sp/>cj_bytes_t<sp/><ref refid="structcjx__filtered__package__t_1a129215bfec15e8cfb1c802e050b21b4d" kindref="member">model_json</ref>;</highlight></codeline>
+<codeline lineno="124" refid="structcjx__filtered__package__t_1a1d8415fa850e8f291c5f1c5d44925785" refkind="member"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structcjx__package__filter__report__t" kindref="compound">cjx_package_filter_report_t</ref><sp/><ref refid="structcjx__filtered__package__t_1a1d8415fa850e8f291c5f1c5d44925785" kindref="member">diagnostics</ref>;</highlight></codeline>
+<codeline lineno="125" refid="cityjson__index_8h_1a997b5f4e9da7cf9c53f5f2d79e47bb27" refkind="member"><highlight class="normal">}<sp/><ref refid="structcjx__filtered__package__t" kindref="compound">cjx_filtered_package_t</ref>;</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"></highlight></codeline>
+<codeline lineno="127" refid="cityjson__index_8h_1a6bfded8f5e85ebe1a19197a2cd7a3d6a" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a6bfded8f5e85ebe1a19197a2cd7a3d6a" kindref="member">cjx_clear_error</ref>(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"></highlight></codeline>
+<codeline lineno="129" refid="cityjson__index_8h_1a7e1587c9c4c1716dc6ce9f6fb9ba8aa2" refkind="member"><highlight class="normal">cj_error_kind_t<sp/><ref refid="cityjson__index_8h_1a7e1587c9c4c1716dc6ce9f6fb9ba8aa2" kindref="member">cjx_last_error_kind</ref>(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"></highlight></codeline>
+<codeline lineno="131" refid="cityjson__index_8h_1a393a5d01f1ee4ac736f63d85ea170942" refkind="member"><highlight class="normal">uintptr_t<sp/><ref refid="cityjson__index_8h_1a393a5d01f1ee4ac736f63d85ea170942" kindref="member">cjx_last_error_message_len</ref>(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"></highlight></codeline>
+<codeline lineno="139" refid="cityjson__index_8h_1a3af8ee04a85fdf914c807a5abcb467c7" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a3af8ee04a85fdf914c807a5abcb467c7" kindref="member">cjx_last_error_message_copy</ref>(</highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*buffer,<sp/>uintptr_t<sp/>capacity,<sp/>uintptr_t<sp/>*out_len);</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"></highlight></codeline>
+<codeline lineno="141" refid="cityjson__index_8h_1a9d0d9aad7b3b515690a97742fe97b879" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a9d0d9aad7b3b515690a97742fe97b879" kindref="member">cjx_bytes_free</ref>(cj_bytes_t<sp/>bytes);</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"></highlight></codeline>
+<codeline lineno="148" refid="cityjson__index_8h_1a916f3723d3c0063f5c95f499060d31d8" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a916f3723d3c0063f5c95f499060d31d8" kindref="member">cjx_bytes_array_free</ref>(cj_bytes_t<sp/>*items,<sp/>uintptr_t<sp/>count);</highlight></codeline>
+<codeline lineno="149"><highlight class="normal"></highlight></codeline>
+<codeline lineno="150" refid="cityjson__index_8h_1a8670ef26e702552efe08aae920cbd639" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a8670ef26e702552efe08aae920cbd639" kindref="member">cjx_index_open</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*dataset_dir,</highlight></codeline>
+<codeline lineno="151"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>dataset_dir_len,</highlight></codeline>
+<codeline lineno="152"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*index_path,</highlight></codeline>
+<codeline lineno="153"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>index_path_len,</highlight></codeline>
+<codeline lineno="154"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>**out_index);</highlight></codeline>
+<codeline lineno="155"><highlight class="normal"></highlight></codeline>
+<codeline lineno="156" refid="cityjson__index_8h_1af84534cbdc923d03e8065bc411825c33" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1af84534cbdc923d03e8065bc411825c33" kindref="member">cjx_index_free</ref>(</highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle);</highlight></codeline>
+<codeline lineno="157"><highlight class="normal"></highlight></codeline>
+<codeline lineno="158" refid="cityjson__index_8h_1aa3a18e2bf069ccafcdef30d15f5d5c1d" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1aa3a18e2bf069ccafcdef30d15f5d5c1d" kindref="member">cjx_index_status</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="159"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__status__t" kindref="compound">cjx_index_status_t</ref><sp/>*out_status);</highlight></codeline>
+<codeline lineno="160"><highlight class="normal"></highlight></codeline>
+<codeline lineno="161" refid="cityjson__index_8h_1a441154b0c0b322384adf4aaaea5997b6" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a441154b0c0b322384adf4aaaea5997b6" kindref="member">cjx_index_reindex</ref>(</highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle);</highlight></codeline>
+<codeline lineno="162"><highlight class="normal"></highlight></codeline>
+<codeline lineno="163" refid="cityjson__index_8h_1a408ccf715061ee43200c63b4f80cde30" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a408ccf715061ee43200c63b4f80cde30" kindref="member">cjx_index_feature_bounds_summary</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="164"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__feature__bounds__summary__t" kindref="compound">cjx_feature_bounds_summary_t</ref><sp/>*out_summary);</highlight></codeline>
+<codeline lineno="165"><highlight class="normal"></highlight></codeline>
+<codeline lineno="166" refid="cityjson__index_8h_1a26a275d04c1a701e9012f02f92298e96" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a26a275d04c1a701e9012f02f92298e96" kindref="member">cjx_index_package_ref_page_after_record_id</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="167"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>has_after_record_id,</highlight></codeline>
+<codeline lineno="168"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>int64_t<sp/>after_record_id,</highlight></codeline>
+<codeline lineno="169"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>limit,</highlight></codeline>
+<codeline lineno="170"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>**out_refs,</highlight></codeline>
+<codeline lineno="171"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>*out_count);</highlight></codeline>
+<codeline lineno="172"><highlight class="normal"></highlight></codeline>
+<codeline lineno="173" refid="cityjson__index_8h_1a078ca2ce25ab5bb39dabbf9d87497227" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a078ca2ce25ab5bb39dabbf9d87497227" kindref="member">cjx_index_cityobject_ref_page_after_record_id</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="174"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>has_after_record_id,</highlight></codeline>
+<codeline lineno="175"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>int64_t<sp/>after_record_id,</highlight></codeline>
+<codeline lineno="176"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>limit,</highlight></codeline>
+<codeline lineno="177"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref><sp/>**out_refs,</highlight></codeline>
+<codeline lineno="178"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>*out_count);</highlight></codeline>
+<codeline lineno="179"><highlight class="normal"></highlight></codeline>
+<codeline lineno="180" refid="cityjson__index_8h_1aef1b71208827cc9dd9858692770ddbe3" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1aef1b71208827cc9dd9858692770ddbe3" kindref="member">cjx_index_query_package_refs_page</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="181"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds2d__t" kindref="compound">cjx_bounds2d_t</ref><sp/>bbox,</highlight></codeline>
+<codeline lineno="182"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>has_after_record_id,</highlight></codeline>
+<codeline lineno="183"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>int64_t<sp/>after_record_id,</highlight></codeline>
+<codeline lineno="184"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>limit,</highlight></codeline>
+<codeline lineno="185"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>**out_refs,</highlight></codeline>
+<codeline lineno="186"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>*out_count);</highlight></codeline>
+<codeline lineno="187"><highlight class="normal"></highlight></codeline>
+<codeline lineno="188" refid="cityjson__index_8h_1a1514fb76fe1c931dece74edf9eaa9b5c" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a1514fb76fe1c931dece74edf9eaa9b5c" kindref="member">cjx_index_query_cityobject_refs_page</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="189"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__bounds2d__t" kindref="compound">cjx_bounds2d_t</ref><sp/>bbox,</highlight></codeline>
+<codeline lineno="190"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>has_after_record_id,</highlight></codeline>
+<codeline lineno="191"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>int64_t<sp/>after_record_id,</highlight></codeline>
+<codeline lineno="192"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>limit,</highlight></codeline>
+<codeline lineno="193"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref><sp/>**out_refs,</highlight></codeline>
+<codeline lineno="194"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>*out_count);</highlight></codeline>
+<codeline lineno="195"><highlight class="normal"></highlight></codeline>
+<codeline lineno="196" refid="cityjson__index_8h_1aeb020a3b8f656dac8dad6e26e61aceed" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1aeb020a3b8f656dac8dad6e26e61aceed" kindref="member">cjx_index_lookup_package_ref_by_record_id</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="197"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>int64_t<sp/>record_id,</highlight></codeline>
+<codeline lineno="198"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>*out_found,</highlight></codeline>
+<codeline lineno="199"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>*out_ref);</highlight></codeline>
+<codeline lineno="200"><highlight class="normal"></highlight></codeline>
+<codeline lineno="201" refid="cityjson__index_8h_1a5b21b866e7ce294cc4b8b4c22747a8dd" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a5b21b866e7ce294cc4b8b4c22747a8dd" kindref="member">cjx_index_lookup_cityobject_refs</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="202"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*external_id,</highlight></codeline>
+<codeline lineno="203"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>external_id_len,</highlight></codeline>
+<codeline lineno="204"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref><sp/>**out_refs,</highlight></codeline>
+<codeline lineno="205"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>*out_count);</highlight></codeline>
+<codeline lineno="206"><highlight class="normal"></highlight></codeline>
+<codeline lineno="207" refid="cityjson__index_8h_1a184dca61b7910e14758ca3877f67f6fa" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a184dca61b7910e14758ca3877f67f6fa" kindref="member">cjx_index_package_refs_for_cityobject</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="208"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref><sp/>*cityobject,</highlight></codeline>
+<codeline lineno="209"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>**out_refs,</highlight></codeline>
+<codeline lineno="210"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>*out_count);</highlight></codeline>
+<codeline lineno="211"><highlight class="normal"></highlight></codeline>
+<codeline lineno="217" refid="cityjson__index_8h_1abe98e036a9eee5a4a1f2a2018fdfb99d" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1abe98e036a9eee5a4a1f2a2018fdfb99d" kindref="member">cjx_cityobject_refs_free</ref>(</highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__cityobject__ref__t" kindref="compound">cjx_cityobject_ref_t</ref><sp/>*refs,<sp/>uintptr_t<sp/>count);</highlight></codeline>
+<codeline lineno="218"><highlight class="normal"></highlight></codeline>
+<codeline lineno="219" refid="cityjson__index_8h_1ab99df6bb563fd6bcab4e523eaf0b4c61" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1ab99df6bb563fd6bcab4e523eaf0b4c61" kindref="member">cjx_package_ref_free</ref>(</highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>value);</highlight></codeline>
+<codeline lineno="220"><highlight class="normal"></highlight></codeline>
+<codeline lineno="226" refid="cityjson__index_8h_1a69684fc08182f2fc58618b073bda8685" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a69684fc08182f2fc58618b073bda8685" kindref="member">cjx_package_refs_free</ref>(</highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>*refs,<sp/>uintptr_t<sp/>count);</highlight></codeline>
+<codeline lineno="227"><highlight class="normal"></highlight></codeline>
+<codeline lineno="228" refid="cityjson__index_8h_1a438f424e914bae436f97efff86cb035e" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a438f424e914bae436f97efff86cb035e" kindref="member">cjx_index_read_package_model_bytes</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="229"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>*package,</highlight></codeline>
+<codeline lineno="230"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cj_bytes_t<sp/>*out_bytes);</highlight></codeline>
+<codeline lineno="231"><highlight class="normal"></highlight></codeline>
+<codeline lineno="232" refid="cityjson__index_8h_1a09d5c4d4845c7af42fcf1d37d9978dbb" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a09d5c4d4845c7af42fcf1d37d9978dbb" kindref="member">cjx_index_read_package_by_record_id_model_bytes</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="233"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>int64_t<sp/>record_id,</highlight></codeline>
+<codeline lineno="234"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>*out_found,</highlight></codeline>
+<codeline lineno="235"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cj_bytes_t<sp/>*out_bytes);</highlight></codeline>
+<codeline lineno="236"><highlight class="normal"></highlight></codeline>
+<codeline lineno="237" refid="cityjson__index_8h_1ae16b664ec2b10f1b8c831a0bd617ee11" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1ae16b664ec2b10f1b8c831a0bd617ee11" kindref="member">cjx_index_read_packages_model_bytes</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="238"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>*refs,</highlight></codeline>
+<codeline lineno="239"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>ref_count,</highlight></codeline>
+<codeline lineno="240"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cj_bytes_t<sp/>**out_items,</highlight></codeline>
+<codeline lineno="241"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>*out_count);</highlight></codeline>
+<codeline lineno="242"><highlight class="normal"></highlight></codeline>
+<codeline lineno="243" refid="cityjson__index_8h_1aa5f758463366fbcfd10dd5faba2e8ad4" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1aa5f758463366fbcfd10dd5faba2e8ad4" kindref="member">cjx_index_read_filtered_packages</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__index__t" kindref="compound">cjx_index_t</ref><sp/>*handle,</highlight></codeline>
+<codeline lineno="244"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__ref__t" kindref="compound">cjx_package_ref_t</ref><sp/>*refs,</highlight></codeline>
+<codeline lineno="245"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>ref_count,</highlight></codeline>
+<codeline lineno="246"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__package__filter__t" kindref="compound">cjx_package_filter_t</ref><sp/>*filter,</highlight></codeline>
+<codeline lineno="247"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__filtered__package__t" kindref="compound">cjx_filtered_package_t</ref><sp/>**out_packages,</highlight></codeline>
+<codeline lineno="248"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>uintptr_t<sp/>*out_count);</highlight></codeline>
+<codeline lineno="249"><highlight class="normal"></highlight></codeline>
+<codeline lineno="256" refid="cityjson__index_8h_1a8c79d4ade90f699b4d8714f742a874b2" refkind="member"><highlight class="normal">cj_status_t<sp/><ref refid="cityjson__index_8h_1a8c79d4ade90f699b4d8714f742a874b2" kindref="member">cjx_filtered_packages_free</ref>(</highlight><highlight class="keyword">struct</highlight><highlight class="normal"><sp/><ref refid="structcjx__filtered__package__t" kindref="compound">cjx_filtered_package_t</ref><sp/>*packages,<sp/>uintptr_t<sp/>count);</highlight></codeline>
+    </programlisting>
+    <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h"/>
+  </compounddef>
+</doxygen>

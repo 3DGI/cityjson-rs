@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classcityjson__lib_1_1StatusError" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>cityjson_lib::StatusError</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">std::runtime_error</basecompoundref>
+    <includes refid="cityjson__lib_8hpp" local="no">cityjson_lib.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcityjson__lib_1_1StatusError_1af144408201108810bc7af9985405115c" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacecityjson__lib_1a59daa11b13352fb51b91bc2356c3394c" kindref="member">Status</ref></type>
+        <definition>Status cityjson_lib::StatusError::status_</definition>
+        <argsstring></argsstring>
+        <name>status_</name>
+        <qualifiedname>cityjson_lib::StatusError::status_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="79" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="79" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcityjson__lib_1_1StatusError_1a7f3095f373d57380c506bef177416eb7" prot="private" static="no" mutable="no">
+        <type><ref refid="namespacecityjson__lib_1a50e87b7bba30468e93df70dfe475e6aa" kindref="member">ErrorKind</ref></type>
+        <definition>ErrorKind cityjson_lib::StatusError::kind_</definition>
+        <argsstring></argsstring>
+        <name>kind_</name>
+        <qualifiedname>cityjson_lib::StatusError::kind_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="80" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="80" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1StatusError_1aa9a78e97279c7d4baab323d67f24d5ff" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::StatusError::StatusError</definition>
+        <argsstring>(Status status, ErrorKind kind, std::string message)</argsstring>
+        <name>StatusError</name>
+        <qualifiedname>cityjson_lib::StatusError::StatusError</qualifiedname>
+        <param>
+          <type><ref refid="namespacecityjson__lib_1a59daa11b13352fb51b91bc2356c3394c" kindref="member">Status</ref></type>
+          <declname>status</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacecityjson__lib_1a50e87b7bba30468e93df70dfe475e6aa" kindref="member">ErrorKind</ref></type>
+          <declname>kind</declname>
+        </param>
+        <param>
+          <type>std::string</type>
+          <declname>message</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="72" column="3" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="72" bodyend="73"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1StatusError_1af8d4aa8c8a78801157d6fc418bdb9b90" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type><ref refid="namespacecityjson__lib_1a59daa11b13352fb51b91bc2356c3394c" kindref="member">Status</ref></type>
+        <definition>Status cityjson_lib::StatusError::status</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>status</name>
+        <qualifiedname>cityjson_lib::StatusError::status</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="75" column="11" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="75" bodyend="75"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1StatusError_1a0ab1f075d7132c7a72b820fe6cfb2841" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type><ref refid="namespacecityjson__lib_1a50e87b7bba30468e93df70dfe475e6aa" kindref="member">ErrorKind</ref></type>
+        <definition>ErrorKind cityjson_lib::StatusError::kind</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>kind</name>
+        <qualifiedname>cityjson_lib::StatusError::kind</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="76" column="14" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="76" bodyend="76"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>cityjson_lib::StatusError</label>
+        <link refid="classcityjson__lib_1_1StatusError"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>std::runtime_error</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>cityjson_lib::StatusError</label>
+        <link refid="classcityjson__lib_1_1StatusError"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>std::runtime_error</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="70" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="70" bodyend="81"/>
+    <listofallmembers>
+      <member refid="classcityjson__lib_1_1StatusError_1a0ab1f075d7132c7a72b820fe6cfb2841" prot="public" virt="non-virtual"><scope>cityjson_lib::StatusError</scope><name>kind</name></member>
+      <member refid="classcityjson__lib_1_1StatusError_1a7f3095f373d57380c506bef177416eb7" prot="private" virt="non-virtual"><scope>cityjson_lib::StatusError</scope><name>kind_</name></member>
+      <member refid="classcityjson__lib_1_1StatusError_1af8d4aa8c8a78801157d6fc418bdb9b90" prot="public" virt="non-virtual"><scope>cityjson_lib::StatusError</scope><name>status</name></member>
+      <member refid="classcityjson__lib_1_1StatusError_1af144408201108810bc7af9985405115c" prot="private" virt="non-virtual"><scope>cityjson_lib::StatusError</scope><name>status_</name></member>
+      <member refid="classcityjson__lib_1_1StatusError_1aa9a78e97279c7d4baab323d67f24d5ff" prot="public" virt="non-virtual"><scope>cityjson_lib::StatusError</scope><name>StatusError</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

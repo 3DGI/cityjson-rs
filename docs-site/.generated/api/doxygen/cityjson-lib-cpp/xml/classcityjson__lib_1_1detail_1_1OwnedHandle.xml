@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classcityjson__lib_1_1detail_1_1OwnedHandle" kind="class" language="C++" prot="private" final="yes">
+    <compoundname>cityjson_lib::detail::OwnedHandle</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename Handle</type>
+      </param>
+      <param>
+        <type><ref refid="namespacecityjson__lib_1a59daa11b13352fb51b91bc2356c3394c" kindref="member">Status</ref>(*)(Handle *)</type>
+        <declname>FreeFn</declname>
+        <defname>FreeFn</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1a16f915c21844fa572feb0de37c2a973d" prot="private" static="no" mutable="no">
+        <type>Handle *</type>
+        <definition>Handle* cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::handle_</definition>
+        <argsstring></argsstring>
+        <name>handle_</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::handle_</qualifiedname>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="277" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="277" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1a5edc0526d4c707f6aa5af9d79a728f5a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::OwnedHandle</definition>
+        <argsstring>()=default</argsstring>
+        <name>OwnedHandle</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::OwnedHandle</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="244" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1a66987b5c2e3f1995b701cbf8bd0fa095" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::OwnedHandle</definition>
+        <argsstring>(Handle *handle)</argsstring>
+        <name>OwnedHandle</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::OwnedHandle</qualifiedname>
+        <param>
+          <type>Handle *</type>
+          <declname>handle</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="246" column="12" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="246" bodyend="246"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1a801937935ea51a46997966436c8e31e1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::OwnedHandle</definition>
+        <argsstring>(const OwnedHandle &amp;)=delete</argsstring>
+        <name>OwnedHandle</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::OwnedHandle</qualifiedname>
+        <param>
+          <type>const OwnedHandle &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="248" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1a6aa76c2a76944869418eb3f60d493ddc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>OwnedHandle &amp;</type>
+        <definition>OwnedHandle &amp; cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::operator=</definition>
+        <argsstring>(const OwnedHandle &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::operator=</qualifiedname>
+        <param>
+          <type>const OwnedHandle &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="249" column="15"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1afbf5a96448521a15e462a63e4e35ecf8" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::OwnedHandle</definition>
+        <argsstring>(OwnedHandle &amp;&amp;other) noexcept</argsstring>
+        <name>OwnedHandle</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::OwnedHandle</qualifiedname>
+        <param>
+          <type>OwnedHandle &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="251" column="3" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="251" bodyend="251"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1a576881193f5792faa68a54ec19f0dc65" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>OwnedHandle &amp;</type>
+        <definition>OwnedHandle &amp; cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::operator=</definition>
+        <argsstring>(OwnedHandle &amp;&amp;other) noexcept</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::operator=</qualifiedname>
+        <param>
+          <type>OwnedHandle &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="253" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="253" bodyend="259"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1ad644b1aca7cd51ed86386dba39683c91" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::~OwnedHandle</definition>
+        <argsstring>()</argsstring>
+        <name>~OwnedHandle</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::~OwnedHandle</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="261" column="3" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="261" bodyend="261"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1a2e4cbd5eb4c75e06f9595b12d98d055a" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>Handle *</type>
+        <definition>Handle * cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::get</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>get</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::get</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="263" column="11" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="263" bodyend="263"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1a930af5165fabc9aada36278cc56ec33d" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::valid</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>valid</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::valid</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="265" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="265" bodyend="265"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1a5cce7980b20181e63f94dad7ce7b3210" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>Handle *</type>
+        <definition>Handle * cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::release</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>release</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::release</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="267" column="11" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="267" bodyend="267"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1detail_1_1OwnedHandle_1ad89f1da7929126e9d0a9534e5a581e1d" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::detail::OwnedHandle&lt; Handle, FreeFn &gt;::reset</definition>
+        <argsstring>(Handle *handle=nullptr) noexcept</argsstring>
+        <name>reset</name>
+        <qualifiedname>cityjson_lib::detail::OwnedHandle::reset</qualifiedname>
+        <param>
+          <type>Handle *</type>
+          <declname>handle</declname>
+          <defval>nullptr</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="269" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="269" bodyend="274"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="242" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="242" bodyend="278"/>
+    <listofallmembers>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1a2e4cbd5eb4c75e06f9595b12d98d055a" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>get</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1a16f915c21844fa572feb0de37c2a973d" prot="private" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>handle_</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1a6aa76c2a76944869418eb3f60d493ddc" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1a576881193f5792faa68a54ec19f0dc65" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1a5edc0526d4c707f6aa5af9d79a728f5a" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>OwnedHandle</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1a66987b5c2e3f1995b701cbf8bd0fa095" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>OwnedHandle</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1a801937935ea51a46997966436c8e31e1" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>OwnedHandle</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1afbf5a96448521a15e462a63e4e35ecf8" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>OwnedHandle</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1a5cce7980b20181e63f94dad7ce7b3210" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>release</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1ad89f1da7929126e9d0a9534e5a581e1d" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>reset</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1a930af5165fabc9aada36278cc56ec33d" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>valid</name></member>
+      <member refid="classcityjson__lib_1_1detail_1_1OwnedHandle_1ad644b1aca7cd51ed86386dba39683c91" prot="public" virt="non-virtual"><scope>cityjson_lib::detail::OwnedHandle</scope><name>~OwnedHandle</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

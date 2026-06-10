@@ -1,0 +1,124 @@
+---
+title: ResolvedDataset
+description: Generated Rust owner reference for cityjson-index.
+languages: ["rust"]
+generated: true
+---
+
+Source: `crates/cityjson-index/src/lib.rs`
+
+## Contents
+
+- [ResolvedDataset](#struct-resolveddataset)
+- [feature_file_paths](#method-feature_file_paths)
+- [inspect](#method-inspect)
+- [source_paths](#method-source_paths)
+- [storage_layout](#method-storage_layout)
+- [validate](#method-validate)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `ResolvedDataset` | struct | [section](#struct-resolveddataset) |
+| `feature_file_paths` | method | [section](#method-feature_file_paths) |
+| `inspect` | method | [section](#method-inspect) |
+| `source_paths` | method | [section](#method-source_paths) |
+| `storage_layout` | method | [section](#method-storage_layout) |
+| `validate` | method | [section](#method-validate) |
+
+<section id="struct-resolveddataset" class="api-reference-symbol" data-pagefind-body>
+
+### `ResolvedDataset`
+
+Kind: struct.
+
+```rust
+pub struct ResolvedDataset
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-index/latest/cityjson_index/struct.ResolvedDataset.html)
+
+</section>
+
+<section id="method-feature_file_paths" class="api-reference-symbol" data-pagefind-body>
+
+### `feature_file_paths`
+
+Kind: method.
+
+```rust
+pub fn feature_file_paths(&self) -> &[PathBuf]
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-index/latest/cityjson_index/)
+
+</section>
+
+<section id="method-inspect" class="api-reference-symbol" data-pagefind-body>
+
+### `inspect`
+
+Kind: method.
+
+```rust
+pub fn inspect(&self) -> Result<DatasetInspection>
+```
+
+Inspects the resolved dataset and its current index sidecar.
+
+#### Errors
+
+Returns an error if the dataset or index cannot be inspected.
+
+[docs.rs mirror](https://docs.rs/cityjson-index/latest/cityjson_index/)
+
+</section>
+
+<section id="method-source_paths" class="api-reference-symbol" data-pagefind-body>
+
+### `source_paths`
+
+Kind: method.
+
+```rust
+pub fn source_paths(&self) -> &[PathBuf]
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-index/latest/cityjson_index/)
+
+</section>
+
+<section id="method-storage_layout" class="api-reference-symbol" data-pagefind-body>
+
+### `storage_layout`
+
+Kind: method.
+
+```rust
+pub fn storage_layout(&self) -> StorageLayout
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-index/latest/cityjson_index/)
+
+</section>
+
+<section id="method-validate" class="api-reference-symbol" data-pagefind-body>
+
+### `validate`
+
+Kind: method.
+
+```rust
+pub fn validate(&self) -> Result<ValidationReport>
+```
+
+Validates the resolved dataset and returns a structured report.
+
+#### Errors
+
+Returns an error if the dataset or index cannot be inspected.
+
+[docs.rs mirror](https://docs.rs/cityjson-index/latest/cityjson_index/)
+
+</section>

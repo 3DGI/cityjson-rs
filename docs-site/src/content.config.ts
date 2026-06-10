@@ -8,7 +8,7 @@ export const collections = {
     loader: docsLoader(),
     schema: docsSchema({
       extend: z.object({
-        languages: z.array(z.enum(['rust', 'python', 'cpp', 'wasm'])).optional(),
+        languages: z.array(z.enum(['rust', 'python', 'cpp', 'wasm', 'c'])).optional(),
       }),
     }),
   }),

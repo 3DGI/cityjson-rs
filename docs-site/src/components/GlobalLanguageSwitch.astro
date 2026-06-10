@@ -4,6 +4,7 @@ const languages = [
   { id: 'python', label: 'Python' },
   { id: 'cpp', label: 'C++' },
   { id: 'wasm', label: 'WASM' },
+  { id: 'c', label: 'C FFI' },
 ];
 const supported = Astro.locals.starlightRoute.entry.data.languages ?? [];
 ---
@@ -18,7 +19,7 @@ const supported = Astro.locals.starlightRoute.entry.data.languages ?? [];
 
 <script>
   const key = 'cityjson-docs-language';
-  const choices = ['rust', 'python', 'cpp', 'wasm'];
+  const choices = ['rust', 'python', 'cpp', 'wasm', 'c'];
 
   const supportedLanguages = () => {
     const raw = (document.querySelector('[data-supported-languages]') as HTMLElement | null)?.dataset.supportedLanguages || '';

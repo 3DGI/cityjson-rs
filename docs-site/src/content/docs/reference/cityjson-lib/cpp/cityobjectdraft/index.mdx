@@ -1,0 +1,128 @@
+---
+title: CityObjectDraft
+description: Generated C++ owner reference for cityjson-lib.
+languages: ["cpp"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp`
+
+## Contents
+
+- [CityObjectDraft](#class-cityobjectdraft)
+- [CityObjectDraft](#method-cityobjectdraft)
+- [operator=](#method-operator)
+- [release](#method-release)
+- [set_attribute](#method-set_attribute)
+- [set_extra](#method-set_extra)
+- [set_geographical_extent](#method-set_geographical_extent)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `CityObjectDraft` | class | [section](#class-cityobjectdraft) |
+| `CityObjectDraft` | method | [section](#method-cityobjectdraft) |
+| `operator=` | method | [section](#method-operator) |
+| `release` | method | [section](#method-release) |
+| `set_attribute` | method | [section](#method-set_attribute) |
+| `set_extra` | method | [section](#method-set_extra) |
+| `set_geographical_extent` | method | [section](#method-set_geographical_extent) |
+
+<section id="class-cityobjectdraft" class="api-reference-symbol" data-pagefind-body>
+
+### `CityObjectDraft`
+
+Kind: class.
+
+```cpp
+class cityjson_lib::CityObjectDraft
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1CityObjectDraft.xml
+
+</section>
+
+<section id="method-cityobjectdraft" class="api-reference-symbol" data-pagefind-body>
+
+### `CityObjectDraft`
+
+Kind: method.
+
+```cpp
+cityjson_lib::CityObjectDraft::CityObjectDraft(std::string_view id, std::string_view type);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1CityObjectDraft.xml
+
+</section>
+
+<section id="method-operator" class="api-reference-symbol" data-pagefind-body>
+
+### `operator=`
+
+Kind: method.
+
+```cpp
+CityObjectDraft & cityjson_lib::CityObjectDraft::operator=(const CityObjectDraft &)=delete;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1CityObjectDraft.xml
+
+</section>
+
+<section id="method-release" class="api-reference-symbol" data-pagefind-body>
+
+### `release`
+
+Kind: method.
+
+```cpp
+cj_cityobject_draft_t * cityjson_lib::CityObjectDraft::release() noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1CityObjectDraft.xml
+
+</section>
+
+<section id="method-set_attribute" class="api-reference-symbol" data-pagefind-body>
+
+### `set_attribute`
+
+Kind: method.
+
+```cpp
+CityObjectDraft & cityjson_lib::CityObjectDraft::set_attribute(std::string_view key, Value value) &;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1CityObjectDraft.xml
+
+</section>
+
+<section id="method-set_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `set_extra`
+
+Kind: method.
+
+```cpp
+CityObjectDraft & cityjson_lib::CityObjectDraft::set_extra(std::string_view key, Value value) &;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1CityObjectDraft.xml
+
+</section>
+
+<section id="method-set_geographical_extent" class="api-reference-symbol" data-pagefind-body>
+
+### `set_geographical_extent`
+
+Kind: method.
+
+```cpp
+CityObjectDraft & cityjson_lib::CityObjectDraft::set_geographical_extent(const BBox &bbox) &;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1CityObjectDraft.xml
+
+</section>

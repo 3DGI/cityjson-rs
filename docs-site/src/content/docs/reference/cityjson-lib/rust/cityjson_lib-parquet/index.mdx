@@ -1,0 +1,80 @@
+---
+title: cityjson_lib::parquet
+description: Generated Rust owner reference for cityjson-lib.
+languages: ["rust"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/src/lib.rs`
+
+## Contents
+
+- [from_dir](#function-from_dir)
+- [from_file](#function-from_file)
+- [to_dir](#function-to_dir)
+- [to_file](#function-to_file)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `from_dir` | function | [section](#function-from_dir) |
+| `from_file` | function | [section](#function-from_file) |
+| `to_dir` | function | [section](#function-to_dir) |
+| `to_file` | function | [section](#function-to_file) |
+
+<section id="function-from_dir" class="api-reference-symbol" data-pagefind-body>
+
+### `from_dir`
+
+Kind: function.
+
+```rust
+pub fn from_dir(path: impl AsRef<Path>) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_dir.html)
+
+</section>
+
+<section id="function-from_file" class="api-reference-symbol" data-pagefind-body>
+
+### `from_file`
+
+Kind: function.
+
+```rust
+pub fn from_file(path: impl AsRef<Path>) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_file.html)
+
+</section>
+
+<section id="function-to_dir" class="api-reference-symbol" data-pagefind-body>
+
+### `to_dir`
+
+Kind: function.
+
+```rust
+pub fn to_dir(path: impl AsRef<Path>, model: &CityModel) -> Result<ParquetDatasetManifest>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_dir.html)
+
+</section>
+
+<section id="function-to_file" class="api-reference-symbol" data-pagefind-body>
+
+### `to_file`
+
+Kind: function.
+
+```rust
+pub fn to_file(path: impl AsRef<Path>, model: &CityModel) -> Result<PackageManifest>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_file.html)
+
+</section>

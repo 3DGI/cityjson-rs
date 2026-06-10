@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classcityjson__lib_1_1CityObjectDraft" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>cityjson_lib::CityObjectDraft</compoundname>
+    <includes refid="cityjson__lib_8hpp" local="no">cityjson_lib.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcityjson__lib_1_1CityObjectDraft_1af4e0a282db0cfd6140705c947e62f331" prot="private" static="no" mutable="no">
+        <type>detail::OwnedHandle&lt; cj_cityobject_draft_t, cj_cityobject_draft_free &gt;</type>
+        <definition>detail::OwnedHandle&lt;cj_cityobject_draft_t, cj_cityobject_draft_free&gt; cityjson_lib::CityObjectDraft::handle_</definition>
+        <argsstring></argsstring>
+        <name>handle_</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::handle_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="568" column="23" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="568" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="friend">
+      <memberdef kind="friend" id="classcityjson__lib_1_1CityObjectDraft_1a2bf2a0e9b454c55aa5dcb5aa4698697b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class Model</definition>
+        <argsstring></argsstring>
+        <name>Model</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::Model</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="570" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="570" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1ab1d52f601d31e057a39b95d5bf27ef68" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::CityObjectDraft::CityObjectDraft</definition>
+        <argsstring>(std::string_view id, std::string_view type)</argsstring>
+        <name>CityObjectDraft</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::CityObjectDraft</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="524" column="3" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="524" bodyend="528"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1ad08672424a6af35f4a2d2603cebf2b0f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::CityObjectDraft::CityObjectDraft</definition>
+        <argsstring>(const CityObjectDraft &amp;)=delete</argsstring>
+        <name>CityObjectDraft</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::CityObjectDraft</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="530" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1adcda11058acef442ca3966a7007f9ed6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;</type>
+        <definition>CityObjectDraft &amp; cityjson_lib::CityObjectDraft::operator=</definition>
+        <argsstring>(const CityObjectDraft &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::operator=</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="531" column="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1a322d67bff25921085353365f2717ed60" prot="public" static="no" const="no" explicit="no" inline="no" noexcept="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::CityObjectDraft::CityObjectDraft</definition>
+        <argsstring>(CityObjectDraft &amp;&amp;) noexcept=default</argsstring>
+        <name>CityObjectDraft</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::CityObjectDraft</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="532" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1abfe4993479ded9c31f84c2264744da8a" prot="public" static="no" const="no" explicit="no" inline="no" noexcept="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;</type>
+        <definition>CityObjectDraft &amp; cityjson_lib::CityObjectDraft::operator=</definition>
+        <argsstring>(CityObjectDraft &amp;&amp;) noexcept=default</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::operator=</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="533" column="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1a87e9e50878ba6bb69190ba8e173ef13a" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="lvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;</type>
+        <definition>CityObjectDraft &amp; cityjson_lib::CityObjectDraft::set_geographical_extent</definition>
+        <argsstring>(const BBox &amp;bbox) &amp;</argsstring>
+        <name>set_geographical_extent</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::set_geographical_extent</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1a9c9dcf76ba84f11461c5568fe81b1fb3" kindref="member">BBox</ref> &amp;</type>
+          <declname>bbox</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="535" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="535" bodyend="538"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1a17d8f8f084a439fb7da7ab774d05b132" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="rvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;&amp;</type>
+        <definition>CityObjectDraft &amp;&amp; cityjson_lib::CityObjectDraft::set_geographical_extent</definition>
+        <argsstring>(const BBox &amp;bbox) &amp;&amp;</argsstring>
+        <name>set_geographical_extent</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::set_geographical_extent</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1a9c9dcf76ba84f11461c5568fe81b1fb3" kindref="member">BBox</ref> &amp;</type>
+          <declname>bbox</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="540" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="540" bodyend="543"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1a3dbd2490ff54a8bbdb835a599a19b236" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="lvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;</type>
+        <definition>CityObjectDraft &amp; cityjson_lib::CityObjectDraft::set_attribute</definition>
+        <argsstring>(std::string_view key, Value value) &amp;</argsstring>
+        <name>set_attribute</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::set_attribute</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Value" kindref="compound">Value</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="545" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="545" bodyend="548"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1ab4fca52a0e0b5598ea1c84862d42085c" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="rvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;&amp;</type>
+        <definition>CityObjectDraft &amp;&amp; cityjson_lib::CityObjectDraft::set_attribute</definition>
+        <argsstring>(std::string_view key, Value value) &amp;&amp;</argsstring>
+        <name>set_attribute</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::set_attribute</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Value" kindref="compound">Value</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="550" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="550" bodyend="553"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1afe508d742fcd20c5e5be85b1ebe1d5c6" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="lvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;</type>
+        <definition>CityObjectDraft &amp; cityjson_lib::CityObjectDraft::set_extra</definition>
+        <argsstring>(std::string_view key, Value value) &amp;</argsstring>
+        <name>set_extra</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::set_extra</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Value" kindref="compound">Value</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="555" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="555" bodyend="558"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1ab0fb1c278d3137f1a12c99fcaf962ac4" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="rvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref> &amp;&amp;</type>
+        <definition>CityObjectDraft &amp;&amp; cityjson_lib::CityObjectDraft::set_extra</definition>
+        <argsstring>(std::string_view key, Value value) &amp;&amp;</argsstring>
+        <name>set_extra</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::set_extra</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Value" kindref="compound">Value</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="560" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="560" bodyend="563"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1CityObjectDraft_1a522a73f6963f84c8209bb384ba298225" prot="private" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>cj_cityobject_draft_t *</type>
+        <definition>cj_cityobject_draft_t * cityjson_lib::CityObjectDraft::release</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>release</name>
+        <qualifiedname>cityjson_lib::CityObjectDraft::release</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="566" column="26" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="566" bodyend="566"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="522" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="522" bodyend="571"/>
+    <listofallmembers>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1ab1d52f601d31e057a39b95d5bf27ef68" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>CityObjectDraft</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1ad08672424a6af35f4a2d2603cebf2b0f" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>CityObjectDraft</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1a322d67bff25921085353365f2717ed60" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>CityObjectDraft</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1af4e0a282db0cfd6140705c947e62f331" prot="private" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>handle_</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1a2bf2a0e9b454c55aa5dcb5aa4698697b" prot="private" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>Model</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1adcda11058acef442ca3966a7007f9ed6" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1abfe4993479ded9c31f84c2264744da8a" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1a522a73f6963f84c8209bb384ba298225" prot="private" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>release</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1a3dbd2490ff54a8bbdb835a599a19b236" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>set_attribute</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1ab4fca52a0e0b5598ea1c84862d42085c" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>set_attribute</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1afe508d742fcd20c5e5be85b1ebe1d5c6" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>set_extra</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1ab0fb1c278d3137f1a12c99fcaf962ac4" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>set_extra</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1a87e9e50878ba6bb69190ba8e173ef13a" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>set_geographical_extent</name></member>
+      <member refid="classcityjson__lib_1_1CityObjectDraft_1a17d8f8f084a439fb7da7ab774d05b132" prot="public" virt="non-virtual"><scope>cityjson_lib::CityObjectDraft</scope><name>set_geographical_extent</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

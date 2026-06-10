@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcjx__index__t" kind="struct" language="C++" prot="public">
+    <compoundname>cjx_index_t</compoundname>
+    <includes refid="cityjson__index_8h" local="no">cityjson_index.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcjx__index__t_1a2f076aa9aea311cced2b18ae60ab8fd7" prot="public" static="no" mutable="no">
+        <type>uint8_t</type>
+        <definition>uint8_t cjx_index_t::_private[0]</definition>
+        <argsstring>[0]</argsstring>
+        <name>_private</name>
+        <qualifiedname>cjx_index_t::_private</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="19" column="11" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="19" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="18" column="1" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="18" bodyend="20"/>
+    <listofallmembers>
+      <member refid="structcjx__index__t_1a2f076aa9aea311cced2b18ae60ab8fd7" prot="public" virt="non-virtual"><scope>cjx_index_t</scope><name>_private</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

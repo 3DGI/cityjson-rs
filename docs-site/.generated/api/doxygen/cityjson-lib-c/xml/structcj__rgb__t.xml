@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__rgb__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_rgb_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__rgb__t_1a3347dd5d31c125e1b75c7fda9aec0612" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float cj_rgb_t::r</definition>
+        <argsstring></argsstring>
+        <name>r</name>
+        <qualifiedname>cj_rgb_t::r</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="460" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="460" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__rgb__t_1a40e27fca85bddebc9fe9ba689aa9a286" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float cj_rgb_t::g</definition>
+        <argsstring></argsstring>
+        <name>g</name>
+        <qualifiedname>cj_rgb_t::g</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="461" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="461" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__rgb__t_1a202e311bfadaacfb7db11c2cd78b7748" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float cj_rgb_t::b</definition>
+        <argsstring></argsstring>
+        <name>b</name>
+        <qualifiedname>cj_rgb_t::b</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="462" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="462" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Packed RGB color copied across the ABI. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="459" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="459" bodyend="463"/>
+    <listofallmembers>
+      <member refid="structcj__rgb__t_1a202e311bfadaacfb7db11c2cd78b7748" prot="public" virt="non-virtual"><scope>cj_rgb_t</scope><name>b</name></member>
+      <member refid="structcj__rgb__t_1a40e27fca85bddebc9fe9ba689aa9a286" prot="public" virt="non-virtual"><scope>cj_rgb_t</scope><name>g</name></member>
+      <member refid="structcj__rgb__t_1a3347dd5d31c125e1b75c7fda9aec0612" prot="public" virt="non-virtual"><scope>cj_rgb_t</scope><name>r</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

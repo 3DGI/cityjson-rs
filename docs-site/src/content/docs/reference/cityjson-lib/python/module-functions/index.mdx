@@ -1,0 +1,802 @@
+---
+title: Module functions
+description: Generated Python owner reference for cityjson-lib.
+languages: ["python"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/ffi/python/src/cityjson_lib/__init__.py`
+
+## Contents
+
+- [AffineTransform4x4](#class-affinetransform4x4)
+- [AutoTransformOptions](#class-autotransformoptions)
+- [BBox](#class-bbox)
+- [CityJSONSeqWriteOptions](#class-cityjsonseqwriteoptions)
+- [CityModel](#class-citymodel)
+- [CityObjectDraft](#class-cityobjectdraft)
+- [CityObjectId](#class-cityobjectid)
+- [Contact](#class-contact)
+- [ContactRole](#class-contactrole)
+- [ContactType](#class-contacttype)
+- [GeometryBoundary](#class-geometryboundary)
+- [GeometryDraft](#class-geometrydraft)
+- [GeometryId](#class-geometryid)
+- [GeometrySelectionSpec](#class-geometryselectionspec)
+- [GeometryTemplateId](#class-geometrytemplateid)
+- [GeometryType](#class-geometrytype)
+- [ImageType](#class-imagetype)
+- [MaterialId](#class-materialid)
+- [ModelCapacities](#class-modelcapacities)
+- [ModelSelection](#class-modelselection)
+- [ModelSummary](#class-modelsummary)
+- [ModelType](#class-modeltype)
+- [Probe](#class-probe)
+- [ProjTransformer](#class-projtransformer)
+- [RGB](#class-rgb)
+- [RGBA](#class-rgba)
+- [RingDraft](#class-ringdraft)
+- [RootKind](#class-rootkind)
+- [SemanticId](#class-semanticid)
+- [ShellDraft](#class-shelldraft)
+- [SurfaceDraft](#class-surfacedraft)
+- [TextureId](#class-textureid)
+- [TextureType](#class-texturetype)
+- [Transform](#class-transform)
+- [UV](#class-uv)
+- [Value](#class-value)
+- [Version](#class-version)
+- [Vertex](#class-vertex)
+- [WrapMode](#class-wrapmode)
+- [merge_feature_stream_bytes](#function-merge_feature_stream_bytes)
+- [merge_models](#function-merge_models)
+- [probe_bytes](#function-probe_bytes)
+- [serialize_feature_stream](#function-serialize_feature_stream)
+- [serialize_feature_stream_bytes](#function-serialize_feature_stream_bytes)
+- [write_cityjsonseq_auto_transform](#function-write_cityjsonseq_auto_transform)
+- [write_cityjsonseq_auto_transform_bytes](#function-write_cityjsonseq_auto_transform_bytes)
+- [write_cityjsonseq_with_transform](#function-write_cityjsonseq_with_transform)
+- [write_cityjsonseq_with_transform_bytes](#function-write_cityjsonseq_with_transform_bytes)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `AffineTransform4x4` | class | [section](#class-affinetransform4x4) |
+| `AutoTransformOptions` | class | [section](#class-autotransformoptions) |
+| `BBox` | class | [section](#class-bbox) |
+| `CityJSONSeqWriteOptions` | class | [section](#class-cityjsonseqwriteoptions) |
+| `CityModel` | class | [section](#class-citymodel) |
+| `CityObjectDraft` | class | [section](#class-cityobjectdraft) |
+| `CityObjectId` | class | [section](#class-cityobjectid) |
+| `Contact` | class | [section](#class-contact) |
+| `ContactRole` | class | [section](#class-contactrole) |
+| `ContactType` | class | [section](#class-contacttype) |
+| `GeometryBoundary` | class | [section](#class-geometryboundary) |
+| `GeometryDraft` | class | [section](#class-geometrydraft) |
+| `GeometryId` | class | [section](#class-geometryid) |
+| `GeometrySelectionSpec` | class | [section](#class-geometryselectionspec) |
+| `GeometryTemplateId` | class | [section](#class-geometrytemplateid) |
+| `GeometryType` | class | [section](#class-geometrytype) |
+| `ImageType` | class | [section](#class-imagetype) |
+| `MaterialId` | class | [section](#class-materialid) |
+| `ModelCapacities` | class | [section](#class-modelcapacities) |
+| `ModelSelection` | class | [section](#class-modelselection) |
+| `ModelSummary` | class | [section](#class-modelsummary) |
+| `ModelType` | class | [section](#class-modeltype) |
+| `Probe` | class | [section](#class-probe) |
+| `ProjTransformer` | class | [section](#class-projtransformer) |
+| `RGB` | class | [section](#class-rgb) |
+| `RGBA` | class | [section](#class-rgba) |
+| `RingDraft` | class | [section](#class-ringdraft) |
+| `RootKind` | class | [section](#class-rootkind) |
+| `SemanticId` | class | [section](#class-semanticid) |
+| `ShellDraft` | class | [section](#class-shelldraft) |
+| `SurfaceDraft` | class | [section](#class-surfacedraft) |
+| `TextureId` | class | [section](#class-textureid) |
+| `TextureType` | class | [section](#class-texturetype) |
+| `Transform` | class | [section](#class-transform) |
+| `UV` | class | [section](#class-uv) |
+| `Value` | class | [section](#class-value) |
+| `Version` | class | [section](#class-version) |
+| `Vertex` | class | [section](#class-vertex) |
+| `WrapMode` | class | [section](#class-wrapmode) |
+| `merge_feature_stream_bytes` | function | [section](#function-merge_feature_stream_bytes) |
+| `merge_models` | function | [section](#function-merge_models) |
+| `probe_bytes` | function | [section](#function-probe_bytes) |
+| `serialize_feature_stream` | function | [section](#function-serialize_feature_stream) |
+| `serialize_feature_stream_bytes` | function | [section](#function-serialize_feature_stream_bytes) |
+| `write_cityjsonseq_auto_transform` | function | [section](#function-write_cityjsonseq_auto_transform) |
+| `write_cityjsonseq_auto_transform_bytes` | function | [section](#function-write_cityjsonseq_auto_transform_bytes) |
+| `write_cityjsonseq_with_transform` | function | [section](#function-write_cityjsonseq_with_transform) |
+| `write_cityjsonseq_with_transform_bytes` | function | [section](#function-write_cityjsonseq_with_transform_bytes) |
+
+<section id="class-affinetransform4x4" class="api-reference-symbol" data-pagefind-body>
+
+### `AffineTransform4x4`
+
+Kind: class.
+
+```python
+class AffineTransform4x4(elements)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-autotransformoptions" class="api-reference-symbol" data-pagefind-body>
+
+### `AutoTransformOptions`
+
+Kind: class.
+
+```python
+class AutoTransformOptions(scale=(0.001, 0.001, 0.001), validate_default_themes=True, trailing_newline=True, update_metadata_geographical_extent=True)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-bbox" class="api-reference-symbol" data-pagefind-body>
+
+### `BBox`
+
+Kind: class.
+
+```python
+class BBox(min_x, min_y, min_z, max_x, max_y, max_z)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-cityjsonseqwriteoptions" class="api-reference-symbol" data-pagefind-body>
+
+### `CityJSONSeqWriteOptions`
+
+Kind: class.
+
+```python
+class CityJSONSeqWriteOptions(validate_default_themes=True, trailing_newline=True, update_metadata_geographical_extent=True)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-citymodel" class="api-reference-symbol" data-pagefind-body>
+
+### `CityModel`
+
+Kind: class.
+
+```python
+class CityModel(handle)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-cityobjectdraft" class="api-reference-symbol" data-pagefind-body>
+
+### `CityObjectDraft`
+
+Kind: class.
+
+```python
+class CityObjectDraft(cityobject_id, cityobject_type)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-cityobjectid" class="api-reference-symbol" data-pagefind-body>
+
+### `CityObjectId`
+
+Kind: class.
+
+```python
+class CityObjectId(slot, generation)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-contact" class="api-reference-symbol" data-pagefind-body>
+
+### `Contact`
+
+Kind: class.
+
+```python
+class Contact
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-contactrole" class="api-reference-symbol" data-pagefind-body>
+
+### `ContactRole`
+
+Kind: class.
+
+```python
+class ContactRole(value)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-contacttype" class="api-reference-symbol" data-pagefind-body>
+
+### `ContactType`
+
+Kind: class.
+
+```python
+class ContactType(value)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-geometryboundary" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometryBoundary`
+
+Kind: class.
+
+```python
+class GeometryBoundary(geometry_type, has_boundaries, vertex_indices, ring_offsets, surface_offsets, shell_offsets, solid_offsets)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-geometrydraft" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometryDraft`
+
+Kind: class.
+
+```python
+class GeometryDraft(handle)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-geometryid" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometryId`
+
+Kind: class.
+
+```python
+class GeometryId(slot, generation)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-geometryselectionspec" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometrySelectionSpec`
+
+Kind: class.
+
+```python
+class GeometrySelectionSpec(cityobject_id, geometry_index)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-geometrytemplateid" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometryTemplateId`
+
+Kind: class.
+
+```python
+class GeometryTemplateId(slot, generation)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-geometrytype" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometryType`
+
+Kind: class.
+
+```python
+class GeometryType(value)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-imagetype" class="api-reference-symbol" data-pagefind-body>
+
+### `ImageType`
+
+Kind: class.
+
+```python
+class ImageType(value)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-materialid" class="api-reference-symbol" data-pagefind-body>
+
+### `MaterialId`
+
+Kind: class.
+
+```python
+class MaterialId(slot, generation)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-modelcapacities" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelCapacities`
+
+Kind: class.
+
+```python
+class ModelCapacities(cityobjects=0, vertices=0, semantics=0, materials=0, textures=0, geometries=0, template_vertices=0, template_geometries=0, uv_coordinates=0)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-modelselection" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelSelection`
+
+Kind: class.
+
+```python
+class ModelSelection(handle)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-modelsummary" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelSummary`
+
+Kind: class.
+
+```python
+class ModelSummary(model_type, version, cityobject_count, geometry_count, geometry_template_count, vertex_count, template_vertex_count, uv_coordinate_count, semantic_count, material_count, texture_count, extension_count, has_metadata, has_transform, has_templates, has_appearance)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-modeltype" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelType`
+
+Kind: class.
+
+```python
+class ModelType(value)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-probe" class="api-reference-symbol" data-pagefind-body>
+
+### `Probe`
+
+Kind: class.
+
+```python
+class Probe(root_kind, version, has_version)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-projtransformer" class="api-reference-symbol" data-pagefind-body>
+
+### `ProjTransformer`
+
+Kind: class.
+
+```python
+class ProjTransformer(handle)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-rgb" class="api-reference-symbol" data-pagefind-body>
+
+### `RGB`
+
+Kind: class.
+
+```python
+class RGB(r, g, b)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-rgba" class="api-reference-symbol" data-pagefind-body>
+
+### `RGBA`
+
+Kind: class.
+
+```python
+class RGBA(r, g, b, a)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-ringdraft" class="api-reference-symbol" data-pagefind-body>
+
+### `RingDraft`
+
+Kind: class.
+
+```python
+class RingDraft
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-rootkind" class="api-reference-symbol" data-pagefind-body>
+
+### `RootKind`
+
+Kind: class.
+
+```python
+class RootKind(value)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-semanticid" class="api-reference-symbol" data-pagefind-body>
+
+### `SemanticId`
+
+Kind: class.
+
+```python
+class SemanticId(slot, generation)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-shelldraft" class="api-reference-symbol" data-pagefind-body>
+
+### `ShellDraft`
+
+Kind: class.
+
+```python
+class ShellDraft
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-surfacedraft" class="api-reference-symbol" data-pagefind-body>
+
+### `SurfaceDraft`
+
+Kind: class.
+
+```python
+class SurfaceDraft(outer)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-textureid" class="api-reference-symbol" data-pagefind-body>
+
+### `TextureId`
+
+Kind: class.
+
+```python
+class TextureId(slot, generation)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-texturetype" class="api-reference-symbol" data-pagefind-body>
+
+### `TextureType`
+
+Kind: class.
+
+```python
+class TextureType(value)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-transform" class="api-reference-symbol" data-pagefind-body>
+
+### `Transform`
+
+Kind: class.
+
+```python
+class Transform(scale, translate)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-uv" class="api-reference-symbol" data-pagefind-body>
+
+### `UV`
+
+Kind: class.
+
+```python
+class UV(u, v)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-value" class="api-reference-symbol" data-pagefind-body>
+
+### `Value`
+
+Kind: class.
+
+```python
+class Value(handle)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-version" class="api-reference-symbol" data-pagefind-body>
+
+### `Version`
+
+Kind: class.
+
+```python
+class Version(value)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `Vertex`
+
+Kind: class.
+
+```python
+class Vertex(x, y, z)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="class-wrapmode" class="api-reference-symbol" data-pagefind-body>
+
+### `WrapMode`
+
+Kind: class.
+
+```python
+class WrapMode(value)
+```
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="function-merge_feature_stream_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `merge_feature_stream_bytes`
+
+Kind: function.
+
+```python
+merge_feature_stream_bytes(data)
+```
+
+- **Return type:** `CityModel`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="function-merge_models" class="api-reference-symbol" data-pagefind-body>
+
+### `merge_models`
+
+Kind: function.
+
+```python
+merge_models(models)
+```
+
+- **Return type:** `CityModel`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="function-probe_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `probe_bytes`
+
+Kind: function.
+
+```python
+probe_bytes(data)
+```
+
+- **Return type:** `Probe`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="function-serialize_feature_stream" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_feature_stream`
+
+Kind: function.
+
+```python
+serialize_feature_stream(models, options=None)
+```
+
+- **Return type:** `str`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="function-serialize_feature_stream_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_feature_stream_bytes`
+
+Kind: function.
+
+```python
+serialize_feature_stream_bytes(models, options=None)
+```
+
+- **Return type:** `bytes`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="function-write_cityjsonseq_auto_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `write_cityjsonseq_auto_transform`
+
+Kind: function.
+
+```python
+write_cityjsonseq_auto_transform(base_root, features, options=None)
+```
+
+- **Return type:** `str`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="function-write_cityjsonseq_auto_transform_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `write_cityjsonseq_auto_transform_bytes`
+
+Kind: function.
+
+```python
+write_cityjsonseq_auto_transform_bytes(base_root, features, options=None)
+```
+
+- **Return type:** `bytes`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="function-write_cityjsonseq_with_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `write_cityjsonseq_with_transform`
+
+Kind: function.
+
+```python
+write_cityjsonseq_with_transform(base_root, features, transform, options=None)
+```
+
+- **Return type:** `str`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="function-write_cityjsonseq_with_transform_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `write_cityjsonseq_with_transform_bytes`
+
+Kind: function.
+
+```python
+write_cityjsonseq_with_transform_bytes(base_root, features, transform, options=None)
+```
+
+- **Return type:** `bytes`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>

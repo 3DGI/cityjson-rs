@@ -1,0 +1,16 @@
+
+PROJECT_NAME = cityjson-index-c
+OUTPUT_DIRECTORY = /home/balazs/Development/cityjson-rs/docs-site/.generated/api/doxygen/cityjson-index-c
+INPUT = /home/balazs/Development/cityjson-rs/docs-site/.generated/api/doxygen-input/cityjson-index-c/cityjson_index.h
+GENERATE_XML = YES
+XML_OUTPUT = xml
+GENERATE_HTML = NO
+GENERATE_LATEX = NO
+EXTRACT_ALL = YES
+EXTRACT_PRIVATE = NO
+QUIET = YES
+WARN_IF_UNDOCUMENTED = NO
+RECURSIVE = NO
+ENABLE_PREPROCESSING = YES
+MACRO_EXPANSION = YES
+HAVE_DOT = YES

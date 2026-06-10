@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcjx__string__list__t" kind="struct" language="C++" prot="public">
+    <compoundname>cjx_string_list_t</compoundname>
+    <includes refid="cityjson__index_8h" local="no">cityjson_index.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcjx__string__list__t_1a3f4489499ed5577e747d2aa3b19fa2f7" prot="public" static="no" mutable="no">
+        <type>cj_bytes_t *</type>
+        <definition>cj_bytes_t* cjx_string_list_t::data</definition>
+        <argsstring></argsstring>
+        <name>data</name>
+        <qualifiedname>cjx_string_list_t::data</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="69" column="14" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="69" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__string__list__t_1a35aa0773dff169b86c3e6819eb760389" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cjx_string_list_t::len</definition>
+        <argsstring></argsstring>
+        <name>len</name>
+        <qualifiedname>cjx_string_list_t::len</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="70" column="13" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="70" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="68" column="1" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="68" bodyend="71"/>
+    <listofallmembers>
+      <member refid="structcjx__string__list__t_1a3f4489499ed5577e747d2aa3b19fa2f7" prot="public" virt="non-virtual"><scope>cjx_string_list_t</scope><name>data</name></member>
+      <member refid="structcjx__string__list__t_1a35aa0773dff169b86c3e6819eb760389" prot="public" virt="non-virtual"><scope>cjx_string_list_t</scope><name>len</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

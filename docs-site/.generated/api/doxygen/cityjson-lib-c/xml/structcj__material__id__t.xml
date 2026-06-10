@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__material__id__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_material_id_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__material__id__t_1adb419be60e87d917b57396778be78364" prot="public" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t cj_material_id_t::slot</definition>
+        <argsstring></argsstring>
+        <name>slot</name>
+        <qualifiedname>cj_material_id_t::slot</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="451" column="12" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="451" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__material__id__t_1a288db3b1369eafcb2348733c4360333d" prot="public" static="no" mutable="no">
+        <type>uint16_t</type>
+        <definition>uint16_t cj_material_id_t::generation</definition>
+        <argsstring></argsstring>
+        <name>generation</name>
+        <qualifiedname>cj_material_id_t::generation</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="452" column="12" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="452" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__material__id__t_1a9eb848a4faee02ebe73acf432167aeb8" prot="public" static="no" mutable="no">
+        <type>uint16_t</type>
+        <definition>uint16_t cj_material_id_t::reserved</definition>
+        <argsstring></argsstring>
+        <name>reserved</name>
+        <qualifiedname>cj_material_id_t::reserved</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="453" column="12" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="453" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Stable typed id for a model-owned material handle. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="450" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="450" bodyend="454"/>
+    <listofallmembers>
+      <member refid="structcj__material__id__t_1a288db3b1369eafcb2348733c4360333d" prot="public" virt="non-virtual"><scope>cj_material_id_t</scope><name>generation</name></member>
+      <member refid="structcj__material__id__t_1a9eb848a4faee02ebe73acf432167aeb8" prot="public" virt="non-virtual"><scope>cj_material_id_t</scope><name>reserved</name></member>
+      <member refid="structcj__material__id__t_1adb419be60e87d917b57396778be78364" prot="public" virt="non-virtual"><scope>cj_material_id_t</scope><name>slot</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

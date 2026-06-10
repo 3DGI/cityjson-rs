@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcjx__bounds2d__t" kind="struct" language="C++" prot="public">
+    <compoundname>cjx_bounds2d_t</compoundname>
+    <includes refid="cityjson__index_8h" local="no">cityjson_index.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcjx__bounds2d__t_1afe0f619d4d7707ecc1d41bc9e5d90451" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cjx_bounds2d_t::min_x</definition>
+        <argsstring></argsstring>
+        <name>min_x</name>
+        <qualifiedname>cjx_bounds2d_t::min_x</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="62" column="10" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__bounds2d__t_1ae2557511f745be86a19d1d2e15945615" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cjx_bounds2d_t::max_x</definition>
+        <argsstring></argsstring>
+        <name>max_x</name>
+        <qualifiedname>cjx_bounds2d_t::max_x</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="63" column="10" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="63" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__bounds2d__t_1ac0612040f95b8ad02b5bb8abcd9bedc2" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cjx_bounds2d_t::min_y</definition>
+        <argsstring></argsstring>
+        <name>min_y</name>
+        <qualifiedname>cjx_bounds2d_t::min_y</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="64" column="10" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__bounds2d__t_1a0d5897cf07ad89d8047e50c719982d0d" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cjx_bounds2d_t::max_y</definition>
+        <argsstring></argsstring>
+        <name>max_y</name>
+        <qualifiedname>cjx_bounds2d_t::max_y</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="65" column="10" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="65" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="61" column="1" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="61" bodyend="66"/>
+    <listofallmembers>
+      <member refid="structcjx__bounds2d__t_1ae2557511f745be86a19d1d2e15945615" prot="public" virt="non-virtual"><scope>cjx_bounds2d_t</scope><name>max_x</name></member>
+      <member refid="structcjx__bounds2d__t_1a0d5897cf07ad89d8047e50c719982d0d" prot="public" virt="non-virtual"><scope>cjx_bounds2d_t</scope><name>max_y</name></member>
+      <member refid="structcjx__bounds2d__t_1afe0f619d4d7707ecc1d41bc9e5d90451" prot="public" virt="non-virtual"><scope>cjx_bounds2d_t</scope><name>min_x</name></member>
+      <member refid="structcjx__bounds2d__t_1ac0612040f95b8ad02b5bb8abcd9bedc2" prot="public" virt="non-virtual"><scope>cjx_bounds2d_t</scope><name>min_y</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

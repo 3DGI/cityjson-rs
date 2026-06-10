@@ -1,0 +1,192 @@
+---
+title: ModelSelection
+description: Generated C++ owner reference for cityjson-lib.
+languages: ["cpp"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp`
+
+## Contents
+
+- [ModelSelection](#class-modelselection)
+- [include_relatives](#method-include_relatives)
+- [intersection_with](#method-intersection_with)
+- [is_empty](#method-is_empty)
+- [ModelSelection](#method-modelselection)
+- [operator=](#method-operator)
+- [raw_handle](#method-raw_handle)
+- [select_cityobjects_by_id](#method-select_cityobjects_by_id)
+- [select_geometries_by_cityobject_id_and_index](#method-select_geometries_by_cityobject_id_and_index)
+- [union_with](#method-union_with)
+- [valid](#method-valid)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `ModelSelection` | class | [section](#class-modelselection) |
+| `include_relatives` | method | [section](#method-include_relatives) |
+| `intersection_with` | method | [section](#method-intersection_with) |
+| `is_empty` | method | [section](#method-is_empty) |
+| `ModelSelection` | method | [section](#method-modelselection) |
+| `operator=` | method | [section](#method-operator) |
+| `raw_handle` | method | [section](#method-raw_handle) |
+| `select_cityobjects_by_id` | method | [section](#method-select_cityobjects_by_id) |
+| `select_geometries_by_cityobject_id_and_index` | method | [section](#method-select_geometries_by_cityobject_id_and_index) |
+| `union_with` | method | [section](#method-union_with) |
+| `valid` | method | [section](#method-valid) |
+
+<section id="class-modelselection" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelSelection`
+
+Kind: class.
+
+```cpp
+class cityjson_lib::ModelSelection
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-include_relatives" class="api-reference-symbol" data-pagefind-body>
+
+### `include_relatives`
+
+Kind: method.
+
+```cpp
+ModelSelection cityjson_lib::ModelSelection::include_relatives(const Model &model) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-intersection_with" class="api-reference-symbol" data-pagefind-body>
+
+### `intersection_with`
+
+Kind: method.
+
+```cpp
+ModelSelection cityjson_lib::ModelSelection::intersection_with(const ModelSelection &other) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-is_empty" class="api-reference-symbol" data-pagefind-body>
+
+### `is_empty`
+
+Kind: method.
+
+```cpp
+bool cityjson_lib::ModelSelection::is_empty() const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-modelselection" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelSelection`
+
+Kind: method.
+
+```cpp
+cityjson_lib::ModelSelection::ModelSelection()=default;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-operator" class="api-reference-symbol" data-pagefind-body>
+
+### `operator=`
+
+Kind: method.
+
+```cpp
+ModelSelection & cityjson_lib::ModelSelection::operator=(const ModelSelection &)=delete;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-raw_handle" class="api-reference-symbol" data-pagefind-body>
+
+### `raw_handle`
+
+Kind: method.
+
+```cpp
+cj_model_selection_t * cityjson_lib::ModelSelection::raw_handle() const noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-select_cityobjects_by_id" class="api-reference-symbol" data-pagefind-body>
+
+### `select_cityobjects_by_id`
+
+Kind: method.
+
+```cpp
+static ModelSelection cityjson_lib::ModelSelection::select_cityobjects_by_id(const Model &model, std::span< const std::string_view > ids);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-select_geometries_by_cityobject_id_and_index" class="api-reference-symbol" data-pagefind-body>
+
+### `select_geometries_by_cityobject_id_and_index`
+
+Kind: method.
+
+```cpp
+static ModelSelection cityjson_lib::ModelSelection::select_geometries_by_cityobject_id_and_index(const Model &model, std::span< const GeometrySelectionSpec > specs);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-union_with" class="api-reference-symbol" data-pagefind-body>
+
+### `union_with`
+
+Kind: method.
+
+```cpp
+ModelSelection cityjson_lib::ModelSelection::union_with(const ModelSelection &other) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>
+
+<section id="method-valid" class="api-reference-symbol" data-pagefind-body>
+
+### `valid`
+
+Kind: method.
+
+```cpp
+bool cityjson_lib::ModelSelection::valid() const noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ModelSelection.xml
+
+</section>

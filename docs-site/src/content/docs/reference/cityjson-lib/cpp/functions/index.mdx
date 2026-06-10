@@ -1,0 +1,848 @@
+---
+title: Functions
+description: Generated C++ owner reference for cityjson-lib.
+languages: ["cpp"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp`
+
+## Contents
+
+- [AffineTransform4x4](#type-alias-affinetransform4x4)
+- [BBox](#type-alias-bbox)
+- [ContactRole](#type-alias-contactrole)
+- [ContactType](#type-alias-contacttype)
+- [ErrorKind](#type-alias-errorkind)
+- [GeometryType](#type-alias-geometrytype)
+- [ImageType](#type-alias-imagetype)
+- [ModelCapacities](#type-alias-modelcapacities)
+- [ModelSummary](#type-alias-modelsummary)
+- [ModelType](#type-alias-modeltype)
+- [Probe](#type-alias-probe)
+- [Rgb](#type-alias-rgb)
+- [Rgba](#type-alias-rgba)
+- [RootKind](#type-alias-rootkind)
+- [Status](#type-alias-status)
+- [TextureType](#type-alias-texturetype)
+- [UV](#type-alias-uv)
+- [Version](#type-alias-version)
+- [Vertex](#type-alias-vertex)
+- [WrapMode](#type-alias-wrapmode)
+- [cityobject_id](#constant-cityobject_id)
+- [geometry_index](#constant-geometry_index)
+- [geometry_type](#constant-geometry_type)
+- [handle_](#constant-handle_)
+- [has_boundaries](#constant-has_boundaries)
+- [kind_](#constant-kind_)
+- [pretty](#constant-pretty)
+- [raw_](#constant-raw_)
+- [ring_offsets](#constant-ring_offsets)
+- [scale](#constant-scale)
+- [shell_offsets](#constant-shell_offsets)
+- [solid_offsets](#constant-solid_offsets)
+- [status_](#constant-status_)
+- [surface_offsets](#constant-surface_offsets)
+- [translate](#constant-translate)
+- [validate_default_themes](#constant-validate_default_themes)
+- [vertex_indices](#constant-vertex_indices)
+- [check_status](#function-check_status)
+- [copy_indices](#function-copy_indices)
+- [copy_string](#function-copy_string)
+- [last_error_message](#function-last_error_message)
+- [span_data](#function-span_data)
+- [take_bytes](#function-take_bytes)
+- [take_geometry_boundary](#function-take_geometry_boundary)
+- [take_geometry_types](#function-take_geometry_types)
+- [take_string](#function-take_string)
+- [take_string_list](#function-take_string_list)
+- [take_uvs](#function-take_uvs)
+- [take_vertices](#function-take_vertices)
+- [throw_last_error](#function-throw_last_error)
+- [to_native](#function-to_native)
+- [to_view](#function-to_view)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `AffineTransform4x4` | type alias | [section](#type-alias-affinetransform4x4) |
+| `BBox` | type alias | [section](#type-alias-bbox) |
+| `ContactRole` | type alias | [section](#type-alias-contactrole) |
+| `ContactType` | type alias | [section](#type-alias-contacttype) |
+| `ErrorKind` | type alias | [section](#type-alias-errorkind) |
+| `GeometryType` | type alias | [section](#type-alias-geometrytype) |
+| `ImageType` | type alias | [section](#type-alias-imagetype) |
+| `ModelCapacities` | type alias | [section](#type-alias-modelcapacities) |
+| `ModelSummary` | type alias | [section](#type-alias-modelsummary) |
+| `ModelType` | type alias | [section](#type-alias-modeltype) |
+| `Probe` | type alias | [section](#type-alias-probe) |
+| `Rgb` | type alias | [section](#type-alias-rgb) |
+| `Rgba` | type alias | [section](#type-alias-rgba) |
+| `RootKind` | type alias | [section](#type-alias-rootkind) |
+| `Status` | type alias | [section](#type-alias-status) |
+| `TextureType` | type alias | [section](#type-alias-texturetype) |
+| `UV` | type alias | [section](#type-alias-uv) |
+| `Version` | type alias | [section](#type-alias-version) |
+| `Vertex` | type alias | [section](#type-alias-vertex) |
+| `WrapMode` | type alias | [section](#type-alias-wrapmode) |
+| `cityobject_id` | constant | [section](#constant-cityobject_id) |
+| `geometry_index` | constant | [section](#constant-geometry_index) |
+| `geometry_type` | constant | [section](#constant-geometry_type) |
+| `handle_` | constant | [section](#constant-handle_) |
+| `has_boundaries` | constant | [section](#constant-has_boundaries) |
+| `kind_` | constant | [section](#constant-kind_) |
+| `pretty` | constant | [section](#constant-pretty) |
+| `raw_` | constant | [section](#constant-raw_) |
+| `ring_offsets` | constant | [section](#constant-ring_offsets) |
+| `scale` | constant | [section](#constant-scale) |
+| `shell_offsets` | constant | [section](#constant-shell_offsets) |
+| `solid_offsets` | constant | [section](#constant-solid_offsets) |
+| `status_` | constant | [section](#constant-status_) |
+| `surface_offsets` | constant | [section](#constant-surface_offsets) |
+| `translate` | constant | [section](#constant-translate) |
+| `validate_default_themes` | constant | [section](#constant-validate_default_themes) |
+| `vertex_indices` | constant | [section](#constant-vertex_indices) |
+| `check_status` | function | [section](#function-check_status) |
+| `copy_indices` | function | [section](#function-copy_indices) |
+| `copy_string` | function | [section](#function-copy_string) |
+| `last_error_message` | function | [section](#function-last_error_message) |
+| `span_data` | function | [section](#function-span_data) |
+| `take_bytes` | function | [section](#function-take_bytes) |
+| `take_geometry_boundary` | function | [section](#function-take_geometry_boundary) |
+| `take_geometry_types` | function | [section](#function-take_geometry_types) |
+| `take_string` | function | [section](#function-take_string) |
+| `take_string_list` | function | [section](#function-take_string_list) |
+| `take_uvs` | function | [section](#function-take_uvs) |
+| `take_vertices` | function | [section](#function-take_vertices) |
+| `throw_last_error` | function | [section](#function-throw_last_error) |
+| `to_native` | function | [section](#function-to_native) |
+| `to_view` | function | [section](#function-to_view) |
+
+<section id="type-alias-affinetransform4x4" class="api-reference-symbol" data-pagefind-body>
+
+### `AffineTransform4x4`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::AffineTransform4x4 = typedef cj_affine_transform_4x4_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-bbox" class="api-reference-symbol" data-pagefind-body>
+
+### `BBox`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::BBox = typedef cj_bbox_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-contactrole" class="api-reference-symbol" data-pagefind-body>
+
+### `ContactRole`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::ContactRole = typedef cj_contact_role_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-contacttype" class="api-reference-symbol" data-pagefind-body>
+
+### `ContactType`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::ContactType = typedef cj_contact_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-errorkind" class="api-reference-symbol" data-pagefind-body>
+
+### `ErrorKind`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::ErrorKind = typedef cj_error_kind_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-geometrytype" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometryType`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::GeometryType = typedef cj_geometry_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-imagetype" class="api-reference-symbol" data-pagefind-body>
+
+### `ImageType`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::ImageType = typedef cj_image_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-modelcapacities" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelCapacities`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::ModelCapacities = typedef cj_model_capacities_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-modelsummary" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelSummary`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::ModelSummary = typedef cj_model_summary_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-modeltype" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelType`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::ModelType = typedef cj_model_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-probe" class="api-reference-symbol" data-pagefind-body>
+
+### `Probe`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::Probe = typedef cj_probe_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-rgb" class="api-reference-symbol" data-pagefind-body>
+
+### `Rgb`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::Rgb = typedef cj_rgb_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-rgba" class="api-reference-symbol" data-pagefind-body>
+
+### `Rgba`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::Rgba = typedef cj_rgba_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-rootkind" class="api-reference-symbol" data-pagefind-body>
+
+### `RootKind`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::RootKind = typedef cj_root_kind_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-status" class="api-reference-symbol" data-pagefind-body>
+
+### `Status`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::Status = typedef cj_status_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-texturetype" class="api-reference-symbol" data-pagefind-body>
+
+### `TextureType`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::TextureType = typedef cj_texture_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-uv" class="api-reference-symbol" data-pagefind-body>
+
+### `UV`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::UV = typedef cj_uv_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-version" class="api-reference-symbol" data-pagefind-body>
+
+### `Version`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::Version = typedef cj_version_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `Vertex`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::Vertex = typedef cj_vertex_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="type-alias-wrapmode" class="api-reference-symbol" data-pagefind-body>
+
+### `WrapMode`
+
+Kind: type alias.
+
+```cpp
+using cityjson_lib::WrapMode = typedef cj_wrap_mode_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="constant-cityobject_id" class="api-reference-symbol" data-pagefind-body>
+
+### `cityobject_id`
+
+Kind: constant.
+
+```cpp
+std::string_view cityjson_lib::GeometrySelectionSpec::cityobject_id;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1GeometrySelectionSpec.xml
+
+</section>
+
+<section id="constant-geometry_index" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_index`
+
+Kind: constant.
+
+```cpp
+std::size_t cityjson_lib::GeometrySelectionSpec::geometry_index;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1GeometrySelectionSpec.xml
+
+</section>
+
+<section id="constant-geometry_type" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_type`
+
+Kind: constant.
+
+```cpp
+GeometryType cityjson_lib::GeometryBoundary::geometry_type;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1GeometryBoundary.xml
+
+</section>
+
+<section id="constant-handle_" class="api-reference-symbol" data-pagefind-body>
+
+### `handle_`
+
+Kind: constant.
+
+```cpp
+cj_proj_transformer_t* cityjson_lib::ProjTransformer::handle_;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1ProjTransformer.xml
+
+</section>
+
+<section id="constant-has_boundaries" class="api-reference-symbol" data-pagefind-body>
+
+### `has_boundaries`
+
+Kind: constant.
+
+```cpp
+bool cityjson_lib::GeometryBoundary::has_boundaries;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1GeometryBoundary.xml
+
+</section>
+
+<section id="constant-kind_" class="api-reference-symbol" data-pagefind-body>
+
+### `kind_`
+
+Kind: constant.
+
+```cpp
+ErrorKind cityjson_lib::StatusError::kind_;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1StatusError.xml
+
+</section>
+
+<section id="constant-pretty" class="api-reference-symbol" data-pagefind-body>
+
+### `pretty`
+
+Kind: constant.
+
+```cpp
+bool cityjson_lib::WriteOptions::pretty;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1WriteOptions.xml
+
+</section>
+
+<section id="constant-raw_" class="api-reference-symbol" data-pagefind-body>
+
+### `raw_`
+
+Kind: constant.
+
+```cpp
+cj_geometry_template_id_t cityjson_lib::GeometryTemplateId::raw_;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryTemplateId.xml
+
+</section>
+
+<section id="constant-ring_offsets" class="api-reference-symbol" data-pagefind-body>
+
+### `ring_offsets`
+
+Kind: constant.
+
+```cpp
+std::vector<std::size_t> cityjson_lib::GeometryBoundary::ring_offsets;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1GeometryBoundary.xml
+
+</section>
+
+<section id="constant-scale" class="api-reference-symbol" data-pagefind-body>
+
+### `scale`
+
+Kind: constant.
+
+```cpp
+std::array<double, 3> cityjson_lib::Transform::scale;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1Transform.xml
+
+</section>
+
+<section id="constant-shell_offsets" class="api-reference-symbol" data-pagefind-body>
+
+### `shell_offsets`
+
+Kind: constant.
+
+```cpp
+std::vector<std::size_t> cityjson_lib::GeometryBoundary::shell_offsets;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1GeometryBoundary.xml
+
+</section>
+
+<section id="constant-solid_offsets" class="api-reference-symbol" data-pagefind-body>
+
+### `solid_offsets`
+
+Kind: constant.
+
+```cpp
+std::vector<std::size_t> cityjson_lib::GeometryBoundary::solid_offsets;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1GeometryBoundary.xml
+
+</section>
+
+<section id="constant-status_" class="api-reference-symbol" data-pagefind-body>
+
+### `status_`
+
+Kind: constant.
+
+```cpp
+Status cityjson_lib::StatusError::status_;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1StatusError.xml
+
+</section>
+
+<section id="constant-surface_offsets" class="api-reference-symbol" data-pagefind-body>
+
+### `surface_offsets`
+
+Kind: constant.
+
+```cpp
+std::vector<std::size_t> cityjson_lib::GeometryBoundary::surface_offsets;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1GeometryBoundary.xml
+
+</section>
+
+<section id="constant-translate" class="api-reference-symbol" data-pagefind-body>
+
+### `translate`
+
+Kind: constant.
+
+```cpp
+std::array<double, 3> cityjson_lib::Transform::translate;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1Transform.xml
+
+</section>
+
+<section id="constant-validate_default_themes" class="api-reference-symbol" data-pagefind-body>
+
+### `validate_default_themes`
+
+Kind: constant.
+
+```cpp
+bool cityjson_lib::WriteOptions::validate_default_themes;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1WriteOptions.xml
+
+</section>
+
+<section id="constant-vertex_indices" class="api-reference-symbol" data-pagefind-body>
+
+### `vertex_indices`
+
+Kind: constant.
+
+```cpp
+std::vector<std::size_t> cityjson_lib::GeometryBoundary::vertex_indices;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/structcityjson__lib_1_1GeometryBoundary.xml
+
+</section>
+
+<section id="function-check_status" class="api-reference-symbol" data-pagefind-body>
+
+### `check_status`
+
+Kind: function.
+
+```cpp
+void cityjson_lib::check_status(Status status);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-copy_indices" class="api-reference-symbol" data-pagefind-body>
+
+### `copy_indices`
+
+Kind: function.
+
+```cpp
+std::vector< std::size_t > cityjson_lib::copy_indices(cj_indices_t indices);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-copy_string" class="api-reference-symbol" data-pagefind-body>
+
+### `copy_string`
+
+Kind: function.
+
+```cpp
+std::string cityjson_lib::copy_string(cj_bytes_t bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-last_error_message" class="api-reference-symbol" data-pagefind-body>
+
+### `last_error_message`
+
+Kind: function.
+
+```cpp
+std::string cityjson_lib::last_error_message();
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-span_data" class="api-reference-symbol" data-pagefind-body>
+
+### `span_data`
+
+Kind: function.
+
+```cpp
+const std::uint8_t * cityjson_lib::span_data(std::span< const std::uint8_t > bytes) noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-take_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `take_bytes`
+
+Kind: function.
+
+```cpp
+std::vector< std::uint8_t > cityjson_lib::take_bytes(cj_bytes_t bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-take_geometry_boundary" class="api-reference-symbol" data-pagefind-body>
+
+### `take_geometry_boundary`
+
+Kind: function.
+
+```cpp
+GeometryBoundary cityjson_lib::take_geometry_boundary(cj_geometry_boundary_t boundary);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-take_geometry_types" class="api-reference-symbol" data-pagefind-body>
+
+### `take_geometry_types`
+
+Kind: function.
+
+```cpp
+std::vector< GeometryType > cityjson_lib::take_geometry_types(cj_geometry_types_t types);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-take_string" class="api-reference-symbol" data-pagefind-body>
+
+### `take_string`
+
+Kind: function.
+
+```cpp
+std::string cityjson_lib::take_string(cj_bytes_t bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-take_string_list" class="api-reference-symbol" data-pagefind-body>
+
+### `take_string_list`
+
+Kind: function.
+
+```cpp
+std::vector< std::string > cityjson_lib::take_string_list(cj_bytes_list_t bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-take_uvs" class="api-reference-symbol" data-pagefind-body>
+
+### `take_uvs`
+
+Kind: function.
+
+```cpp
+std::vector< UV > cityjson_lib::take_uvs(cj_uvs_t uvs);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-take_vertices" class="api-reference-symbol" data-pagefind-body>
+
+### `take_vertices`
+
+Kind: function.
+
+```cpp
+std::vector< Vertex > cityjson_lib::take_vertices(cj_vertices_t vertices);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-throw_last_error" class="api-reference-symbol" data-pagefind-body>
+
+### `throw_last_error`
+
+Kind: function.
+
+```cpp
+void cityjson_lib::throw_last_error(Status status);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-to_native" class="api-reference-symbol" data-pagefind-body>
+
+### `to_native`
+
+Kind: function.
+
+```cpp
+cj_json_write_options_t cityjson_lib::to_native(const WriteOptions &options) noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>
+
+<section id="function-to_view" class="api-reference-symbol" data-pagefind-body>
+
+### `to_view`
+
+Kind: function.
+
+```cpp
+cj_string_view_t cityjson_lib::to_view(std::string_view value) noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/namespacecityjson__lib.xml
+
+</section>

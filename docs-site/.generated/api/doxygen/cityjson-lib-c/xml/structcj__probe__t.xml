@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__probe__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_probe_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__probe__t_1aa6831e0560d5cf44d58d61428b61f50d" prot="public" static="no" mutable="no">
+        <type>enum <ref refid="cityjson__lib_8h_1a6f1b57ef348b43219edc63d8714ee712" kindref="member">cj_root_kind_t</ref></type>
+        <definition>enum cj_root_kind_t cj_probe_t::root_kind</definition>
+        <argsstring></argsstring>
+        <name>root_kind</name>
+        <qualifiedname>cj_probe_t::root_kind</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="298" column="22" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="298" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__probe__t_1a56cd93049ab8c40e4c2ec231560a970f" prot="public" static="no" mutable="no">
+        <type>enum <ref refid="cityjson__lib_8h_1a600d048dc538cf570544de344b48691f" kindref="member">cj_version_t</ref></type>
+        <definition>enum cj_version_t cj_probe_t::version</definition>
+        <argsstring></argsstring>
+        <name>version</name>
+        <qualifiedname>cj_probe_t::version</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="299" column="20" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="299" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__probe__t_1a32fd7c07f4c8ec1ae638b166c098dac1" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_probe_t::has_version</definition>
+        <argsstring></argsstring>
+        <name>has_version</name>
+        <qualifiedname>cj_probe_t::has_version</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="300" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="300" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Probe result returned by the low-level ABI. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="297" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="297" bodyend="301"/>
+    <listofallmembers>
+      <member refid="structcj__probe__t_1a32fd7c07f4c8ec1ae638b166c098dac1" prot="public" virt="non-virtual"><scope>cj_probe_t</scope><name>has_version</name></member>
+      <member refid="structcj__probe__t_1aa6831e0560d5cf44d58d61428b61f50d" prot="public" virt="non-virtual"><scope>cj_probe_t</scope><name>root_kind</name></member>
+      <member refid="structcj__probe__t_1a56cd93049ab8c40e4c2ec231560a970f" prot="public" virt="non-virtual"><scope>cj_probe_t</scope><name>version</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

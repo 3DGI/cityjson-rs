@@ -3,406 +3,210 @@ import path from 'node:path';
 import process from 'node:process';
 
 const docsRoot = process.cwd();
-const repoRoot = path.resolve(docsRoot, '..');
-const dataPath = path.join(docsRoot, 'src/data/api-symbols.json');
+const dataDir = path.join(docsRoot, 'src/data');
+const referenceDataPath = path.join(dataDir, 'api-reference.json');
+const symbolsPath = path.join(dataDir, 'api-symbols.json');
 const referenceDir = path.join(docsRoot, 'src/content/docs/reference');
-const generatedPages = [
-  'cityjson-lib/rust.mdx',
-  'cityjson-lib/python.mdx',
-  'cityjson-lib/cpp.mdx',
-  'cityjson-lib/wasm.mdx',
-  'cityjson-index/rust.mdx',
-  'cityjson-index/python.mdx',
-];
 
-const languages = {
+const languageLabels = {
   rust: 'Rust',
   python: 'Python',
   cpp: 'C++',
   wasm: 'WASM',
+  c: 'C FFI',
 };
 
-const targets = [
-  {
-    package: 'cityjson-lib',
-    title: 'cityjson-lib Rust API',
-    language: 'rust',
-    source: 'crates/cityjson-lib/src',
-    docsRsBase: 'https://docs.rs/cityjson-lib/latest/cityjson_lib/',
-    entries: rustCityjsonLib,
-  },
-  {
-    package: 'cityjson-lib',
-    title: 'cityjson-lib Python API',
-    language: 'python',
-    source: 'crates/cityjson-lib/ffi/python/src/cityjson_lib/__init__.py',
-    entries: pythonApi,
-  },
-  {
-    package: 'cityjson-lib',
-    title: 'cityjson-lib C++ API',
-    language: 'cpp',
-    source: 'crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp',
-    entries: cppApi,
-  },
-  {
-    package: 'cityjson-lib',
-    title: 'cityjson-lib WASM API',
-    language: 'wasm',
-    source: 'crates/cityjson-lib/ffi/wasm/src/lib.rs',
-    entries: wasmApi,
-  },
-  {
-    package: 'cityjson-index',
-    title: 'cityjson-index Rust API',
-    language: 'rust',
-    source: 'crates/cityjson-index/src/lib.rs',
-    docsRsBase: 'https://docs.rs/cityjson-index/latest/cityjson_index/',
-    entries: rustCityjsonIndex,
-  },
-  {
-    package: 'cityjson-index',
-    title: 'cityjson-index Python API',
-    language: 'python',
-    source: 'crates/cityjson-index/ffi/python/src/cityjson_index/__init__.py',
-    entries: pythonApi,
-  },
-];
+const kindOrder = ['class', 'struct', 'enum', 'type alias', 'constant', 'function', 'method'];
 
-const allEntries = [];
-const symbolsByPackage = {};
-
-fs.mkdirSync(referenceDir, { recursive: true });
-for (const page of generatedPages) {
-  const fullPath = path.join(referenceDir, page);
-  if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+if (!fs.existsSync(referenceDataPath)) {
+  throw new Error(`Missing ${referenceDataPath}; run npm run extract:api first`);
 }
 
-for (const target of targets) {
-  const sourcePath = path.join(repoRoot, target.source);
-  const source = readSource(sourcePath);
-  const entries = target
-    .entries(source, target)
-    .filter((entry) => !entry.name.startsWith('_'))
-    .map((entry) => normalizeEntry(entry, target));
-  const uniqueEntries = assignUniqueAnchors(uniqueBy(entries, (entry) => `${entry.kind}:${entry.name}`));
-  const slug = `/reference/${target.package}/${target.language}/`;
-  const pagePath = path.join(referenceDir, target.package, `${target.language}.mdx`);
+const reference = JSON.parse(fs.readFileSync(referenceDataPath, 'utf8'));
+const entries = assignUrls(reference.entries ?? []);
 
-  fs.mkdirSync(path.dirname(pagePath), { recursive: true });
-  fs.writeFileSync(pagePath, renderReferencePage(target, uniqueEntries), 'utf8');
+removeGeneratedPages(referenceDir);
 
-  for (const entry of uniqueEntries) {
-    const url = `${slug}#${entry.anchor}`;
-    const enriched = { ...entry, url };
-    delete enriched.anchor;
-    allEntries.push(enriched);
-    symbolsByPackage[target.package] ??= {};
-    symbolsByPackage[target.package][target.language] ??= {};
+const allSymbols = [];
+const symbolsByPackage = {};
+for (const group of groupBy(entries, (entry) => `${entry.package}\0${entry.language}`).values()) {
+  renderLanguageIndex(group);
+  for (const ownerEntries of groupBy(group, (entry) => entry.owner.key).values()) {
+    renderOwnerPage(ownerEntries);
+  }
+
+  for (const entry of group) {
+    allSymbols.push(symbolManifestEntry(entry));
+    symbolsByPackage[entry.package] ??= {};
+    symbolsByPackage[entry.package][entry.language] ??= {};
     for (const alias of entry.aliases) {
-      symbolsByPackage[target.package][target.language][alias] = url;
+      symbolsByPackage[entry.package][entry.language][alias] = entry.url;
     }
   }
 }
 
-allEntries.sort((a, b) =>
+allSymbols.sort((a, b) =>
   [a.package, a.language, a.name].join('\0').localeCompare([b.package, b.language, b.name].join('\0')),
 );
 
 fs.writeFileSync(
-  dataPath,
-  `${JSON.stringify({ entries: allEntries, symbolsByPackage }, null, 2)}\n`,
+  symbolsPath,
+  `${JSON.stringify({ entries: allSymbols, symbolsByPackage }, null, 2)}\n`,
   'utf8',
 );
 
-function readSource(sourcePath) {
-  if (fs.statSync(sourcePath).isDirectory()) {
-    return fs
-      .readdirSync(sourcePath)
-      .filter((file) => file.endsWith('.rs'))
-      .map((file) => `// ${file}\n${fs.readFileSync(path.join(sourcePath, file), 'utf8')}`)
-      .join('\n');
+function assignUrls(values) {
+  const ownerSlugs = new Map();
+  const ownerSlugSets = new Map();
+
+  for (const group of groupBy(values, (entry) => `${entry.package}\0${entry.language}`).values()) {
+    const first = group[0];
+    const slugSetKey = `${first.package}\0${first.language}`;
+    const seen = ownerSlugSets.get(slugSetKey) ?? new Set();
+    ownerSlugSets.set(slugSetKey, seen);
+
+    for (const ownerEntries of groupBy(group, (entry) => entry.owner.key).values()) {
+      const owner = ownerEntries[0].owner;
+      ownerSlugs.set(ownerKey(ownerEntries[0]), uniqueSlug(owner.slug, seen));
+    }
   }
-  return fs.readFileSync(sourcePath, 'utf8');
-}
 
-function normalizeEntry(entry, target) {
-  const name = entry.name.trim();
-  const anchor = slugify(`${entry.kind}-${name}`);
-  const aliases = uniqueBy([name, ...(entry.aliases ?? [])].filter(Boolean), (alias) => alias);
-  return {
-    name,
-    language: target.language,
-    package: target.package,
-    kind: entry.kind,
-    signature: entry.signature?.trim(),
-    source: target.source,
-    docsRsUrl: target.docsRsBase ? rustDocsRsUrl(target, name, entry.kind) : undefined,
-    anchor,
-    aliases,
-  };
-}
-
-function renderReferencePage(target, entries) {
-  const grouped = groupBy(entries, (entry) => entry.kind);
-  const sourceLabel = target.source.replaceAll('\\', '/');
-  const sections = ['class', 'struct', 'enum', 'type alias', 'constant', 'function', 'method']
-    .filter((kind) => grouped.has(kind))
-    .map((kind) => {
-      const items = grouped
-        .get(kind)
-        .map((entry) => {
-          const docsRs = entry.docsRsUrl ? `\n\n[docs.rs mirror](${entry.docsRsUrl})` : '';
-          const signature = entry.signature
-            ? `\n\n\`\`\`${fenceLanguage(target.language)}\n${entry.signature}\n\`\`\``
-            : '';
-          return `<section id="${entry.anchor}" class="api-reference-symbol" data-pagefind-body>\n\n### \`${escapeMd(entry.name)}\`\n\nKind: ${kind}.${signature}${docsRs}\n\n</section>`;
-        })
-        .join('\n\n');
-      return `## ${kindLabel(kind)}\n\n${items}`;
-    })
-    .join('\n\n');
-
-  return `---\ntitle: ${target.title}\ndescription: Generated public ${languages[target.language]} API reference for ${target.package}.\nlanguages: ["${target.language}"]\n---\n\nThis generated page indexes public user-facing ${languages[target.language]} symbols from \`${sourceLabel}\`.\n\n${sections}\n`;
-}
-
-function rustCityjsonLib(_source, target) {
-  const entries = [];
-  const root = readSource(path.join(repoRoot, 'crates/cityjson-lib/src/lib.rs'));
-  for (const match of root.matchAll(/^pub use (?<path>[^;]+);/gm)) {
-    const rawPath = match.groups.path.trim();
-    const name = rawPath.includes(' as ')
-      ? rawPath.split(/\s+as\s+/).at(-1)
-      : rawPath.split('::').at(-1);
-    if (!name || name === 'cityjson_types') continue;
-    entries.push({ name: `cityjson_lib::${name}`, kind: 'type alias', aliases: [name] });
-  }
-  for (const moduleName of ['json', 'arrow', 'parquet', 'ops']) {
-    const modulePath = path.join(repoRoot, `crates/cityjson-lib/src/${moduleName}.rs`);
-    if (!fs.existsSync(modulePath)) continue;
-    const moduleSource = fs.readFileSync(modulePath, 'utf8');
-    for (const entry of rustItems(moduleSource, moduleName, target)) entries.push(entry);
-  }
-  entries.push({
-    name: 'cityjson_lib::query::summary',
-    kind: 'function',
-    aliases: ['query::summary', 'summary'],
-    signature: 'pub fn summary(model: &CityModel) -> ModelSummary',
+  const anchorsByPage = new Map();
+  return values.map((entry) => {
+    const pageSlug = ownerSlugs.get(ownerKey(entry));
+    const pageKey = `${entry.package}\0${entry.language}\0${pageSlug}`;
+    const anchors = anchorsByPage.get(pageKey) ?? new Set();
+    const anchor = uniqueSlug(slugify(`${entry.kind}-${entry.memberName}`), anchors);
+    anchorsByPage.set(pageKey, anchors);
+    return {
+      ...entry,
+      anchor,
+      url: `/reference/${entry.package}/${entry.language}/${pageSlug}/#${anchor}`,
+      owner: { ...entry.owner, slug: pageSlug },
+    };
   });
-  return entries;
 }
 
-function rustCityjsonIndex(source, target) {
-  return rustItems(source, '', target).filter(
-    (entry) =>
-      !entry.name.includes('benchmark::') &&
-      !entry.name.includes('profile::') &&
-      !entry.name.includes('PackageFilterDiagnostics'),
+function renderLanguageIndex(group) {
+  const first = group[0];
+  const title = `${first.package} ${languageLabels[first.language]} API`;
+  const packageDir = path.join(referenceDir, first.package, first.language);
+  fs.mkdirSync(packageDir, { recursive: true });
+
+  const owners = [...groupBy(group, (entry) => entry.owner.key).values()]
+    .map((ownerEntries) => {
+      const owner = ownerEntries[0].owner;
+      const memberCount = ownerEntries.length;
+      const noun = memberCount === 1 ? 'symbol' : 'symbols';
+      return `- [${escapeMd(owner.label)}](./${owner.slug}/) - ${memberCount} ${noun}`;
+    })
+    .join('\n');
+
+  fs.writeFileSync(
+    path.join(packageDir, 'index.mdx'),
+    `---\ntitle: ${title}\ndescription: Generated ${languageLabels[first.language]} API reference for ${first.package}.\nlanguages: ["${first.language}"]\ngenerated: true\n---\n\nThis generated index links to owner-level reference pages for ${languageLabels[first.language]} symbols.\n\n${owners}\n`,
+    'utf8',
   );
 }
 
-function rustItems(source, moduleName, target) {
-  const entries = [];
-  const crateName = target.package.replace('-', '_');
-  const prefix = moduleName ? `${crateName}::${moduleName}::` : `${crateName}::`;
+function renderOwnerPage(ownerEntries) {
+  const first = ownerEntries[0];
+  const owner = first.owner;
+  const packageDir = path.join(referenceDir, first.package, first.language, owner.slug);
+  fs.mkdirSync(packageDir, { recursive: true });
 
-  for (const match of source.matchAll(/^pub\s+(struct|enum|const|type)\s+([A-Za-z][A-Za-z0-9_]*)/gm)) {
-    const [, rawKind, name] = match;
-    entries.push({
-      name: `${prefix}${name}`,
-      kind: rawKind === 'const' ? 'constant' : rawKind === 'type' ? 'type alias' : rawKind,
-      aliases: [moduleName ? `${moduleName}::${name}` : name],
-      signature: firstLineAt(source, match.index),
-    });
-  }
+  const ownedEntries = ownerEntries.toSorted((a, b) => kindSort(a, b) || a.memberName.localeCompare(b.memberName));
+  const toc = ownedEntries
+    .map((entry) => `- [${escapeMd(entry.memberName)}](#${entry.anchor})`)
+    .join('\n');
+  const memberTable = ownedEntries
+    .map((entry) => `| \`${escapeMd(entry.memberName)}\` | ${entry.kind} | [section](#${entry.anchor}) |`)
+    .join('\n');
+  const sections = ownedEntries.map((entry) => renderSymbolSection(entry)).join('\n\n');
 
-  for (const match of source.matchAll(/^pub\s+fn\s+([A-Za-z][A-Za-z0-9_]*)/gm)) {
-    const name = match[1];
-    entries.push({
-      name: `${prefix}${name}`,
-      kind: 'function',
-      aliases: [moduleName ? `${moduleName}::${name}` : name],
-      signature: compactSignature(source, match.index),
-    });
-  }
+  fs.writeFileSync(
+    path.join(packageDir, 'index.mdx'),
+    `---\ntitle: ${owner.label}\ndescription: Generated ${languageLabels[first.language]} owner reference for ${first.package}.\nlanguages: ["${first.language}"]\ngenerated: true\n---\n\nSource: \`${escapeMd(first.source.path)}\`\n\n## Contents\n\n${toc}\n\n## Members\n\n| Symbol | Kind | Reference |\n| --- | --- | --- |\n${memberTable}\n\n${sections}\n`,
+    'utf8',
+  );
+}
 
-  for (const implMatch of source.matchAll(/^impl\s+([A-Za-z][A-Za-z0-9_]*)\s*\{/gm)) {
-    const typeName = implMatch[1];
-    const bodyStart = source.indexOf('{', implMatch.index) + 1;
-    const bodyEnd = matchingBrace(source, bodyStart - 1);
-    const body = source.slice(bodyStart, bodyEnd);
-    for (const method of body.matchAll(/^\s+pub\s+fn\s+([A-Za-z][A-Za-z0-9_]*)/gm)) {
-      const methodName = method[1];
-      const absoluteIndex = bodyStart + method.index;
-      entries.push({
-        name: `${prefix}${typeName}::${methodName}`,
-        kind: 'method',
-        aliases: [`${typeName}::${methodName}`, methodName],
-        signature: compactSignature(source, absoluteIndex),
-      });
+function renderSymbolSection(entry) {
+  const signature = entry.signature
+    ? `\n\n\`\`\`${fenceLanguage(entry.language)}\n${entry.signature}\n\`\`\``
+    : '';
+  const docs = entry.docs ? `\n\n${entry.docs}` : '';
+  const source = entry.source.detail ? `\n\nSource metadata: ${escapeMdxText(entry.source.detail)}` : '';
+  const mirror = entry.docsRsUrl ? `\n\n[docs.rs mirror](${entry.docsRsUrl})` : '';
+  return `<section id="${entry.anchor}" class="api-reference-symbol" data-pagefind-body>\n\n### \`${escapeMd(entry.memberName)}\`\n\nKind: ${entry.kind}.${signature}${docs}${source}${mirror}\n\n</section>`;
+}
+
+function symbolManifestEntry(entry) {
+  return {
+    name: entry.name,
+    memberName: entry.memberName,
+    owner: entry.owner.label,
+    package: entry.package,
+    language: entry.language,
+    kind: entry.kind,
+    signature: entry.signature,
+    source: entry.source.path,
+    docsRsUrl: entry.docsRsUrl,
+    url: entry.url,
+    aliases: entry.aliases,
+  };
+}
+
+function removeGeneratedPages(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const file of walk(dir)) {
+    if (!file.endsWith('.mdx')) continue;
+    const text = fs.readFileSync(file, 'utf8');
+    if (text.includes('\ngenerated: true\n')) {
+      fs.unlinkSync(file);
     }
   }
-
-  return entries;
+  pruneEmptyDirs(dir);
 }
 
-function pythonApi(source) {
-  const exported = new Set([...source.matchAll(/__all__\s*=\s*\[([\s\S]*?)\]/g)].flatMap((match) => [...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1])));
-  const entries = [];
-  const classes = [...source.matchAll(/^class\s+([A-Za-z][A-Za-z0-9_]*)[(:]/gm)];
-  for (const match of classes) {
-    const className = match[1];
-    if (!exported.has(className)) continue;
-    const bodyStart = source.indexOf('\n', match.index) + 1;
-    const bodyEnd = nextTopLevel(source, bodyStart);
-    const body = source.slice(bodyStart, bodyEnd);
-    entries.push({ name: className, kind: 'class', signature: firstLineAt(source, match.index) });
-    for (const method of body.matchAll(/^    def\s+([A-Za-z][A-Za-z0-9_]*)\(/gm)) {
-      const methodName = method[1];
-      if (methodName.startsWith('_') || ['to_native', 'from_native', 'to_native_payload'].includes(methodName)) continue;
-      entries.push({
-        name: `${className}.${methodName}`,
-        kind: 'method',
-        aliases: [methodName],
-        signature: compactPythonSignature(source, bodyStart + method.index),
-      });
-    }
-    for (const method of body.matchAll(/^    @classmethod\n    def\s+([A-Za-z][A-Za-z0-9_]*)\(/gm)) {
-      const methodName = method[1];
-      if (methodName.startsWith('_') || ['to_native', 'from_native', 'to_native_payload'].includes(methodName)) continue;
-      entries.push({
-        name: `${className}.${methodName}`,
-        kind: 'method',
-        aliases: [methodName],
-        signature: compactPythonSignature(source, bodyStart + method.index + method[0].indexOf('def')),
-      });
+function* walk(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      yield* walk(fullPath);
+    } else {
+      yield fullPath;
     }
   }
+}
 
-  for (const match of source.matchAll(/^def\s+([A-Za-z][A-Za-z0-9_]*)\(/gm)) {
-    const name = match[1];
-    if (!exported.has(name) || name.startsWith('_')) continue;
-    entries.push({ name, kind: 'function', signature: compactPythonSignature(source, match.index) });
+function pruneEmptyDirs(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const fullPath = path.join(dir, entry.name);
+    pruneEmptyDirs(fullPath);
+    if (fs.readdirSync(fullPath).length === 0) fs.rmdirSync(fullPath);
   }
-  return entries;
 }
 
-function cppApi(source) {
-  const publicSource = source.replace(/namespace detail \{[\s\S]*?\n\}  \/\/ namespace detail/g, '');
-  const entries = [];
-  for (const match of publicSource.matchAll(/^(using|struct|class)\s+([A-Za-z][A-Za-z0-9_]*)/gm)) {
-    const rawKind = match[1];
-    const name = match[2];
-    if (name === 'ModelSelection' && publicSource.slice(match.index, match.index + 40).includes(';')) continue;
-    entries.push({
-      name: `cityjson_lib::${name}`,
-      kind: rawKind === 'using' ? 'type alias' : rawKind === 'class' ? 'class' : 'struct',
-      aliases: [name],
-      signature: firstLineAt(publicSource, match.index),
-    });
+function ownerKey(entry) {
+  return `${entry.package}\0${entry.language}\0${entry.owner.key}`;
+}
+
+function uniqueSlug(base, seen) {
+  const fallback = base || 'symbols';
+  let slug = fallback;
+  let suffix = 2;
+  while (seen.has(slug)) {
+    slug = `${fallback}-${suffix}`;
+    suffix += 1;
   }
-  for (const classMatch of publicSource.matchAll(/^class\s+([A-Za-z][A-Za-z0-9_]*)[^{]*\{/gm)) {
-    const className = classMatch[1];
-    const bodyStart = publicSource.indexOf('{', classMatch.index) + 1;
-    const bodyEnd = matchingBrace(publicSource, bodyStart - 1);
-    const body = publicSource.slice(bodyStart, bodyEnd).split(' private:')[0];
-    for (const method of body.matchAll(/(?:\[\[nodiscard\]\]\s+)?(?:static\s+)?(?:[A-Za-z_:<>,&*\s]+)\s+([A-Za-z][A-Za-z0-9_]*)\s*\(/gm)) {
-      const methodName = method[1];
-      if (['if', 'for', 'while', 'return', className].includes(methodName)) continue;
-      entries.push({
-        name: `cityjson_lib::${className}::${methodName}`,
-        kind: 'method',
-        aliases: [`${className}::${methodName}`, methodName],
-        signature: compactCppSignature(publicSource, bodyStart + method.index),
-      });
-    }
-  }
-  return entries;
+  seen.add(slug);
+  return slug;
 }
 
-function wasmApi(source) {
-  const entries = [];
-  for (const match of source.matchAll(/^pub\s+struct\s+([A-Za-z][A-Za-z0-9_]*)/gm)) {
-    entries.push({ name: match[1], kind: 'struct', signature: firstLineAt(source, match.index) });
-  }
-  for (const match of source.matchAll(/^pub\s+fn\s+([A-Za-z][A-Za-z0-9_]*)/gm)) {
-    entries.push({ name: match[1], kind: 'function', signature: compactSignature(source, match.index) });
-  }
-  return entries;
-}
-
-function rustDocsRsUrl(target, name, kind) {
-  const cratePrefix = target.package.replace('-', '_');
-  const pathName = name.replace(`${cratePrefix}::`, '');
-  const parts = pathName.split('::');
-  const last = parts.at(-1);
-  if (kind === 'method' && parts.length >= 2) {
-    const typeName = parts.at(-2);
-    return `${target.docsRsBase}struct.${typeName}.html#method.${last}`;
-  }
-  if (kind === 'struct') return `${target.docsRsBase}struct.${last}.html`;
-  if (kind === 'enum') return `${target.docsRsBase}enum.${last}.html`;
-  if (kind === 'type alias') return `${target.docsRsBase}type.${last}.html`;
-  if (kind === 'constant') return `${target.docsRsBase}constant.${last}.html`;
-  if (kind === 'function') return `${target.docsRsBase}fn.${last}.html`;
-  return target.docsRsBase;
-}
-
-function firstLineAt(source, index) {
-  return source.slice(index, source.indexOf('\n', index)).trim();
-}
-
-function compactSignature(source, index) {
-  const end = source.indexOf('{', index);
-  return source.slice(index, end === -1 ? source.indexOf('\n', index) : end).replace(/\s+/g, ' ').trim();
-}
-
-function compactPythonSignature(source, index) {
-  let depth = 0;
-  for (let cursor = index; cursor < source.length; cursor += 1) {
-    const char = source[cursor];
-    if (char === '(') depth += 1;
-    if (char === ')') depth -= 1;
-    if (char === ':' && depth === 0) {
-      return source.slice(index, cursor + 1).replace(/\s+/g, ' ').trim();
-    }
-  }
-  return firstLineAt(source, index);
-}
-
-function compactCppSignature(source, index) {
-  const endCandidates = ['{', ';'].map((token) => source.indexOf(token, index)).filter((value) => value !== -1);
-  const end = Math.min(...endCandidates);
-  return source.slice(index, end).replace(/\s+/g, ' ').trim();
-}
-
-function nextTopLevel(source, start) {
-  const match = /\n(?=class |def |[A-Za-z_][A-Za-z0-9_]*\s*=|__all__)/g;
-  match.lastIndex = start;
-  const next = match.exec(source);
-  return next ? next.index : source.length;
-}
-
-function matchingBrace(source, openIndex) {
-  let depth = 0;
-  for (let index = openIndex; index < source.length; index += 1) {
-    if (source[index] === '{') depth += 1;
-    if (source[index] === '}') {
-      depth -= 1;
-      if (depth === 0) return index;
-    }
-  }
-  return source.length;
-}
-
-
-function assignUniqueAnchors(entries) {
-  const seen = new Map();
-  return entries.map((entry) => {
-    const count = seen.get(entry.anchor) ?? 0;
-    seen.set(entry.anchor, count + 1);
-    return count === 0 ? entry : { ...entry, anchor: `${entry.anchor}-${count + 1}` };
-  });
+function kindSort(a, b) {
+  return kindOrder.indexOf(a.kind) - kindOrder.indexOf(b.kind);
 }
 
 function groupBy(values, keyFn) {
@@ -414,18 +218,6 @@ function groupBy(values, keyFn) {
   return groups;
 }
 
-function uniqueBy(values, keyFn) {
-  const seen = new Set();
-  const unique = [];
-  for (const value of values) {
-    const key = keyFn(value);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    unique.push(value);
-  }
-  return unique;
-}
-
 function slugify(value) {
   return value
     .replace(/::/g, '-')
@@ -435,23 +227,22 @@ function slugify(value) {
     .toLowerCase();
 }
 
-function kindLabel(kind) {
-  const labels = {
-    class: 'Classes',
-    struct: 'Structs',
-    enum: 'Enums',
-    'type alias': 'Type aliases',
-    constant: 'Constants',
-    function: 'Functions',
-    method: 'Methods',
-  };
-  return labels[kind] ?? `${kind[0].toUpperCase()}${kind.slice(1)}s`;
-}
-
 function fenceLanguage(language) {
-  return language === 'cpp' ? 'cpp' : language === 'wasm' ? 'rust' : language;
+  if (language === 'cpp') return 'cpp';
+  if (language === 'c') return 'c';
+  if (language === 'wasm') return 'rust';
+  return language;
 }
 
 function escapeMd(value) {
-  return value.replaceAll('`', '\\`');
+  return String(value).replaceAll('`', '\\`');
+}
+
+function escapeMdxText(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('{', '&#123;')
+    .replaceAll('}', '&#125;');
 }

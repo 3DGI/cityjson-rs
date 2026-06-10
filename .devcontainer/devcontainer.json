@@ -24,7 +24,7 @@
   "source=${localEnv:HOME}/.claude.json,target=/home/vscode/.claude.json,type=bind,relabel=shared",
   "source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent,type=bind,relabel=shared"
  ],
- "postCreateCommand": "rustc --version && uv --version && cbindgen --version && jq --version",
+ "postCreateCommand": "rustc --version && uv --version && cbindgen --version && jq --version && doxygen --version && dot -V && cd docs-site && uv run python tools/check_docs_tools.py",
  "customizations": {
   "jetbrains": {
    "backend": "RustRover"

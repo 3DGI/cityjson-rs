@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcjx__cityobject__ref__t" kind="struct" language="C++" prot="public">
+    <compoundname>cjx_cityobject_ref_t</compoundname>
+    <includes refid="cityjson__index_8h" local="no">cityjson_index.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcjx__cityobject__ref__t_1ab07a2bd907ea16bab699c4aae4847c34" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t cjx_cityobject_ref_t::record_id</definition>
+        <argsstring></argsstring>
+        <name>record_id</name>
+        <qualifiedname>cjx_cityobject_ref_t::record_id</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="54" column="11" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__cityobject__ref__t_1a8debde194fba495e39451827d07d2d0c" prot="public" static="no" mutable="no">
+        <type>cj_bytes_t</type>
+        <definition>cj_bytes_t cjx_cityobject_ref_t::external_id</definition>
+        <argsstring></argsstring>
+        <name>external_id</name>
+        <qualifiedname>cjx_cityobject_ref_t::external_id</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="55" column="14" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__cityobject__ref__t_1a7c8d204e9b8dd49efa8beabd43af63f1" prot="public" static="no" mutable="no">
+        <type>cj_bytes_t</type>
+        <definition>cj_bytes_t cjx_cityobject_ref_t::cityobject_type</definition>
+        <argsstring></argsstring>
+        <name>cityobject_type</name>
+        <qualifiedname>cjx_cityobject_ref_t::cityobject_type</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="56" column="14" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__cityobject__ref__t_1a16ab34dfbd6d577563f841fb0688b786" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cjx_cityobject_ref_t::has_bounds</definition>
+        <argsstring></argsstring>
+        <name>has_bounds</name>
+        <qualifiedname>cjx_cityobject_ref_t::has_bounds</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="57" column="8" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__cityobject__ref__t_1a61b65274ea1f6884ca8958a888450e63" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structcjx__bounds3d__t" kindref="compound">cjx_bounds3d_t</ref></type>
+        <definition>struct cjx_bounds3d_t cjx_cityobject_ref_t::bounds</definition>
+        <argsstring></argsstring>
+        <name>bounds</name>
+        <qualifiedname>cjx_cityobject_ref_t::bounds</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="58" column="23" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="58" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>cjx_bounds3d_t</label>
+        <link refid="structcjx__bounds3d__t"/>
+      </node>
+      <node id="1">
+        <label>cjx_cityobject_ref_t</label>
+        <link refid="structcjx__cityobject__ref__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>bounds</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="53" column="1" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="53" bodyend="59"/>
+    <listofallmembers>
+      <member refid="structcjx__cityobject__ref__t_1a61b65274ea1f6884ca8958a888450e63" prot="public" virt="non-virtual"><scope>cjx_cityobject_ref_t</scope><name>bounds</name></member>
+      <member refid="structcjx__cityobject__ref__t_1a7c8d204e9b8dd49efa8beabd43af63f1" prot="public" virt="non-virtual"><scope>cjx_cityobject_ref_t</scope><name>cityobject_type</name></member>
+      <member refid="structcjx__cityobject__ref__t_1a8debde194fba495e39451827d07d2d0c" prot="public" virt="non-virtual"><scope>cjx_cityobject_ref_t</scope><name>external_id</name></member>
+      <member refid="structcjx__cityobject__ref__t_1a16ab34dfbd6d577563f841fb0688b786" prot="public" virt="non-virtual"><scope>cjx_cityobject_ref_t</scope><name>has_bounds</name></member>
+      <member refid="structcjx__cityobject__ref__t_1ab07a2bd907ea16bab699c4aae4847c34" prot="public" virt="non-virtual"><scope>cjx_cityobject_ref_t</scope><name>record_id</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

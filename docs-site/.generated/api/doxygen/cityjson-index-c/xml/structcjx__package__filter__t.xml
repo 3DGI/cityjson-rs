@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcjx__package__filter__t" kind="struct" language="C++" prot="public">
+    <compoundname>cjx_package_filter_t</compoundname>
+    <includes refid="cityjson__index_8h" local="no">cityjson_index.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcjx__package__filter__t_1a256f28bf779bdcbb2270356fdce3830b" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cjx_package_filter_t::has_cityobject_types</definition>
+        <argsstring></argsstring>
+        <name>has_cityobject_types</name>
+        <qualifiedname>cjx_package_filter_t::has_cityobject_types</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="84" column="8" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="84" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__package__filter__t_1ac736c3e1b0106333d91355fce71f087b" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structcjx__string__list__t" kindref="compound">cjx_string_list_t</ref></type>
+        <definition>struct cjx_string_list_t cjx_package_filter_t::cityobject_types</definition>
+        <argsstring></argsstring>
+        <name>cityobject_types</name>
+        <qualifiedname>cjx_package_filter_t::cityobject_types</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="85" column="26" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="85" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__package__filter__t_1a8d03ef058468e4501edb8499f716bee8" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structcjx__lod__selection__t" kindref="compound">cjx_lod_selection_t</ref></type>
+        <definition>struct cjx_lod_selection_t cjx_package_filter_t::default_lod</definition>
+        <argsstring></argsstring>
+        <name>default_lod</name>
+        <qualifiedname>cjx_package_filter_t::default_lod</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="86" column="28" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="86" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__package__filter__t_1a8a4a649569d44bbea7ed06a6ba07e675" prot="public" static="no" mutable="no">
+        <type>struct <ref refid="structcjx__lod__by__type__t" kindref="compound">cjx_lod_by_type_t</ref> *</type>
+        <definition>struct cjx_lod_by_type_t* cjx_package_filter_t::lods_by_type</definition>
+        <argsstring></argsstring>
+        <name>lods_by_type</name>
+        <qualifiedname>cjx_package_filter_t::lods_by_type</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="87" column="26" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="87" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcjx__package__filter__t_1abde08eab47821c3ad7b07eed4a5f89c2" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cjx_package_filter_t::lods_by_type_len</definition>
+        <argsstring></argsstring>
+        <name>lods_by_type_len</name>
+        <qualifiedname>cjx_package_filter_t::lods_by_type_len</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="88" column="13" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="88" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="4">
+        <label>cjx_lod_by_type_t</label>
+        <link refid="structcjx__lod__by__type__t"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>selection</edgelabel>
+        </childnode>
+      </node>
+      <node id="3">
+        <label>cjx_lod_selection_t</label>
+        <link refid="structcjx__lod__selection__t"/>
+      </node>
+      <node id="1">
+        <label>cjx_package_filter_t</label>
+        <link refid="structcjx__package__filter__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>cityobject_types</edgelabel>
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>default_lod</edgelabel>
+        </childnode>
+        <childnode refid="4" relation="usage">
+          <edgelabel>lods_by_type</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>cjx_string_list_t</label>
+        <link refid="structcjx__string__list__t"/>
+      </node>
+    </collaborationgraph>
+    <location file=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" line="83" column="1" bodyfile=".generated/api/doxygen-input/cityjson-index-c/cityjson_index.h" bodystart="83" bodyend="89"/>
+    <listofallmembers>
+      <member refid="structcjx__package__filter__t_1ac736c3e1b0106333d91355fce71f087b" prot="public" virt="non-virtual"><scope>cjx_package_filter_t</scope><name>cityobject_types</name></member>
+      <member refid="structcjx__package__filter__t_1a8d03ef058468e4501edb8499f716bee8" prot="public" virt="non-virtual"><scope>cjx_package_filter_t</scope><name>default_lod</name></member>
+      <member refid="structcjx__package__filter__t_1a256f28bf779bdcbb2270356fdce3830b" prot="public" virt="non-virtual"><scope>cjx_package_filter_t</scope><name>has_cityobject_types</name></member>
+      <member refid="structcjx__package__filter__t_1a8a4a649569d44bbea7ed06a6ba07e675" prot="public" virt="non-virtual"><scope>cjx_package_filter_t</scope><name>lods_by_type</name></member>
+      <member refid="structcjx__package__filter__t_1abde08eab47821c3ad7b07eed4a5f89c2" prot="public" virt="non-virtual"><scope>cjx_package_filter_t</scope><name>lods_by_type_len</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

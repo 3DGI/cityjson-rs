@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__transform__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_transform_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__transform__t_1a70d8c7bddc3bc0764d12008cc992b7a7" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_transform_t::scale_x</definition>
+        <argsstring></argsstring>
+        <name>scale_x</name>
+        <qualifiedname>cj_transform_t::scale_x</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="352" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="352" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__transform__t_1a54de8651a93377a8d77f4c5a9adae865" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_transform_t::scale_y</definition>
+        <argsstring></argsstring>
+        <name>scale_y</name>
+        <qualifiedname>cj_transform_t::scale_y</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="353" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="353" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__transform__t_1abe71a25658ad083f82cf26f0a07f4272" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_transform_t::scale_z</definition>
+        <argsstring></argsstring>
+        <name>scale_z</name>
+        <qualifiedname>cj_transform_t::scale_z</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="354" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="354" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__transform__t_1a96d0959b8bc124b5d28b5fa72485e9ca" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_transform_t::translate_x</definition>
+        <argsstring></argsstring>
+        <name>translate_x</name>
+        <qualifiedname>cj_transform_t::translate_x</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="355" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="355" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__transform__t_1a017bbb0740af2151b40f33653781c5e9" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_transform_t::translate_y</definition>
+        <argsstring></argsstring>
+        <name>translate_y</name>
+        <qualifiedname>cj_transform_t::translate_y</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="356" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="356" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__transform__t_1a9996c091e4a13a3fd7c7e1fb840613e6" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_transform_t::translate_z</definition>
+        <argsstring></argsstring>
+        <name>translate_z</name>
+        <qualifiedname>cj_transform_t::translate_z</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="357" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="357" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Explicit root-transform state for JSON write and edit workflows. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="351" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="351" bodyend="358"/>
+    <listofallmembers>
+      <member refid="structcj__transform__t_1a70d8c7bddc3bc0764d12008cc992b7a7" prot="public" virt="non-virtual"><scope>cj_transform_t</scope><name>scale_x</name></member>
+      <member refid="structcj__transform__t_1a54de8651a93377a8d77f4c5a9adae865" prot="public" virt="non-virtual"><scope>cj_transform_t</scope><name>scale_y</name></member>
+      <member refid="structcj__transform__t_1abe71a25658ad083f82cf26f0a07f4272" prot="public" virt="non-virtual"><scope>cj_transform_t</scope><name>scale_z</name></member>
+      <member refid="structcj__transform__t_1a96d0959b8bc124b5d28b5fa72485e9ca" prot="public" virt="non-virtual"><scope>cj_transform_t</scope><name>translate_x</name></member>
+      <member refid="structcj__transform__t_1a017bbb0740af2151b40f33653781c5e9" prot="public" virt="non-virtual"><scope>cj_transform_t</scope><name>translate_y</name></member>
+      <member refid="structcj__transform__t_1a9996c091e4a13a3fd7c7e1fb840613e6" prot="public" virt="non-virtual"><scope>cj_transform_t</scope><name>translate_z</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

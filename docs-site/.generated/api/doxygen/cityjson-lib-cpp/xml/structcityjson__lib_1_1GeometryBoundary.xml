@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcityjson__lib_1_1GeometryBoundary" kind="struct" language="C++" prot="public" final="yes">
+    <compoundname>cityjson_lib::GeometryBoundary</compoundname>
+    <includes refid="cityjson__lib_8hpp" local="no">cityjson_lib.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcityjson__lib_1_1GeometryBoundary_1af20ce93c3f179422efc63b85d744c5c8" prot="public" static="no" mutable="no">
+        <type><ref refid="namespacecityjson__lib_1a8d3fbcfd7bda3f5ef9f6b85a4ec90c3b" kindref="member">GeometryType</ref></type>
+        <definition>GeometryType cityjson_lib::GeometryBoundary::geometry_type</definition>
+        <argsstring></argsstring>
+        <name>geometry_type</name>
+        <qualifiedname>cityjson_lib::GeometryBoundary::geometry_type</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="53" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcityjson__lib_1_1GeometryBoundary_1adf491e05b59e2f5dccd57e77ec61f16c" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cityjson_lib::GeometryBoundary::has_boundaries</definition>
+        <argsstring></argsstring>
+        <name>has_boundaries</name>
+        <qualifiedname>cityjson_lib::GeometryBoundary::has_boundaries</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="54" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcityjson__lib_1_1GeometryBoundary_1ad148dc1a0330cded2a6ee25dc32ee319" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::size_t &gt;</type>
+        <definition>std::vector&lt;std::size_t&gt; cityjson_lib::GeometryBoundary::vertex_indices</definition>
+        <argsstring></argsstring>
+        <name>vertex_indices</name>
+        <qualifiedname>cityjson_lib::GeometryBoundary::vertex_indices</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="55" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcityjson__lib_1_1GeometryBoundary_1a063b5bdb5d281fdc7f84cbf50d28d73e" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::size_t &gt;</type>
+        <definition>std::vector&lt;std::size_t&gt; cityjson_lib::GeometryBoundary::ring_offsets</definition>
+        <argsstring></argsstring>
+        <name>ring_offsets</name>
+        <qualifiedname>cityjson_lib::GeometryBoundary::ring_offsets</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="56" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcityjson__lib_1_1GeometryBoundary_1a91aa3e5f4200b340f3c826df3de96846" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::size_t &gt;</type>
+        <definition>std::vector&lt;std::size_t&gt; cityjson_lib::GeometryBoundary::surface_offsets</definition>
+        <argsstring></argsstring>
+        <name>surface_offsets</name>
+        <qualifiedname>cityjson_lib::GeometryBoundary::surface_offsets</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="57" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcityjson__lib_1_1GeometryBoundary_1aa05d8f6eedaf42dafa83ec1a75760959" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::size_t &gt;</type>
+        <definition>std::vector&lt;std::size_t&gt; cityjson_lib::GeometryBoundary::shell_offsets</definition>
+        <argsstring></argsstring>
+        <name>shell_offsets</name>
+        <qualifiedname>cityjson_lib::GeometryBoundary::shell_offsets</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="58" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="58" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcityjson__lib_1_1GeometryBoundary_1abc66a684daf8d9ffb39c8b84062e467c" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::size_t &gt;</type>
+        <definition>std::vector&lt;std::size_t&gt; cityjson_lib::GeometryBoundary::solid_offsets</definition>
+        <argsstring></argsstring>
+        <name>solid_offsets</name>
+        <qualifiedname>cityjson_lib::GeometryBoundary::solid_offsets</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="59" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="59" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="52" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="52" bodyend="60"/>
+    <listofallmembers>
+      <member refid="structcityjson__lib_1_1GeometryBoundary_1af20ce93c3f179422efc63b85d744c5c8" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryBoundary</scope><name>geometry_type</name></member>
+      <member refid="structcityjson__lib_1_1GeometryBoundary_1adf491e05b59e2f5dccd57e77ec61f16c" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryBoundary</scope><name>has_boundaries</name></member>
+      <member refid="structcityjson__lib_1_1GeometryBoundary_1a063b5bdb5d281fdc7f84cbf50d28d73e" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryBoundary</scope><name>ring_offsets</name></member>
+      <member refid="structcityjson__lib_1_1GeometryBoundary_1aa05d8f6eedaf42dafa83ec1a75760959" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryBoundary</scope><name>shell_offsets</name></member>
+      <member refid="structcityjson__lib_1_1GeometryBoundary_1abc66a684daf8d9ffb39c8b84062e467c" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryBoundary</scope><name>solid_offsets</name></member>
+      <member refid="structcityjson__lib_1_1GeometryBoundary_1a91aa3e5f4200b340f3c826df3de96846" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryBoundary</scope><name>surface_offsets</name></member>
+      <member refid="structcityjson__lib_1_1GeometryBoundary_1ad148dc1a0330cded2a6ee25dc32ee319" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryBoundary</scope><name>vertex_indices</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

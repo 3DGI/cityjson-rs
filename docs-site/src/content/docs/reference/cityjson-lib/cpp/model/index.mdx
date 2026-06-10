@@ -1,0 +1,1264 @@
+---
+title: Model
+description: Generated C++ owner reference for cityjson-lib.
+languages: ["cpp"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp`
+
+## Contents
+
+- [Model](#class-model)
+- [~Model](#method--model)
+- [add_cityobject](#method-add_cityobject)
+- [add_cityobject_geometry](#method-add_cityobject_geometry)
+- [add_cityobject_parent](#method-add_cityobject_parent)
+- [add_extension](#method-add_extension)
+- [add_geometry](#method-add_geometry)
+- [add_geometry_template](#method-add_geometry_template)
+- [add_material](#method-add_material)
+- [add_semantic](#method-add_semantic)
+- [add_template_vertex](#method-add_template_vertex)
+- [add_texture](#method-add_texture)
+- [add_uv_coordinate](#method-add_uv_coordinate)
+- [add_vertex](#method-add_vertex)
+- [append_model](#method-append_model)
+- [cityobject_ids](#method-cityobject_ids)
+- [cleanup](#method-cleanup)
+- [clear_transform](#method-clear_transform)
+- [create](#method-create)
+- [extract_selection](#method-extract_selection)
+- [geometry_boundary](#method-geometry_boundary)
+- [geometry_boundary_coordinates](#method-geometry_boundary_coordinates)
+- [geometry_types](#method-geometry_types)
+- [merge_feature_stream](#method-merge_feature_stream)
+- [merge_models](#method-merge_models)
+- [metadata_identifier](#method-metadata_identifier)
+- [metadata_title](#method-metadata_title)
+- [Model](#method-model)
+- [operator=](#method-operator)
+- [parse_arrow](#method-parse_arrow)
+- [parse_document](#method-parse_document)
+- [parse_feature](#method-parse_feature)
+- [parse_feature_with_base](#method-parse_feature_with_base)
+- [parse_parquet_dataset_dir](#method-parse_parquet_dataset_dir)
+- [parse_parquet_file](#method-parse_parquet_file)
+- [probe](#method-probe)
+- [raw_handle](#method-raw_handle)
+- [remove_cityobject](#method-remove_cityobject)
+- [reproject](#method-reproject)
+- [reserve_import](#method-reserve_import)
+- [reset](#method-reset)
+- [serialize_arrow_bytes](#method-serialize_arrow_bytes)
+- [serialize_document](#method-serialize_document)
+- [serialize_document_bytes](#method-serialize_document_bytes)
+- [serialize_feature](#method-serialize_feature)
+- [serialize_feature_bytes](#method-serialize_feature_bytes)
+- [serialize_feature_stream](#method-serialize_feature_stream)
+- [serialize_parquet_dataset_dir](#method-serialize_parquet_dataset_dir)
+- [serialize_parquet_file](#method-serialize_parquet_file)
+- [set_default_material_theme](#method-set_default_material_theme)
+- [set_default_texture_theme](#method-set_default_texture_theme)
+- [set_material_ambient_intensity](#method-set_material_ambient_intensity)
+- [set_material_diffuse_color](#method-set_material_diffuse_color)
+- [set_material_emissive_color](#method-set_material_emissive_color)
+- [set_material_is_smooth](#method-set_material_is_smooth)
+- [set_material_shininess](#method-set_material_shininess)
+- [set_material_specular_color](#method-set_material_specular_color)
+- [set_material_transparency](#method-set_material_transparency)
+- [set_metadata_contact](#method-set_metadata_contact)
+- [set_metadata_extra](#method-set_metadata_extra)
+- [set_metadata_geographical_extent](#method-set_metadata_geographical_extent)
+- [set_metadata_identifier](#method-set_metadata_identifier)
+- [set_metadata_reference_date](#method-set_metadata_reference_date)
+- [set_metadata_reference_system](#method-set_metadata_reference_system)
+- [set_metadata_title](#method-set_metadata_title)
+- [set_root_extra](#method-set_root_extra)
+- [set_semantic_extra](#method-set_semantic_extra)
+- [set_semantic_parent](#method-set_semantic_parent)
+- [set_template_vertex](#method-set_template_vertex)
+- [set_texture_border_color](#method-set_texture_border_color)
+- [set_texture_type](#method-set_texture_type)
+- [set_texture_wrap_mode](#method-set_texture_wrap_mode)
+- [set_transform](#method-set_transform)
+- [set_vertex](#method-set_vertex)
+- [subset_cityobjects](#method-subset_cityobjects)
+- [summary](#method-summary)
+- [uv_coordinates](#method-uv_coordinates)
+- [valid](#method-valid)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `Model` | class | [section](#class-model) |
+| `~Model` | method | [section](#method--model) |
+| `add_cityobject` | method | [section](#method-add_cityobject) |
+| `add_cityobject_geometry` | method | [section](#method-add_cityobject_geometry) |
+| `add_cityobject_parent` | method | [section](#method-add_cityobject_parent) |
+| `add_extension` | method | [section](#method-add_extension) |
+| `add_geometry` | method | [section](#method-add_geometry) |
+| `add_geometry_template` | method | [section](#method-add_geometry_template) |
+| `add_material` | method | [section](#method-add_material) |
+| `add_semantic` | method | [section](#method-add_semantic) |
+| `add_template_vertex` | method | [section](#method-add_template_vertex) |
+| `add_texture` | method | [section](#method-add_texture) |
+| `add_uv_coordinate` | method | [section](#method-add_uv_coordinate) |
+| `add_vertex` | method | [section](#method-add_vertex) |
+| `append_model` | method | [section](#method-append_model) |
+| `cityobject_ids` | method | [section](#method-cityobject_ids) |
+| `cleanup` | method | [section](#method-cleanup) |
+| `clear_transform` | method | [section](#method-clear_transform) |
+| `create` | method | [section](#method-create) |
+| `extract_selection` | method | [section](#method-extract_selection) |
+| `geometry_boundary` | method | [section](#method-geometry_boundary) |
+| `geometry_boundary_coordinates` | method | [section](#method-geometry_boundary_coordinates) |
+| `geometry_types` | method | [section](#method-geometry_types) |
+| `merge_feature_stream` | method | [section](#method-merge_feature_stream) |
+| `merge_models` | method | [section](#method-merge_models) |
+| `metadata_identifier` | method | [section](#method-metadata_identifier) |
+| `metadata_title` | method | [section](#method-metadata_title) |
+| `Model` | method | [section](#method-model) |
+| `operator=` | method | [section](#method-operator) |
+| `parse_arrow` | method | [section](#method-parse_arrow) |
+| `parse_document` | method | [section](#method-parse_document) |
+| `parse_feature` | method | [section](#method-parse_feature) |
+| `parse_feature_with_base` | method | [section](#method-parse_feature_with_base) |
+| `parse_parquet_dataset_dir` | method | [section](#method-parse_parquet_dataset_dir) |
+| `parse_parquet_file` | method | [section](#method-parse_parquet_file) |
+| `probe` | method | [section](#method-probe) |
+| `raw_handle` | method | [section](#method-raw_handle) |
+| `remove_cityobject` | method | [section](#method-remove_cityobject) |
+| `reproject` | method | [section](#method-reproject) |
+| `reserve_import` | method | [section](#method-reserve_import) |
+| `reset` | method | [section](#method-reset) |
+| `serialize_arrow_bytes` | method | [section](#method-serialize_arrow_bytes) |
+| `serialize_document` | method | [section](#method-serialize_document) |
+| `serialize_document_bytes` | method | [section](#method-serialize_document_bytes) |
+| `serialize_feature` | method | [section](#method-serialize_feature) |
+| `serialize_feature_bytes` | method | [section](#method-serialize_feature_bytes) |
+| `serialize_feature_stream` | method | [section](#method-serialize_feature_stream) |
+| `serialize_parquet_dataset_dir` | method | [section](#method-serialize_parquet_dataset_dir) |
+| `serialize_parquet_file` | method | [section](#method-serialize_parquet_file) |
+| `set_default_material_theme` | method | [section](#method-set_default_material_theme) |
+| `set_default_texture_theme` | method | [section](#method-set_default_texture_theme) |
+| `set_material_ambient_intensity` | method | [section](#method-set_material_ambient_intensity) |
+| `set_material_diffuse_color` | method | [section](#method-set_material_diffuse_color) |
+| `set_material_emissive_color` | method | [section](#method-set_material_emissive_color) |
+| `set_material_is_smooth` | method | [section](#method-set_material_is_smooth) |
+| `set_material_shininess` | method | [section](#method-set_material_shininess) |
+| `set_material_specular_color` | method | [section](#method-set_material_specular_color) |
+| `set_material_transparency` | method | [section](#method-set_material_transparency) |
+| `set_metadata_contact` | method | [section](#method-set_metadata_contact) |
+| `set_metadata_extra` | method | [section](#method-set_metadata_extra) |
+| `set_metadata_geographical_extent` | method | [section](#method-set_metadata_geographical_extent) |
+| `set_metadata_identifier` | method | [section](#method-set_metadata_identifier) |
+| `set_metadata_reference_date` | method | [section](#method-set_metadata_reference_date) |
+| `set_metadata_reference_system` | method | [section](#method-set_metadata_reference_system) |
+| `set_metadata_title` | method | [section](#method-set_metadata_title) |
+| `set_root_extra` | method | [section](#method-set_root_extra) |
+| `set_semantic_extra` | method | [section](#method-set_semantic_extra) |
+| `set_semantic_parent` | method | [section](#method-set_semantic_parent) |
+| `set_template_vertex` | method | [section](#method-set_template_vertex) |
+| `set_texture_border_color` | method | [section](#method-set_texture_border_color) |
+| `set_texture_type` | method | [section](#method-set_texture_type) |
+| `set_texture_wrap_mode` | method | [section](#method-set_texture_wrap_mode) |
+| `set_transform` | method | [section](#method-set_transform) |
+| `set_vertex` | method | [section](#method-set_vertex) |
+| `subset_cityobjects` | method | [section](#method-subset_cityobjects) |
+| `summary` | method | [section](#method-summary) |
+| `uv_coordinates` | method | [section](#method-uv_coordinates) |
+| `valid` | method | [section](#method-valid) |
+
+<section id="class-model" class="api-reference-symbol" data-pagefind-body>
+
+### `Model`
+
+Kind: class.
+
+```cpp
+class cityjson_lib::Model
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method--model" class="api-reference-symbol" data-pagefind-body>
+
+### `~Model`
+
+Kind: method.
+
+```cpp
+cityjson_lib::Model::~Model();
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_cityobject" class="api-reference-symbol" data-pagefind-body>
+
+### `add_cityobject`
+
+Kind: method.
+
+```cpp
+CityObjectId cityjson_lib::Model::add_cityobject(CityObjectDraft draft);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_cityobject_geometry" class="api-reference-symbol" data-pagefind-body>
+
+### `add_cityobject_geometry`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::add_cityobject_geometry(CityObjectId cityobject, GeometryId geometry);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_cityobject_parent" class="api-reference-symbol" data-pagefind-body>
+
+### `add_cityobject_parent`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::add_cityobject_parent(CityObjectId child, CityObjectId parent);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_extension" class="api-reference-symbol" data-pagefind-body>
+
+### `add_extension`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::add_extension(std::string_view name, std::string_view url, std::string_view version);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_geometry" class="api-reference-symbol" data-pagefind-body>
+
+### `add_geometry`
+
+Kind: method.
+
+```cpp
+GeometryId cityjson_lib::Model::add_geometry(GeometryDraft draft);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_geometry_template" class="api-reference-symbol" data-pagefind-body>
+
+### `add_geometry_template`
+
+Kind: method.
+
+```cpp
+GeometryTemplateId cityjson_lib::Model::add_geometry_template(GeometryDraft draft);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_material" class="api-reference-symbol" data-pagefind-body>
+
+### `add_material`
+
+Kind: method.
+
+```cpp
+MaterialId cityjson_lib::Model::add_material(std::string_view name);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_semantic" class="api-reference-symbol" data-pagefind-body>
+
+### `add_semantic`
+
+Kind: method.
+
+```cpp
+SemanticId cityjson_lib::Model::add_semantic(std::string_view semantic_type);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_template_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `add_template_vertex`
+
+Kind: method.
+
+```cpp
+std::uint32_t cityjson_lib::Model::add_template_vertex(const Vertex &vertex);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_texture" class="api-reference-symbol" data-pagefind-body>
+
+### `add_texture`
+
+Kind: method.
+
+```cpp
+TextureId cityjson_lib::Model::add_texture(std::string_view image, ImageType image_type);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_uv_coordinate" class="api-reference-symbol" data-pagefind-body>
+
+### `add_uv_coordinate`
+
+Kind: method.
+
+```cpp
+std::uint32_t cityjson_lib::Model::add_uv_coordinate(const UV &uv);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-add_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `add_vertex`
+
+Kind: method.
+
+```cpp
+std::uint32_t cityjson_lib::Model::add_vertex(const Vertex &vertex);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-append_model" class="api-reference-symbol" data-pagefind-body>
+
+### `append_model`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::append_model(const Model &source);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-cityobject_ids" class="api-reference-symbol" data-pagefind-body>
+
+### `cityobject_ids`
+
+Kind: method.
+
+```cpp
+std::vector< std::string > cityjson_lib::Model::cityobject_ids() const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-cleanup" class="api-reference-symbol" data-pagefind-body>
+
+### `cleanup`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::cleanup();
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-clear_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `clear_transform`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::clear_transform();
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-create" class="api-reference-symbol" data-pagefind-body>
+
+### `create`
+
+Kind: method.
+
+```cpp
+static Model cityjson_lib::Model::create(ModelType type);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-extract_selection" class="api-reference-symbol" data-pagefind-body>
+
+### `extract_selection`
+
+Kind: method.
+
+```cpp
+Model cityjson_lib::Model::extract_selection(const ModelSelection &selection) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-geometry_boundary" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_boundary`
+
+Kind: method.
+
+```cpp
+GeometryBoundary cityjson_lib::Model::geometry_boundary(std::size_t index) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-geometry_boundary_coordinates" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_boundary_coordinates`
+
+Kind: method.
+
+```cpp
+std::vector< Vertex > cityjson_lib::Model::geometry_boundary_coordinates(std::size_t index) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-geometry_types" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_types`
+
+Kind: method.
+
+```cpp
+std::vector< GeometryType > cityjson_lib::Model::geometry_types() const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-merge_feature_stream" class="api-reference-symbol" data-pagefind-body>
+
+### `merge_feature_stream`
+
+Kind: method.
+
+```cpp
+static Model cityjson_lib::Model::merge_feature_stream(std::span< const std::uint8_t > bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-merge_models" class="api-reference-symbol" data-pagefind-body>
+
+### `merge_models`
+
+Kind: method.
+
+```cpp
+static Model cityjson_lib::Model::merge_models(std::span< const Model *const > models);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-metadata_identifier" class="api-reference-symbol" data-pagefind-body>
+
+### `metadata_identifier`
+
+Kind: method.
+
+```cpp
+std::string cityjson_lib::Model::metadata_identifier() const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-metadata_title" class="api-reference-symbol" data-pagefind-body>
+
+### `metadata_title`
+
+Kind: method.
+
+```cpp
+std::string cityjson_lib::Model::metadata_title() const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-model" class="api-reference-symbol" data-pagefind-body>
+
+### `Model`
+
+Kind: method.
+
+```cpp
+cityjson_lib::Model::Model()=default;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-operator" class="api-reference-symbol" data-pagefind-body>
+
+### `operator=`
+
+Kind: method.
+
+```cpp
+Model & cityjson_lib::Model::operator=(const Model &)=delete;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-parse_arrow" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_arrow`
+
+Kind: method.
+
+```cpp
+static Model cityjson_lib::Model::parse_arrow(std::span< const std::uint8_t > bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-parse_document" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_document`
+
+Kind: method.
+
+```cpp
+static Model cityjson_lib::Model::parse_document(std::span< const std::uint8_t > bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-parse_feature" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_feature`
+
+Kind: method.
+
+```cpp
+static Model cityjson_lib::Model::parse_feature(std::span< const std::uint8_t > bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-parse_feature_with_base" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_feature_with_base`
+
+Kind: method.
+
+```cpp
+static Model cityjson_lib::Model::parse_feature_with_base(std::span< const std::uint8_t > feature_bytes, std::span< const std::uint8_t > base_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-parse_parquet_dataset_dir" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_parquet_dataset_dir`
+
+Kind: method.
+
+```cpp
+static Model cityjson_lib::Model::parse_parquet_dataset_dir(std::string_view path);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-parse_parquet_file" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_parquet_file`
+
+Kind: method.
+
+```cpp
+static Model cityjson_lib::Model::parse_parquet_file(std::string_view path);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-probe" class="api-reference-symbol" data-pagefind-body>
+
+### `probe`
+
+Kind: method.
+
+```cpp
+static Probe cityjson_lib::Model::probe(std::span< const std::uint8_t > bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-raw_handle" class="api-reference-symbol" data-pagefind-body>
+
+### `raw_handle`
+
+Kind: method.
+
+```cpp
+cj_model_t * cityjson_lib::Model::raw_handle() const noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-remove_cityobject" class="api-reference-symbol" data-pagefind-body>
+
+### `remove_cityobject`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::remove_cityobject(std::string_view id);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-reproject" class="api-reference-symbol" data-pagefind-body>
+
+### `reproject`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::reproject(std::string_view target_crs);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-reserve_import" class="api-reference-symbol" data-pagefind-body>
+
+### `reserve_import`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::reserve_import(const ModelCapacities &capacities);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-reset" class="api-reference-symbol" data-pagefind-body>
+
+### `reset`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::reset() noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-serialize_arrow_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_arrow_bytes`
+
+Kind: method.
+
+```cpp
+std::vector< std::uint8_t > cityjson_lib::Model::serialize_arrow_bytes() const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-serialize_document" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_document`
+
+Kind: method.
+
+```cpp
+std::string cityjson_lib::Model::serialize_document(const WriteOptions &options={}) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-serialize_document_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_document_bytes`
+
+Kind: method.
+
+```cpp
+std::vector< std::uint8_t > cityjson_lib::Model::serialize_document_bytes(const WriteOptions &options={}) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-serialize_feature" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_feature`
+
+Kind: method.
+
+```cpp
+std::string cityjson_lib::Model::serialize_feature(const WriteOptions &options={}) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-serialize_feature_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_feature_bytes`
+
+Kind: method.
+
+```cpp
+std::vector< std::uint8_t > cityjson_lib::Model::serialize_feature_bytes(const WriteOptions &options={}) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-serialize_feature_stream" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_feature_stream`
+
+Kind: method.
+
+```cpp
+static std::vector< std::uint8_t > cityjson_lib::Model::serialize_feature_stream(std::span< const Model *const > models, const WriteOptions &options={});
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-serialize_parquet_dataset_dir" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_parquet_dataset_dir`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::serialize_parquet_dataset_dir(std::string_view path) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-serialize_parquet_file" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_parquet_file`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::serialize_parquet_file(std::string_view path) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_default_material_theme" class="api-reference-symbol" data-pagefind-body>
+
+### `set_default_material_theme`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_default_material_theme(std::string_view theme);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_default_texture_theme" class="api-reference-symbol" data-pagefind-body>
+
+### `set_default_texture_theme`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_default_texture_theme(std::string_view theme);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_material_ambient_intensity" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_ambient_intensity`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_material_ambient_intensity(MaterialId id, float value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_material_diffuse_color" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_diffuse_color`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_material_diffuse_color(MaterialId id, const Rgb &value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_material_emissive_color" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_emissive_color`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_material_emissive_color(MaterialId id, const Rgb &value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_material_is_smooth" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_is_smooth`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_material_is_smooth(MaterialId id, bool value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_material_shininess" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_shininess`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_material_shininess(MaterialId id, float value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_material_specular_color" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_specular_color`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_material_specular_color(MaterialId id, const Rgb &value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_material_transparency" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_transparency`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_material_transparency(MaterialId id, float value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_metadata_contact" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_contact`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_metadata_contact(Contact contact);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_metadata_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_extra`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_metadata_extra(std::string_view key, Value value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_metadata_geographical_extent" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_geographical_extent`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_metadata_geographical_extent(const BBox &bbox);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_metadata_identifier" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_identifier`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_metadata_identifier(std::string_view identifier);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_metadata_reference_date" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_reference_date`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_metadata_reference_date(std::string_view value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_metadata_reference_system" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_reference_system`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_metadata_reference_system(std::string_view value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_metadata_title" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_title`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_metadata_title(std::string_view title);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_root_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `set_root_extra`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_root_extra(std::string_view key, Value value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_semantic_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `set_semantic_extra`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_semantic_extra(SemanticId semantic, std::string_view key, Value value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_semantic_parent" class="api-reference-symbol" data-pagefind-body>
+
+### `set_semantic_parent`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_semantic_parent(SemanticId semantic, SemanticId parent);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_template_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `set_template_vertex`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_template_vertex(std::size_t index, const Vertex &vertex);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_texture_border_color" class="api-reference-symbol" data-pagefind-body>
+
+### `set_texture_border_color`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_texture_border_color(TextureId id, const Rgba &value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_texture_type" class="api-reference-symbol" data-pagefind-body>
+
+### `set_texture_type`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_texture_type(TextureId id, TextureType value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_texture_wrap_mode" class="api-reference-symbol" data-pagefind-body>
+
+### `set_texture_wrap_mode`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_texture_wrap_mode(TextureId id, WrapMode value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `set_transform`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_transform(const Transform &transform);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-set_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `set_vertex`
+
+Kind: method.
+
+```cpp
+void cityjson_lib::Model::set_vertex(std::size_t index, const Vertex &vertex);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-subset_cityobjects" class="api-reference-symbol" data-pagefind-body>
+
+### `subset_cityobjects`
+
+Kind: method.
+
+```cpp
+Model cityjson_lib::Model::subset_cityobjects(std::span< const std::string_view > ids, bool exclude=false) const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-summary" class="api-reference-symbol" data-pagefind-body>
+
+### `summary`
+
+Kind: method.
+
+```cpp
+ModelSummary cityjson_lib::Model::summary() const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-uv_coordinates" class="api-reference-symbol" data-pagefind-body>
+
+### `uv_coordinates`
+
+Kind: method.
+
+```cpp
+std::vector< UV > cityjson_lib::Model::uv_coordinates() const;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>
+
+<section id="method-valid" class="api-reference-symbol" data-pagefind-body>
+
+### `valid`
+
+Kind: method.
+
+```cpp
+bool cityjson_lib::Model::valid() const noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1Model.xml
+
+</section>

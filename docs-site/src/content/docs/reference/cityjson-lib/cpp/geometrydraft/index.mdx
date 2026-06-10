@@ -1,0 +1,272 @@
+---
+title: GeometryDraft
+description: Generated C++ owner reference for cityjson-lib.
+languages: ["cpp"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp`
+
+## Contents
+
+- [GeometryDraft](#class-geometrydraft)
+- [add_linestring](#method-add_linestring)
+- [add_point](#method-add_point)
+- [add_solid](#method-add_solid)
+- [add_surface](#method-add_surface)
+- [composite_solid](#method-composite_solid)
+- [composite_surface](#method-composite_surface)
+- [GeometryDraft](#method-geometrydraft)
+- [instance](#method-instance)
+- [multi_line_string](#method-multi_line_string)
+- [multi_point](#method-multi_point)
+- [multi_solid](#method-multi_solid)
+- [multi_surface](#method-multi_surface)
+- [operator=](#method-operator)
+- [release](#method-release)
+- [solid](#method-solid)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `GeometryDraft` | class | [section](#class-geometrydraft) |
+| `add_linestring` | method | [section](#method-add_linestring) |
+| `add_point` | method | [section](#method-add_point) |
+| `add_solid` | method | [section](#method-add_solid) |
+| `add_surface` | method | [section](#method-add_surface) |
+| `composite_solid` | method | [section](#method-composite_solid) |
+| `composite_surface` | method | [section](#method-composite_surface) |
+| `GeometryDraft` | method | [section](#method-geometrydraft) |
+| `instance` | method | [section](#method-instance) |
+| `multi_line_string` | method | [section](#method-multi_line_string) |
+| `multi_point` | method | [section](#method-multi_point) |
+| `multi_solid` | method | [section](#method-multi_solid) |
+| `multi_surface` | method | [section](#method-multi_surface) |
+| `operator=` | method | [section](#method-operator) |
+| `release` | method | [section](#method-release) |
+| `solid` | method | [section](#method-solid) |
+
+<section id="class-geometrydraft" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometryDraft`
+
+Kind: class.
+
+```cpp
+class cityjson_lib::GeometryDraft
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-add_linestring" class="api-reference-symbol" data-pagefind-body>
+
+### `add_linestring`
+
+Kind: method.
+
+```cpp
+GeometryDraft & cityjson_lib::GeometryDraft::add_linestring(std::span< const std::uint32_t > vertex_indices, std::optional< SemanticId > semantic=std::nullopt) &;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-add_point" class="api-reference-symbol" data-pagefind-body>
+
+### `add_point`
+
+Kind: method.
+
+```cpp
+GeometryDraft & cityjson_lib::GeometryDraft::add_point(std::uint32_t vertex_index, std::optional< SemanticId > semantic=std::nullopt) &;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-add_solid" class="api-reference-symbol" data-pagefind-body>
+
+### `add_solid`
+
+Kind: method.
+
+```cpp
+GeometryDraft & cityjson_lib::GeometryDraft::add_solid(ShellDraft outer, std::vector< ShellDraft > inner_shells={}) &;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-add_surface" class="api-reference-symbol" data-pagefind-body>
+
+### `add_surface`
+
+Kind: method.
+
+```cpp
+GeometryDraft & cityjson_lib::GeometryDraft::add_surface(SurfaceDraft surface) &;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-composite_solid" class="api-reference-symbol" data-pagefind-body>
+
+### `composite_solid`
+
+Kind: method.
+
+```cpp
+static GeometryDraft cityjson_lib::GeometryDraft::composite_solid(std::optional< std::string_view > lod=std::nullopt);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-composite_surface" class="api-reference-symbol" data-pagefind-body>
+
+### `composite_surface`
+
+Kind: method.
+
+```cpp
+static GeometryDraft cityjson_lib::GeometryDraft::composite_surface(std::optional< std::string_view > lod=std::nullopt);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-geometrydraft" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometryDraft`
+
+Kind: method.
+
+```cpp
+cityjson_lib::GeometryDraft::GeometryDraft(const GeometryDraft &)=delete;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-instance" class="api-reference-symbol" data-pagefind-body>
+
+### `instance`
+
+Kind: method.
+
+```cpp
+static GeometryDraft cityjson_lib::GeometryDraft::instance(GeometryTemplateId template_id, std::uint32_t reference_vertex_index, const AffineTransform4x4 &transform);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-multi_line_string" class="api-reference-symbol" data-pagefind-body>
+
+### `multi_line_string`
+
+Kind: method.
+
+```cpp
+static GeometryDraft cityjson_lib::GeometryDraft::multi_line_string(std::optional< std::string_view > lod=std::nullopt);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-multi_point" class="api-reference-symbol" data-pagefind-body>
+
+### `multi_point`
+
+Kind: method.
+
+```cpp
+static GeometryDraft cityjson_lib::GeometryDraft::multi_point(std::optional< std::string_view > lod=std::nullopt);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-multi_solid" class="api-reference-symbol" data-pagefind-body>
+
+### `multi_solid`
+
+Kind: method.
+
+```cpp
+static GeometryDraft cityjson_lib::GeometryDraft::multi_solid(std::optional< std::string_view > lod=std::nullopt);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-multi_surface" class="api-reference-symbol" data-pagefind-body>
+
+### `multi_surface`
+
+Kind: method.
+
+```cpp
+static GeometryDraft cityjson_lib::GeometryDraft::multi_surface(std::optional< std::string_view > lod=std::nullopt);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-operator" class="api-reference-symbol" data-pagefind-body>
+
+### `operator=`
+
+Kind: method.
+
+```cpp
+GeometryDraft & cityjson_lib::GeometryDraft::operator=(const GeometryDraft &)=delete;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-release" class="api-reference-symbol" data-pagefind-body>
+
+### `release`
+
+Kind: method.
+
+```cpp
+cj_geometry_draft_t * cityjson_lib::GeometryDraft::release() noexcept;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>
+
+<section id="method-solid" class="api-reference-symbol" data-pagefind-body>
+
+### `solid`
+
+Kind: method.
+
+```cpp
+static GeometryDraft cityjson_lib::GeometryDraft::solid(std::optional< std::string_view > lod=std::nullopt);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-cpp/xml/classcityjson__lib_1_1GeometryDraft.xml
+
+</section>

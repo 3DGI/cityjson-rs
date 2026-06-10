@@ -19,9 +19,21 @@ from ctypes import (
 )
 from enum import IntEnum
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 import os
 import sys
+
+
+def _docs_import_enabled() -> bool:
+    return os.environ.get("CITYJSON_DOCS_IMPORT") == "1"
+
+
+class _DocsImportFfiLibrary:
+    def __getattr__(self, name: str) -> NoReturn:
+        raise RuntimeError(
+            "cityjson_index native FFI is unavailable while CITYJSON_DOCS_IMPORT=1; "
+            f"attempted to access {name}"
+        )
 
 
 class Status(IntEnum):
@@ -246,7 +258,9 @@ class FfiLibrary:
         self._configure()
 
     @classmethod
-    def load(cls) -> "FfiLibrary":
+    def load(cls) -> "FfiLibrary | _DocsImportFfiLibrary":
+        if _docs_import_enabled():
+            return _DocsImportFfiLibrary()
         return cls(_load_cdll())
 
     def _configure(self) -> None:

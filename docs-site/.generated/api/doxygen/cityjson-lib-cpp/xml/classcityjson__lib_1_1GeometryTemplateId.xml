@@ -1,0 +1,213 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classcityjson__lib_1_1GeometryTemplateId" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>cityjson_lib::GeometryTemplateId</compoundname>
+    <includes refid="cityjson__lib_8hpp" local="no">cityjson_lib.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcityjson__lib_1_1GeometryTemplateId_1a6269946549092abdee0d87cf043ab5f1" prot="private" static="no" mutable="no">
+        <type>cj_geometry_template_id_t</type>
+        <definition>cj_geometry_template_id_t cityjson_lib::GeometryTemplateId::raw_</definition>
+        <argsstring></argsstring>
+        <name>raw_</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::raw_</qualifiedname>
+        <initializer>{}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="327" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="325"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="friend">
+      <memberdef kind="friend" id="classcityjson__lib_1_1GeometryTemplateId_1a2bf2a0e9b454c55aa5dcb5aa4698697b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class Model</definition>
+        <argsstring></argsstring>
+        <name>Model</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::Model</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="349" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="friend" id="classcityjson__lib_1_1GeometryTemplateId_1aeceedf6e1a7d48a588516ce2b1983d6f" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class Value</definition>
+        <argsstring></argsstring>
+        <name>Value</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::Value</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Value" kindref="compound">Value</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="370" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="friend" id="classcityjson__lib_1_1GeometryTemplateId_1a145b9ef6ec7f2dc95e938628a77e6beb" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class RingDraft</definition>
+        <argsstring></argsstring>
+        <name>RingDraft</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::RingDraft</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="391" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="friend" id="classcityjson__lib_1_1GeometryTemplateId_1a50ec84d0cf160705ba1252dc4a5135bc" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class SurfaceDraft</definition>
+        <argsstring></argsstring>
+        <name>SurfaceDraft</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::SurfaceDraft</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1SurfaceDraft" kindref="compound">SurfaceDraft</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="416" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="friend" id="classcityjson__lib_1_1GeometryTemplateId_1ab4b0ff31b9bfebd3c5cd2c861b9c18d2" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class GeometryDraft</definition>
+        <argsstring></argsstring>
+        <name>GeometryDraft</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::GeometryDraft</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1GeometryDraft" kindref="compound">GeometryDraft</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="444" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="friend" id="classcityjson__lib_1_1GeometryTemplateId_1abb38754c91c1f85db0c875d00f1858a2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool operator==</definition>
+        <argsstring>(const GeometryTemplateId &amp;, const GeometryTemplateId &amp;)=default</argsstring>
+        <name>operator==</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::operator==</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1GeometryTemplateId" kindref="compound">GeometryTemplateId</ref> &amp;</type>
+        </param>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1GeometryTemplateId" kindref="compound">GeometryTemplateId</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="151"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1GeometryTemplateId_1acebba68e115e3228b5564951cf068186" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::GeometryTemplateId::GeometryTemplateId</definition>
+        <argsstring>()=default</argsstring>
+        <name>GeometryTemplateId</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::GeometryTemplateId</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1GeometryTemplateId_1accf9d8ae080664a86c18bd0a202ca013" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool cityjson_lib::GeometryTemplateId::valid</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>valid</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::valid</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="77" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="325"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1GeometryTemplateId_1a5141f524219e405aa6dcc6f768241f1b" prot="private" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::GeometryTemplateId::GeometryTemplateId</definition>
+        <argsstring>(cj_geometry_template_id_t raw)</argsstring>
+        <name>GeometryTemplateId</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::GeometryTemplateId</qualifiedname>
+        <param>
+          <type>cj_geometry_template_id_t</type>
+          <declname>raw</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="204" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="325"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1GeometryTemplateId_1a68f4c921f043b4be433693d58ed5b5d4" prot="private" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>cj_geometry_template_id_t</type>
+        <definition>cj_geometry_template_id_t cityjson_lib::GeometryTemplateId::raw</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>raw</name>
+        <qualifiedname>cityjson_lib::GeometryTemplateId::raw</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="261" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="325"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="325" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="325" bodyend="325"/>
+    <listofallmembers>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1ab4b0ff31b9bfebd3c5cd2c861b9c18d2" prot="private" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>GeometryDraft</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1acebba68e115e3228b5564951cf068186" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>GeometryTemplateId</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1a5141f524219e405aa6dcc6f768241f1b" prot="private" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>GeometryTemplateId</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1a2bf2a0e9b454c55aa5dcb5aa4698697b" prot="private" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>Model</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1abb38754c91c1f85db0c875d00f1858a2" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>operator==</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1a68f4c921f043b4be433693d58ed5b5d4" prot="private" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>raw</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1a6269946549092abdee0d87cf043ab5f1" prot="private" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>raw_</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1a145b9ef6ec7f2dc95e938628a77e6beb" prot="private" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>RingDraft</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1a50ec84d0cf160705ba1252dc4a5135bc" prot="private" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>SurfaceDraft</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1accf9d8ae080664a86c18bd0a202ca013" prot="public" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>valid</name></member>
+      <member refid="classcityjson__lib_1_1GeometryTemplateId_1aeceedf6e1a7d48a588516ce2b1983d6f" prot="private" virt="non-virtual"><scope>cityjson_lib::GeometryTemplateId</scope><name>Value</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

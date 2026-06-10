@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__model__summary__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_model_summary_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__model__summary__t_1ac05d8b01c298649dfbb8fc7dc65ff7e9" prot="public" static="no" mutable="no">
+        <type>enum <ref refid="cityjson__lib_8h_1ab9eb5af78e8c2794ae96241eeb21fac6" kindref="member">cj_model_type_t</ref></type>
+        <definition>enum cj_model_type_t cj_model_summary_t::model_type</definition>
+        <argsstring></argsstring>
+        <name>model_type</name>
+        <qualifiedname>cj_model_summary_t::model_type</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="315" column="23" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="315" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a971ab004814c8cc2fd00387dad5591ad" prot="public" static="no" mutable="no">
+        <type>enum <ref refid="cityjson__lib_8h_1a600d048dc538cf570544de344b48691f" kindref="member">cj_version_t</ref></type>
+        <definition>enum cj_version_t cj_model_summary_t::version</definition>
+        <argsstring></argsstring>
+        <name>version</name>
+        <qualifiedname>cj_model_summary_t::version</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="316" column="20" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="316" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a55d32bc74319cec83d9bdb52b1fbcece" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::cityobject_count</definition>
+        <argsstring></argsstring>
+        <name>cityobject_count</name>
+        <qualifiedname>cj_model_summary_t::cityobject_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="317" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="317" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a9004f86796a00e8bc5ada08d94265ff5" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::geometry_count</definition>
+        <argsstring></argsstring>
+        <name>geometry_count</name>
+        <qualifiedname>cj_model_summary_t::geometry_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="318" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="318" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a14e635ad7b3b41479b1b79c1e0278385" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::geometry_template_count</definition>
+        <argsstring></argsstring>
+        <name>geometry_template_count</name>
+        <qualifiedname>cj_model_summary_t::geometry_template_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="319" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="319" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a812e3106e5c914f96d6593c7998a7c53" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::vertex_count</definition>
+        <argsstring></argsstring>
+        <name>vertex_count</name>
+        <qualifiedname>cj_model_summary_t::vertex_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="320" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="320" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a61101957a4053b087406744187433f6f" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::template_vertex_count</definition>
+        <argsstring></argsstring>
+        <name>template_vertex_count</name>
+        <qualifiedname>cj_model_summary_t::template_vertex_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="321" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="321" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a00bf8673c11084730fafda1a96225ec3" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::uv_coordinate_count</definition>
+        <argsstring></argsstring>
+        <name>uv_coordinate_count</name>
+        <qualifiedname>cj_model_summary_t::uv_coordinate_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="322" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="322" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a73af4694910be1ae76b0fed6af4da13e" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::semantic_count</definition>
+        <argsstring></argsstring>
+        <name>semantic_count</name>
+        <qualifiedname>cj_model_summary_t::semantic_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="323" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="323" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a9f676620c39c13b9fea9210c110edb9d" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::material_count</definition>
+        <argsstring></argsstring>
+        <name>material_count</name>
+        <qualifiedname>cj_model_summary_t::material_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="324" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="324" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a457617df2e4025399fe457b7d9cbabab" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::texture_count</definition>
+        <argsstring></argsstring>
+        <name>texture_count</name>
+        <qualifiedname>cj_model_summary_t::texture_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="325" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="325" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1aae289a8443ea89086e4b119c5ce06681" prot="public" static="no" mutable="no">
+        <type>uintptr_t</type>
+        <definition>uintptr_t cj_model_summary_t::extension_count</definition>
+        <argsstring></argsstring>
+        <name>extension_count</name>
+        <qualifiedname>cj_model_summary_t::extension_count</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="326" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="326" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a6cfa34c554e7d0b33765b94133b0be8f" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_model_summary_t::has_metadata</definition>
+        <argsstring></argsstring>
+        <name>has_metadata</name>
+        <qualifiedname>cj_model_summary_t::has_metadata</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="327" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="327" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a5a266a00f53d7936a1e5a33583cdf4ff" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_model_summary_t::has_transform</definition>
+        <argsstring></argsstring>
+        <name>has_transform</name>
+        <qualifiedname>cj_model_summary_t::has_transform</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="328" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="328" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a2454911585587facdcf2d6c947c3ebb7" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_model_summary_t::has_templates</definition>
+        <argsstring></argsstring>
+        <name>has_templates</name>
+        <qualifiedname>cj_model_summary_t::has_templates</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="329" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="329" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__model__summary__t_1a28d6ea96603800031dd765d2622d9706" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_model_summary_t::has_appearance</definition>
+        <argsstring></argsstring>
+        <name>has_appearance</name>
+        <qualifiedname>cj_model_summary_t::has_appearance</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="330" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="330" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Aggregate model inspection summary returned across the ABI. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="314" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="314" bodyend="331"/>
+    <listofallmembers>
+      <member refid="structcj__model__summary__t_1a55d32bc74319cec83d9bdb52b1fbcece" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>cityobject_count</name></member>
+      <member refid="structcj__model__summary__t_1aae289a8443ea89086e4b119c5ce06681" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>extension_count</name></member>
+      <member refid="structcj__model__summary__t_1a9004f86796a00e8bc5ada08d94265ff5" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>geometry_count</name></member>
+      <member refid="structcj__model__summary__t_1a14e635ad7b3b41479b1b79c1e0278385" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>geometry_template_count</name></member>
+      <member refid="structcj__model__summary__t_1a28d6ea96603800031dd765d2622d9706" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>has_appearance</name></member>
+      <member refid="structcj__model__summary__t_1a6cfa34c554e7d0b33765b94133b0be8f" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>has_metadata</name></member>
+      <member refid="structcj__model__summary__t_1a2454911585587facdcf2d6c947c3ebb7" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>has_templates</name></member>
+      <member refid="structcj__model__summary__t_1a5a266a00f53d7936a1e5a33583cdf4ff" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>has_transform</name></member>
+      <member refid="structcj__model__summary__t_1a9f676620c39c13b9fea9210c110edb9d" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>material_count</name></member>
+      <member refid="structcj__model__summary__t_1ac05d8b01c298649dfbb8fc7dc65ff7e9" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>model_type</name></member>
+      <member refid="structcj__model__summary__t_1a73af4694910be1ae76b0fed6af4da13e" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>semantic_count</name></member>
+      <member refid="structcj__model__summary__t_1a61101957a4053b087406744187433f6f" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>template_vertex_count</name></member>
+      <member refid="structcj__model__summary__t_1a457617df2e4025399fe457b7d9cbabab" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>texture_count</name></member>
+      <member refid="structcj__model__summary__t_1a00bf8673c11084730fafda1a96225ec3" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>uv_coordinate_count</name></member>
+      <member refid="structcj__model__summary__t_1a971ab004814c8cc2fd00387dad5591ad" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>version</name></member>
+      <member refid="structcj__model__summary__t_1a812e3106e5c914f96d6593c7998a7c53" prot="public" virt="non-virtual"><scope>cj_model_summary_t</scope><name>vertex_count</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

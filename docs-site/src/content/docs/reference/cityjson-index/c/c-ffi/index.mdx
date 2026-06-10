@@ -1,0 +1,1416 @@
+---
+title: C FFI
+description: Generated C FFI owner reference for cityjson-index.
+languages: ["c"]
+generated: true
+---
+
+Source: `crates/cityjson-index/ffi/core/include/cityjson_index/cityjson_index.h`
+
+## Contents
+
+- [cjx_lod_selection_kind_t](#enum-cjx_lod_selection_kind_t)
+- [cjx_package_type_t](#enum-cjx_package_type_t)
+- [cjx_bounds2d_t](#type-alias-cjx_bounds2d_t)
+- [cjx_bounds3d_t](#type-alias-cjx_bounds3d_t)
+- [cjx_cityobject_ref_t](#type-alias-cjx_cityobject_ref_t)
+- [cjx_feature_bounds_summary_t](#type-alias-cjx_feature_bounds_summary_t)
+- [cjx_filtered_package_t](#type-alias-cjx_filtered_package_t)
+- [cjx_index_status_t](#type-alias-cjx_index_status_t)
+- [cjx_index_t](#type-alias-cjx_index_t)
+- [cjx_lod_by_type_t](#type-alias-cjx_lod_by_type_t)
+- [cjx_lod_map_entry_t](#type-alias-cjx_lod_map_entry_t)
+- [cjx_lod_map_t](#type-alias-cjx_lod_map_t)
+- [cjx_lod_selection_kind_t](#type-alias-cjx_lod_selection_kind_t)
+- [cjx_lod_selection_t](#type-alias-cjx_lod_selection_t)
+- [cjx_missing_lod_selection_list_t](#type-alias-cjx_missing_lod_selection_list_t)
+- [cjx_missing_lod_selection_t](#type-alias-cjx_missing_lod_selection_t)
+- [cjx_package_filter_report_t](#type-alias-cjx_package_filter_report_t)
+- [cjx_package_filter_t](#type-alias-cjx_package_filter_t)
+- [cjx_package_ref_t](#type-alias-cjx_package_ref_t)
+- [cjx_package_type_t](#type-alias-cjx_package_type_t)
+- [cjx_string_list_t](#type-alias-cjx_string_list_t)
+- [_private](#constant-_private)
+- [available_lods](#constant-available_lods)
+- [available_types](#constant-available_types)
+- [bounds](#constant-bounds)
+- [cityobject_count](#constant-cityobject_count)
+- [cityobject_type](#constant-cityobject_type)
+- [cityobject_types](#constant-cityobject_types)
+- [data](#constant-data)
+- [default_lod](#constant-default_lod)
+- [diagnostics](#constant-diagnostics)
+- [exact_lod](#constant-exact_lod)
+- [exists](#constant-exists)
+- [external_id](#constant-external_id)
+- [has_bounds](#constant-has_bounds)
+- [has_cityobject_types](#constant-has_cityobject_types)
+- [ignored_types](#constant-ignored_types)
+- [indexed_feature_count](#constant-indexed_feature_count)
+- [indexed_source_count](#constant-indexed_source_count)
+- [kind](#constant-kind)
+- [len](#constant-len)
+- [lods](#constant-lods)
+- [lods_by_type](#constant-lods_by_type)
+- [lods_by_type_len](#constant-lods_by_type_len)
+- [max_x](#constant-max_x)
+- [max_y](#constant-max_y)
+- [max_z](#constant-max_z)
+- [min_x](#constant-min_x)
+- [min_y](#constant-min_y)
+- [min_z](#constant-min_z)
+- [missing_lods](#constant-missing_lods)
+- [model_id](#constant-model_id)
+- [model_json](#constant-model_json)
+- [needs_reindex](#constant-needs_reindex)
+- [package_count](#constant-package_count)
+- [package_type](#constant-package_type)
+- [record_id](#constant-record_id)
+- [requested_lod](#constant-requested_lod)
+- [retained_geometry_count](#constant-retained_geometry_count)
+- [retained_lods](#constant-retained_lods)
+- [retained_types](#constant-retained_types)
+- [selection](#constant-selection)
+- [cjx_bytes_array_free](#function-cjx_bytes_array_free)
+- [cjx_bytes_free](#function-cjx_bytes_free)
+- [cjx_cityobject_refs_free](#function-cjx_cityobject_refs_free)
+- [cjx_clear_error](#function-cjx_clear_error)
+- [cjx_filtered_packages_free](#function-cjx_filtered_packages_free)
+- [cjx_index_cityobject_ref_page_after_record_id](#function-cjx_index_cityobject_ref_page_after_record_id)
+- [cjx_index_feature_bounds_summary](#function-cjx_index_feature_bounds_summary)
+- [cjx_index_free](#function-cjx_index_free)
+- [cjx_index_lookup_cityobject_refs](#function-cjx_index_lookup_cityobject_refs)
+- [cjx_index_lookup_package_ref_by_record_id](#function-cjx_index_lookup_package_ref_by_record_id)
+- [cjx_index_open](#function-cjx_index_open)
+- [cjx_index_package_ref_page_after_record_id](#function-cjx_index_package_ref_page_after_record_id)
+- [cjx_index_package_refs_for_cityobject](#function-cjx_index_package_refs_for_cityobject)
+- [cjx_index_query_cityobject_refs_page](#function-cjx_index_query_cityobject_refs_page)
+- [cjx_index_query_package_refs_page](#function-cjx_index_query_package_refs_page)
+- [cjx_index_read_filtered_packages](#function-cjx_index_read_filtered_packages)
+- [cjx_index_read_package_by_record_id_model_bytes](#function-cjx_index_read_package_by_record_id_model_bytes)
+- [cjx_index_read_package_model_bytes](#function-cjx_index_read_package_model_bytes)
+- [cjx_index_read_packages_model_bytes](#function-cjx_index_read_packages_model_bytes)
+- [cjx_index_reindex](#function-cjx_index_reindex)
+- [cjx_index_status](#function-cjx_index_status)
+- [cjx_last_error_kind](#function-cjx_last_error_kind)
+- [cjx_last_error_message_copy](#function-cjx_last_error_message_copy)
+- [cjx_last_error_message_len](#function-cjx_last_error_message_len)
+- [cjx_package_ref_free](#function-cjx_package_ref_free)
+- [cjx_package_refs_free](#function-cjx_package_refs_free)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `cjx_lod_selection_kind_t` | enum | [section](#enum-cjx_lod_selection_kind_t) |
+| `cjx_package_type_t` | enum | [section](#enum-cjx_package_type_t) |
+| `cjx_bounds2d_t` | type alias | [section](#type-alias-cjx_bounds2d_t) |
+| `cjx_bounds3d_t` | type alias | [section](#type-alias-cjx_bounds3d_t) |
+| `cjx_cityobject_ref_t` | type alias | [section](#type-alias-cjx_cityobject_ref_t) |
+| `cjx_feature_bounds_summary_t` | type alias | [section](#type-alias-cjx_feature_bounds_summary_t) |
+| `cjx_filtered_package_t` | type alias | [section](#type-alias-cjx_filtered_package_t) |
+| `cjx_index_status_t` | type alias | [section](#type-alias-cjx_index_status_t) |
+| `cjx_index_t` | type alias | [section](#type-alias-cjx_index_t) |
+| `cjx_lod_by_type_t` | type alias | [section](#type-alias-cjx_lod_by_type_t) |
+| `cjx_lod_map_entry_t` | type alias | [section](#type-alias-cjx_lod_map_entry_t) |
+| `cjx_lod_map_t` | type alias | [section](#type-alias-cjx_lod_map_t) |
+| `cjx_lod_selection_kind_t` | type alias | [section](#type-alias-cjx_lod_selection_kind_t) |
+| `cjx_lod_selection_t` | type alias | [section](#type-alias-cjx_lod_selection_t) |
+| `cjx_missing_lod_selection_list_t` | type alias | [section](#type-alias-cjx_missing_lod_selection_list_t) |
+| `cjx_missing_lod_selection_t` | type alias | [section](#type-alias-cjx_missing_lod_selection_t) |
+| `cjx_package_filter_report_t` | type alias | [section](#type-alias-cjx_package_filter_report_t) |
+| `cjx_package_filter_t` | type alias | [section](#type-alias-cjx_package_filter_t) |
+| `cjx_package_ref_t` | type alias | [section](#type-alias-cjx_package_ref_t) |
+| `cjx_package_type_t` | type alias | [section](#type-alias-cjx_package_type_t) |
+| `cjx_string_list_t` | type alias | [section](#type-alias-cjx_string_list_t) |
+| `_private` | constant | [section](#constant-_private) |
+| `available_lods` | constant | [section](#constant-available_lods) |
+| `available_types` | constant | [section](#constant-available_types) |
+| `bounds` | constant | [section](#constant-bounds) |
+| `cityobject_count` | constant | [section](#constant-cityobject_count) |
+| `cityobject_type` | constant | [section](#constant-cityobject_type) |
+| `cityobject_types` | constant | [section](#constant-cityobject_types) |
+| `data` | constant | [section](#constant-data) |
+| `default_lod` | constant | [section](#constant-default_lod) |
+| `diagnostics` | constant | [section](#constant-diagnostics) |
+| `exact_lod` | constant | [section](#constant-exact_lod) |
+| `exists` | constant | [section](#constant-exists) |
+| `external_id` | constant | [section](#constant-external_id) |
+| `has_bounds` | constant | [section](#constant-has_bounds) |
+| `has_cityobject_types` | constant | [section](#constant-has_cityobject_types) |
+| `ignored_types` | constant | [section](#constant-ignored_types) |
+| `indexed_feature_count` | constant | [section](#constant-indexed_feature_count) |
+| `indexed_source_count` | constant | [section](#constant-indexed_source_count) |
+| `kind` | constant | [section](#constant-kind) |
+| `len` | constant | [section](#constant-len) |
+| `lods` | constant | [section](#constant-lods) |
+| `lods_by_type` | constant | [section](#constant-lods_by_type) |
+| `lods_by_type_len` | constant | [section](#constant-lods_by_type_len) |
+| `max_x` | constant | [section](#constant-max_x) |
+| `max_y` | constant | [section](#constant-max_y) |
+| `max_z` | constant | [section](#constant-max_z) |
+| `min_x` | constant | [section](#constant-min_x) |
+| `min_y` | constant | [section](#constant-min_y) |
+| `min_z` | constant | [section](#constant-min_z) |
+| `missing_lods` | constant | [section](#constant-missing_lods) |
+| `model_id` | constant | [section](#constant-model_id) |
+| `model_json` | constant | [section](#constant-model_json) |
+| `needs_reindex` | constant | [section](#constant-needs_reindex) |
+| `package_count` | constant | [section](#constant-package_count) |
+| `package_type` | constant | [section](#constant-package_type) |
+| `record_id` | constant | [section](#constant-record_id) |
+| `requested_lod` | constant | [section](#constant-requested_lod) |
+| `retained_geometry_count` | constant | [section](#constant-retained_geometry_count) |
+| `retained_lods` | constant | [section](#constant-retained_lods) |
+| `retained_types` | constant | [section](#constant-retained_types) |
+| `selection` | constant | [section](#constant-selection) |
+| `cjx_bytes_array_free` | function | [section](#function-cjx_bytes_array_free) |
+| `cjx_bytes_free` | function | [section](#function-cjx_bytes_free) |
+| `cjx_cityobject_refs_free` | function | [section](#function-cjx_cityobject_refs_free) |
+| `cjx_clear_error` | function | [section](#function-cjx_clear_error) |
+| `cjx_filtered_packages_free` | function | [section](#function-cjx_filtered_packages_free) |
+| `cjx_index_cityobject_ref_page_after_record_id` | function | [section](#function-cjx_index_cityobject_ref_page_after_record_id) |
+| `cjx_index_feature_bounds_summary` | function | [section](#function-cjx_index_feature_bounds_summary) |
+| `cjx_index_free` | function | [section](#function-cjx_index_free) |
+| `cjx_index_lookup_cityobject_refs` | function | [section](#function-cjx_index_lookup_cityobject_refs) |
+| `cjx_index_lookup_package_ref_by_record_id` | function | [section](#function-cjx_index_lookup_package_ref_by_record_id) |
+| `cjx_index_open` | function | [section](#function-cjx_index_open) |
+| `cjx_index_package_ref_page_after_record_id` | function | [section](#function-cjx_index_package_ref_page_after_record_id) |
+| `cjx_index_package_refs_for_cityobject` | function | [section](#function-cjx_index_package_refs_for_cityobject) |
+| `cjx_index_query_cityobject_refs_page` | function | [section](#function-cjx_index_query_cityobject_refs_page) |
+| `cjx_index_query_package_refs_page` | function | [section](#function-cjx_index_query_package_refs_page) |
+| `cjx_index_read_filtered_packages` | function | [section](#function-cjx_index_read_filtered_packages) |
+| `cjx_index_read_package_by_record_id_model_bytes` | function | [section](#function-cjx_index_read_package_by_record_id_model_bytes) |
+| `cjx_index_read_package_model_bytes` | function | [section](#function-cjx_index_read_package_model_bytes) |
+| `cjx_index_read_packages_model_bytes` | function | [section](#function-cjx_index_read_packages_model_bytes) |
+| `cjx_index_reindex` | function | [section](#function-cjx_index_reindex) |
+| `cjx_index_status` | function | [section](#function-cjx_index_status) |
+| `cjx_last_error_kind` | function | [section](#function-cjx_last_error_kind) |
+| `cjx_last_error_message_copy` | function | [section](#function-cjx_last_error_message_copy) |
+| `cjx_last_error_message_len` | function | [section](#function-cjx_last_error_message_len) |
+| `cjx_package_ref_free` | function | [section](#function-cjx_package_ref_free) |
+| `cjx_package_refs_free` | function | [section](#function-cjx_package_refs_free) |
+
+<section id="enum-cjx_lod_selection_kind_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_lod_selection_kind_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="enum-cjx_package_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_package_type_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_bounds2d_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_bounds2d_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_bounds2d_t cjx_bounds2d_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_bounds3d_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_bounds3d_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_bounds3d_t cjx_bounds3d_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_cityobject_ref_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_cityobject_ref_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_cityobject_ref_t cjx_cityobject_ref_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_feature_bounds_summary_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_feature_bounds_summary_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_feature_bounds_summary_t cjx_feature_bounds_summary_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_filtered_package_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_filtered_package_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_filtered_package_t cjx_filtered_package_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_index_status_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_status_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_index_status_t cjx_index_status_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_index_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_index_t cjx_index_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_lod_by_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_lod_by_type_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_lod_by_type_t cjx_lod_by_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_lod_map_entry_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_lod_map_entry_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_lod_map_entry_t cjx_lod_map_entry_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_lod_map_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_lod_map_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_lod_map_t cjx_lod_map_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_lod_selection_kind_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_lod_selection_kind_t`
+
+Kind: type alias.
+
+```c
+typedef enum cjx_lod_selection_kind_t cjx_lod_selection_kind_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_lod_selection_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_lod_selection_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_lod_selection_t cjx_lod_selection_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_missing_lod_selection_list_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_missing_lod_selection_list_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_missing_lod_selection_list_t cjx_missing_lod_selection_list_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_missing_lod_selection_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_missing_lod_selection_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_missing_lod_selection_t cjx_missing_lod_selection_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_package_filter_report_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_package_filter_report_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_package_filter_report_t cjx_package_filter_report_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_package_filter_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_package_filter_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_package_filter_t cjx_package_filter_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_package_ref_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_package_ref_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_package_ref_t cjx_package_ref_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_package_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_package_type_t`
+
+Kind: type alias.
+
+```c
+typedef enum cjx_package_type_t cjx_package_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="type-alias-cjx_string_list_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_string_list_t`
+
+Kind: type alias.
+
+```c
+typedef struct cjx_string_list_t cjx_string_list_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="constant-_private" class="api-reference-symbol" data-pagefind-body>
+
+### `_private`
+
+Kind: constant.
+
+```c
+uint8_t cjx_index_t::_private[0][0];
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__index__t.xml
+
+</section>
+
+<section id="constant-available_lods" class="api-reference-symbol" data-pagefind-body>
+
+### `available_lods`
+
+Kind: constant.
+
+```c
+struct cjx_lod_map_t cjx_package_filter_report_t::available_lods;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__report__t.xml
+
+</section>
+
+<section id="constant-available_types" class="api-reference-symbol" data-pagefind-body>
+
+### `available_types`
+
+Kind: constant.
+
+```c
+struct cjx_string_list_t cjx_package_filter_report_t::available_types;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__report__t.xml
+
+</section>
+
+<section id="constant-bounds" class="api-reference-symbol" data-pagefind-body>
+
+### `bounds`
+
+Kind: constant.
+
+```c
+struct cjx_bounds3d_t cjx_cityobject_ref_t::bounds;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__cityobject__ref__t.xml
+
+</section>
+
+<section id="constant-cityobject_count" class="api-reference-symbol" data-pagefind-body>
+
+### `cityobject_count`
+
+Kind: constant.
+
+```c
+uintptr_t cjx_feature_bounds_summary_t::cityobject_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__feature__bounds__summary__t.xml
+
+</section>
+
+<section id="constant-cityobject_type" class="api-reference-symbol" data-pagefind-body>
+
+### `cityobject_type`
+
+Kind: constant.
+
+```c
+cj_bytes_t cjx_cityobject_ref_t::cityobject_type;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__cityobject__ref__t.xml
+
+</section>
+
+<section id="constant-cityobject_types" class="api-reference-symbol" data-pagefind-body>
+
+### `cityobject_types`
+
+Kind: constant.
+
+```c
+struct cjx_string_list_t cjx_package_filter_t::cityobject_types;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__t.xml
+
+</section>
+
+<section id="constant-data" class="api-reference-symbol" data-pagefind-body>
+
+### `data`
+
+Kind: constant.
+
+```c
+struct cjx_lod_map_entry_t* cjx_lod_map_t::data;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__lod__map__t.xml
+
+</section>
+
+<section id="constant-default_lod" class="api-reference-symbol" data-pagefind-body>
+
+### `default_lod`
+
+Kind: constant.
+
+```c
+struct cjx_lod_selection_t cjx_package_filter_t::default_lod;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__t.xml
+
+</section>
+
+<section id="constant-diagnostics" class="api-reference-symbol" data-pagefind-body>
+
+### `diagnostics`
+
+Kind: constant.
+
+```c
+struct cjx_package_filter_report_t cjx_filtered_package_t::diagnostics;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__filtered__package__t.xml
+
+</section>
+
+<section id="constant-exact_lod" class="api-reference-symbol" data-pagefind-body>
+
+### `exact_lod`
+
+Kind: constant.
+
+```c
+cj_bytes_t cjx_lod_selection_t::exact_lod;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__lod__selection__t.xml
+
+</section>
+
+<section id="constant-exists" class="api-reference-symbol" data-pagefind-body>
+
+### `exists`
+
+Kind: constant.
+
+```c
+bool cjx_index_status_t::exists;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__index__status__t.xml
+
+</section>
+
+<section id="constant-external_id" class="api-reference-symbol" data-pagefind-body>
+
+### `external_id`
+
+Kind: constant.
+
+```c
+cj_bytes_t cjx_cityobject_ref_t::external_id;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__cityobject__ref__t.xml
+
+</section>
+
+<section id="constant-has_bounds" class="api-reference-symbol" data-pagefind-body>
+
+### `has_bounds`
+
+Kind: constant.
+
+```c
+bool cjx_cityobject_ref_t::has_bounds;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__cityobject__ref__t.xml
+
+</section>
+
+<section id="constant-has_cityobject_types" class="api-reference-symbol" data-pagefind-body>
+
+### `has_cityobject_types`
+
+Kind: constant.
+
+```c
+bool cjx_package_filter_t::has_cityobject_types;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__t.xml
+
+</section>
+
+<section id="constant-ignored_types" class="api-reference-symbol" data-pagefind-body>
+
+### `ignored_types`
+
+Kind: constant.
+
+```c
+struct cjx_string_list_t cjx_package_filter_report_t::ignored_types;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__report__t.xml
+
+</section>
+
+<section id="constant-indexed_feature_count" class="api-reference-symbol" data-pagefind-body>
+
+### `indexed_feature_count`
+
+Kind: constant.
+
+```c
+uintptr_t cjx_index_status_t::indexed_feature_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__index__status__t.xml
+
+</section>
+
+<section id="constant-indexed_source_count" class="api-reference-symbol" data-pagefind-body>
+
+### `indexed_source_count`
+
+Kind: constant.
+
+```c
+uintptr_t cjx_index_status_t::indexed_source_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__index__status__t.xml
+
+</section>
+
+<section id="constant-kind" class="api-reference-symbol" data-pagefind-body>
+
+### `kind`
+
+Kind: constant.
+
+```c
+enum cjx_lod_selection_kind_t cjx_lod_selection_t::kind;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__lod__selection__t.xml
+
+</section>
+
+<section id="constant-len" class="api-reference-symbol" data-pagefind-body>
+
+### `len`
+
+Kind: constant.
+
+```c
+uintptr_t cjx_lod_map_t::len;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__lod__map__t.xml
+
+</section>
+
+<section id="constant-lods" class="api-reference-symbol" data-pagefind-body>
+
+### `lods`
+
+Kind: constant.
+
+```c
+struct cjx_string_list_t cjx_lod_map_entry_t::lods;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__lod__map__entry__t.xml
+
+</section>
+
+<section id="constant-lods_by_type" class="api-reference-symbol" data-pagefind-body>
+
+### `lods_by_type`
+
+Kind: constant.
+
+```c
+struct cjx_lod_by_type_t* cjx_package_filter_t::lods_by_type;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__t.xml
+
+</section>
+
+<section id="constant-lods_by_type_len" class="api-reference-symbol" data-pagefind-body>
+
+### `lods_by_type_len`
+
+Kind: constant.
+
+```c
+uintptr_t cjx_package_filter_t::lods_by_type_len;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__t.xml
+
+</section>
+
+<section id="constant-max_x" class="api-reference-symbol" data-pagefind-body>
+
+### `max_x`
+
+Kind: constant.
+
+```c
+double cjx_bounds2d_t::max_x;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__bounds2d__t.xml
+
+</section>
+
+<section id="constant-max_y" class="api-reference-symbol" data-pagefind-body>
+
+### `max_y`
+
+Kind: constant.
+
+```c
+double cjx_bounds2d_t::max_y;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__bounds2d__t.xml
+
+</section>
+
+<section id="constant-max_z" class="api-reference-symbol" data-pagefind-body>
+
+### `max_z`
+
+Kind: constant.
+
+```c
+double cjx_bounds3d_t::max_z;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__bounds3d__t.xml
+
+</section>
+
+<section id="constant-min_x" class="api-reference-symbol" data-pagefind-body>
+
+### `min_x`
+
+Kind: constant.
+
+```c
+double cjx_bounds2d_t::min_x;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__bounds2d__t.xml
+
+</section>
+
+<section id="constant-min_y" class="api-reference-symbol" data-pagefind-body>
+
+### `min_y`
+
+Kind: constant.
+
+```c
+double cjx_bounds2d_t::min_y;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__bounds2d__t.xml
+
+</section>
+
+<section id="constant-min_z" class="api-reference-symbol" data-pagefind-body>
+
+### `min_z`
+
+Kind: constant.
+
+```c
+double cjx_bounds3d_t::min_z;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__bounds3d__t.xml
+
+</section>
+
+<section id="constant-missing_lods" class="api-reference-symbol" data-pagefind-body>
+
+### `missing_lods`
+
+Kind: constant.
+
+```c
+struct cjx_missing_lod_selection_list_t cjx_package_filter_report_t::missing_lods;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__report__t.xml
+
+</section>
+
+<section id="constant-model_id" class="api-reference-symbol" data-pagefind-body>
+
+### `model_id`
+
+Kind: constant.
+
+```c
+cj_bytes_t cjx_package_ref_t::model_id;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__ref__t.xml
+
+</section>
+
+<section id="constant-model_json" class="api-reference-symbol" data-pagefind-body>
+
+### `model_json`
+
+Kind: constant.
+
+```c
+cj_bytes_t cjx_filtered_package_t::model_json;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__filtered__package__t.xml
+
+</section>
+
+<section id="constant-needs_reindex" class="api-reference-symbol" data-pagefind-body>
+
+### `needs_reindex`
+
+Kind: constant.
+
+```c
+bool cjx_index_status_t::needs_reindex;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__index__status__t.xml
+
+</section>
+
+<section id="constant-package_count" class="api-reference-symbol" data-pagefind-body>
+
+### `package_count`
+
+Kind: constant.
+
+```c
+uintptr_t cjx_feature_bounds_summary_t::package_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__feature__bounds__summary__t.xml
+
+</section>
+
+<section id="constant-package_type" class="api-reference-symbol" data-pagefind-body>
+
+### `package_type`
+
+Kind: constant.
+
+```c
+enum cjx_package_type_t cjx_package_ref_t::package_type;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__ref__t.xml
+
+</section>
+
+<section id="constant-record_id" class="api-reference-symbol" data-pagefind-body>
+
+### `record_id`
+
+Kind: constant.
+
+```c
+int64_t cjx_cityobject_ref_t::record_id;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__cityobject__ref__t.xml
+
+</section>
+
+<section id="constant-requested_lod" class="api-reference-symbol" data-pagefind-body>
+
+### `requested_lod`
+
+Kind: constant.
+
+```c
+cj_bytes_t cjx_missing_lod_selection_t::requested_lod;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__missing__lod__selection__t.xml
+
+</section>
+
+<section id="constant-retained_geometry_count" class="api-reference-symbol" data-pagefind-body>
+
+### `retained_geometry_count`
+
+Kind: constant.
+
+```c
+uintptr_t cjx_package_filter_report_t::retained_geometry_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__report__t.xml
+
+</section>
+
+<section id="constant-retained_lods" class="api-reference-symbol" data-pagefind-body>
+
+### `retained_lods`
+
+Kind: constant.
+
+```c
+struct cjx_lod_map_t cjx_package_filter_report_t::retained_lods;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__report__t.xml
+
+</section>
+
+<section id="constant-retained_types" class="api-reference-symbol" data-pagefind-body>
+
+### `retained_types`
+
+Kind: constant.
+
+```c
+struct cjx_string_list_t cjx_package_filter_report_t::retained_types;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__package__filter__report__t.xml
+
+</section>
+
+<section id="constant-selection" class="api-reference-symbol" data-pagefind-body>
+
+### `selection`
+
+Kind: constant.
+
+```c
+struct cjx_lod_selection_t cjx_lod_by_type_t::selection;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/structcjx__lod__by__type__t.xml
+
+</section>
+
+<section id="function-cjx_bytes_array_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_bytes_array_free`
+
+Kind: function.
+
+```c
+cj_status_t cjx_bytes_array_free(cj_bytes_t *items, uintptr_t count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_bytes_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_bytes_free`
+
+Kind: function.
+
+```c
+cj_status_t cjx_bytes_free(cj_bytes_t bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_cityobject_refs_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_cityobject_refs_free`
+
+Kind: function.
+
+```c
+cj_status_t cjx_cityobject_refs_free(struct cjx_cityobject_ref_t *refs, uintptr_t count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_clear_error" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_clear_error`
+
+Kind: function.
+
+```c
+cj_status_t cjx_clear_error(void);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_filtered_packages_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_filtered_packages_free`
+
+Kind: function.
+
+```c
+cj_status_t cjx_filtered_packages_free(struct cjx_filtered_package_t *packages, uintptr_t count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_cityobject_ref_page_after_record_id" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_cityobject_ref_page_after_record_id`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_cityobject_ref_page_after_record_id(const struct cjx_index_t *handle, bool has_after_record_id, int64_t after_record_id, uintptr_t limit, struct cjx_cityobject_ref_t **out_refs, uintptr_t *out_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_feature_bounds_summary" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_feature_bounds_summary`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_feature_bounds_summary(const struct cjx_index_t *handle, struct cjx_feature_bounds_summary_t *out_summary);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_free`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_free(struct cjx_index_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_lookup_cityobject_refs" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_lookup_cityobject_refs`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_lookup_cityobject_refs(const struct cjx_index_t *handle, const char *external_id, uintptr_t external_id_len, struct cjx_cityobject_ref_t **out_refs, uintptr_t *out_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_lookup_package_ref_by_record_id" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_lookup_package_ref_by_record_id`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_lookup_package_ref_by_record_id(const struct cjx_index_t *handle, int64_t record_id, bool *out_found, struct cjx_package_ref_t *out_ref);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_open" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_open`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_open(const char *dataset_dir, uintptr_t dataset_dir_len, const char *index_path, uintptr_t index_path_len, struct cjx_index_t **out_index);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_package_ref_page_after_record_id" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_package_ref_page_after_record_id`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_package_ref_page_after_record_id(const struct cjx_index_t *handle, bool has_after_record_id, int64_t after_record_id, uintptr_t limit, struct cjx_package_ref_t **out_refs, uintptr_t *out_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_package_refs_for_cityobject" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_package_refs_for_cityobject`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_package_refs_for_cityobject(const struct cjx_index_t *handle, const struct cjx_cityobject_ref_t *cityobject, struct cjx_package_ref_t **out_refs, uintptr_t *out_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_query_cityobject_refs_page" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_query_cityobject_refs_page`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_query_cityobject_refs_page(const struct cjx_index_t *handle, struct cjx_bounds2d_t bbox, bool has_after_record_id, int64_t after_record_id, uintptr_t limit, struct cjx_cityobject_ref_t **out_refs, uintptr_t *out_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_query_package_refs_page" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_query_package_refs_page`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_query_package_refs_page(const struct cjx_index_t *handle, struct cjx_bounds2d_t bbox, bool has_after_record_id, int64_t after_record_id, uintptr_t limit, struct cjx_package_ref_t **out_refs, uintptr_t *out_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_read_filtered_packages" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_read_filtered_packages`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_read_filtered_packages(const struct cjx_index_t *handle, const struct cjx_package_ref_t *refs, uintptr_t ref_count, const struct cjx_package_filter_t *filter, struct cjx_filtered_package_t **out_packages, uintptr_t *out_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_read_package_by_record_id_model_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_read_package_by_record_id_model_bytes`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_read_package_by_record_id_model_bytes(const struct cjx_index_t *handle, int64_t record_id, bool *out_found, cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_read_package_model_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_read_package_model_bytes`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_read_package_model_bytes(const struct cjx_index_t *handle, const struct cjx_package_ref_t *package, cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_read_packages_model_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_read_packages_model_bytes`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_read_packages_model_bytes(const struct cjx_index_t *handle, const struct cjx_package_ref_t *refs, uintptr_t ref_count, cj_bytes_t **out_items, uintptr_t *out_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_reindex" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_reindex`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_reindex(struct cjx_index_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_index_status" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_index_status`
+
+Kind: function.
+
+```c
+cj_status_t cjx_index_status(const struct cjx_index_t *handle, struct cjx_index_status_t *out_status);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_last_error_kind" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_last_error_kind`
+
+Kind: function.
+
+```c
+cj_error_kind_t cjx_last_error_kind(void);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_last_error_message_copy" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_last_error_message_copy`
+
+Kind: function.
+
+```c
+cj_status_t cjx_last_error_message_copy(char *buffer, uintptr_t capacity, uintptr_t *out_len);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_last_error_message_len" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_last_error_message_len`
+
+Kind: function.
+
+```c
+uintptr_t cjx_last_error_message_len(void);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_package_ref_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_package_ref_free`
+
+Kind: function.
+
+```c
+cj_status_t cjx_package_ref_free(struct cjx_package_ref_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>
+
+<section id="function-cjx_package_refs_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cjx_package_refs_free`
+
+Kind: function.
+
+```c
+cj_status_t cjx_package_refs_free(struct cjx_package_ref_t *refs, uintptr_t count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-index-c/xml/cityjson__index_8h.xml
+
+</section>

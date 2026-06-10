@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__uv__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_uv_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__uv__t_1a64bf3851f2fa633d449e0c8dea8241fc" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float cj_uv_t::u</definition>
+        <argsstring></argsstring>
+        <name>u</name>
+        <qualifiedname>cj_uv_t::u</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="205" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="205" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__uv__t_1a7edd22a065ed1ad8f94979d22d1f4084" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float cj_uv_t::v</definition>
+        <argsstring></argsstring>
+        <name>v</name>
+        <qualifiedname>cj_uv_t::v</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="206" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="206" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Packed UV coordinate copied across the ABI. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="204" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="204" bodyend="207"/>
+    <listofallmembers>
+      <member refid="structcj__uv__t_1a64bf3851f2fa633d449e0c8dea8241fc" prot="public" virt="non-virtual"><scope>cj_uv_t</scope><name>u</name></member>
+      <member refid="structcj__uv__t_1a7edd22a065ed1ad8f94979d22d1f4084" prot="public" virt="non-virtual"><scope>cj_uv_t</scope><name>v</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

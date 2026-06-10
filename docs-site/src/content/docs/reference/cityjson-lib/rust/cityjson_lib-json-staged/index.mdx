@@ -1,0 +1,128 @@
+---
+title: cityjson_lib::json::staged
+description: Generated Rust owner reference for cityjson-lib.
+languages: ["rust"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/src/lib.rs`
+
+## Contents
+
+- [from_feature_assembly_with_base](#function-from_feature_assembly_with_base)
+- [from_feature_file_with_base](#function-from_feature_file_with_base)
+- [from_feature_slice_with_base](#function-from_feature_slice_with_base)
+- [from_feature_slice_with_base_assume_cityjson_feature_v2_0](#function-from_feature_slice_with_base_assume_cityjson_feature_v2_0)
+- [from_feature_slice_with_base_direct](#function-from_feature_slice_with_base_direct)
+- [from_feature_slice_with_indexed_id_and_base](#function-from_feature_slice_with_indexed_id_and_base)
+- [to_feature_writer](#function-to_feature_writer)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `from_feature_assembly_with_base` | function | [section](#function-from_feature_assembly_with_base) |
+| `from_feature_file_with_base` | function | [section](#function-from_feature_file_with_base) |
+| `from_feature_slice_with_base` | function | [section](#function-from_feature_slice_with_base) |
+| `from_feature_slice_with_base_assume_cityjson_feature_v2_0` | function | [section](#function-from_feature_slice_with_base_assume_cityjson_feature_v2_0) |
+| `from_feature_slice_with_base_direct` | function | [section](#function-from_feature_slice_with_base_direct) |
+| `from_feature_slice_with_indexed_id_and_base` | function | [section](#function-from_feature_slice_with_indexed_id_and_base) |
+| `to_feature_writer` | function | [section](#function-to_feature_writer) |
+
+<section id="function-from_feature_assembly_with_base" class="api-reference-symbol" data-pagefind-body>
+
+### `from_feature_assembly_with_base`
+
+Kind: function.
+
+```rust
+pub fn from_feature_assembly_with_base( assembly: FeatureAssembly<'_>, base_document_bytes: &[u8], ) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_feature_assembly_with_base.html)
+
+</section>
+
+<section id="function-from_feature_file_with_base" class="api-reference-symbol" data-pagefind-body>
+
+### `from_feature_file_with_base`
+
+Kind: function.
+
+```rust
+pub fn from_feature_file_with_base<P: AsRef<Path>>( path: P, base_document_bytes: &[u8], ) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_feature_file_with_base.html)
+
+</section>
+
+<section id="function-from_feature_slice_with_base" class="api-reference-symbol" data-pagefind-body>
+
+### `from_feature_slice_with_base`
+
+Kind: function.
+
+```rust
+pub fn from_feature_slice_with_base( feature_bytes: &[u8], base_document_bytes: &[u8], ) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_feature_slice_with_base.html)
+
+</section>
+
+<section id="function-from_feature_slice_with_base_assume_cityjson_feature_v2_0" class="api-reference-symbol" data-pagefind-body>
+
+### `from_feature_slice_with_base_assume_cityjson_feature_v2_0`
+
+Kind: function.
+
+```rust
+pub fn from_feature_slice_with_base_assume_cityjson_feature_v2_0( feature_bytes: &[u8], base_document_bytes: &[u8], ) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_feature_slice_with_base_assume_cityjson_feature_v2_0.html)
+
+</section>
+
+<section id="function-from_feature_slice_with_base_direct" class="api-reference-symbol" data-pagefind-body>
+
+### `from_feature_slice_with_base_direct`
+
+Kind: function.
+
+```rust
+pub fn from_feature_slice_with_base_direct( feature_bytes: &[u8], base_document_bytes: &[u8], ) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_feature_slice_with_base_direct.html)
+
+</section>
+
+<section id="function-from_feature_slice_with_indexed_id_and_base" class="api-reference-symbol" data-pagefind-body>
+
+### `from_feature_slice_with_indexed_id_and_base`
+
+Kind: function.
+
+```rust
+pub fn from_feature_slice_with_indexed_id_and_base( feature_bytes: &[u8], indexed_id: &str, base_document_bytes: &[u8], ) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_feature_slice_with_indexed_id_and_base.html)
+
+</section>
+
+<section id="function-to_feature_writer" class="api-reference-symbol" data-pagefind-body>
+
+### `to_feature_writer`
+
+Kind: function.
+
+```rust
+pub fn to_feature_writer(writer: &mut impl Write, model: &CityModel) -> Result<()>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_feature_writer.html)
+
+</section>

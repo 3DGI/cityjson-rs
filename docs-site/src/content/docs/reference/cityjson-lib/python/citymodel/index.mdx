@@ -1,0 +1,1366 @@
+---
+title: CityModel
+description: Generated Python owner reference for cityjson-lib.
+languages: ["python"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/ffi/python/src/cityjson_lib/__init__.py`
+
+## Contents
+
+- [add_cityobject](#method-add_cityobject)
+- [add_cityobject_geometry](#method-add_cityobject_geometry)
+- [add_cityobject_parent](#method-add_cityobject_parent)
+- [add_extension](#method-add_extension)
+- [add_geometry](#method-add_geometry)
+- [add_geometry_template](#method-add_geometry_template)
+- [add_material](#method-add_material)
+- [add_semantic](#method-add_semantic)
+- [add_template_vertex](#method-add_template_vertex)
+- [add_texture](#method-add_texture)
+- [add_uv_coordinate](#method-add_uv_coordinate)
+- [add_vertex](#method-add_vertex)
+- [append_model](#method-append_model)
+- [cityobject_ids](#method-cityobject_ids)
+- [cleanup](#method-cleanup)
+- [clear_transform](#method-clear_transform)
+- [create](#method-create)
+- [extract_selection](#method-extract_selection)
+- [from_arrow_bytes](#method-from_arrow_bytes)
+- [from_document_bytes](#method-from_document_bytes)
+- [from_parquet_dataset_dir](#method-from_parquet_dataset_dir)
+- [from_parquet_file](#method-from_parquet_file)
+- [geometry_boundary](#method-geometry_boundary)
+- [geometry_boundary_coordinates](#method-geometry_boundary_coordinates)
+- [geometry_types](#method-geometry_types)
+- [metadata_identifier](#method-metadata_identifier)
+- [metadata_title](#method-metadata_title)
+- [parse_arrow_bytes](#method-parse_arrow_bytes)
+- [parse_document_bytes](#method-parse_document_bytes)
+- [parse_feature_bytes](#method-parse_feature_bytes)
+- [parse_feature_with_base_bytes](#method-parse_feature_with_base_bytes)
+- [parse_parquet_dataset_dir](#method-parse_parquet_dataset_dir)
+- [parse_parquet_file](#method-parse_parquet_file)
+- [remove_cityobject](#method-remove_cityobject)
+- [reproject](#method-reproject)
+- [reserve_import](#method-reserve_import)
+- [serialize_arrow_bytes](#method-serialize_arrow_bytes)
+- [serialize_document](#method-serialize_document)
+- [serialize_document_bytes](#method-serialize_document_bytes)
+- [serialize_feature](#method-serialize_feature)
+- [serialize_feature_bytes](#method-serialize_feature_bytes)
+- [serialize_parquet_dataset_dir](#method-serialize_parquet_dataset_dir)
+- [serialize_parquet_file](#method-serialize_parquet_file)
+- [set_default_material_theme](#method-set_default_material_theme)
+- [set_default_texture_theme](#method-set_default_texture_theme)
+- [set_material_ambient_intensity](#method-set_material_ambient_intensity)
+- [set_material_diffuse_color](#method-set_material_diffuse_color)
+- [set_material_emissive_color](#method-set_material_emissive_color)
+- [set_material_is_smooth](#method-set_material_is_smooth)
+- [set_material_shininess](#method-set_material_shininess)
+- [set_material_specular_color](#method-set_material_specular_color)
+- [set_material_transparency](#method-set_material_transparency)
+- [set_metadata_contact](#method-set_metadata_contact)
+- [set_metadata_extra](#method-set_metadata_extra)
+- [set_metadata_geographical_extent](#method-set_metadata_geographical_extent)
+- [set_metadata_identifier](#method-set_metadata_identifier)
+- [set_metadata_reference_date](#method-set_metadata_reference_date)
+- [set_metadata_reference_system](#method-set_metadata_reference_system)
+- [set_metadata_title](#method-set_metadata_title)
+- [set_root_extra](#method-set_root_extra)
+- [set_semantic_extra](#method-set_semantic_extra)
+- [set_semantic_parent](#method-set_semantic_parent)
+- [set_template_vertex](#method-set_template_vertex)
+- [set_texture_border_color](#method-set_texture_border_color)
+- [set_texture_type](#method-set_texture_type)
+- [set_texture_wrap_mode](#method-set_texture_wrap_mode)
+- [set_transform](#method-set_transform)
+- [set_vertex](#method-set_vertex)
+- [subset_cityobjects](#method-subset_cityobjects)
+- [summary](#method-summary)
+- [to_arrow_bytes](#method-to_arrow_bytes)
+- [to_json_bytes](#method-to_json_bytes)
+- [to_parquet_dataset_dir](#method-to_parquet_dataset_dir)
+- [to_parquet_file](#method-to_parquet_file)
+- [uv_coordinates](#method-uv_coordinates)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `add_cityobject` | method | [section](#method-add_cityobject) |
+| `add_cityobject_geometry` | method | [section](#method-add_cityobject_geometry) |
+| `add_cityobject_parent` | method | [section](#method-add_cityobject_parent) |
+| `add_extension` | method | [section](#method-add_extension) |
+| `add_geometry` | method | [section](#method-add_geometry) |
+| `add_geometry_template` | method | [section](#method-add_geometry_template) |
+| `add_material` | method | [section](#method-add_material) |
+| `add_semantic` | method | [section](#method-add_semantic) |
+| `add_template_vertex` | method | [section](#method-add_template_vertex) |
+| `add_texture` | method | [section](#method-add_texture) |
+| `add_uv_coordinate` | method | [section](#method-add_uv_coordinate) |
+| `add_vertex` | method | [section](#method-add_vertex) |
+| `append_model` | method | [section](#method-append_model) |
+| `cityobject_ids` | method | [section](#method-cityobject_ids) |
+| `cleanup` | method | [section](#method-cleanup) |
+| `clear_transform` | method | [section](#method-clear_transform) |
+| `create` | method | [section](#method-create) |
+| `extract_selection` | method | [section](#method-extract_selection) |
+| `from_arrow_bytes` | method | [section](#method-from_arrow_bytes) |
+| `from_document_bytes` | method | [section](#method-from_document_bytes) |
+| `from_parquet_dataset_dir` | method | [section](#method-from_parquet_dataset_dir) |
+| `from_parquet_file` | method | [section](#method-from_parquet_file) |
+| `geometry_boundary` | method | [section](#method-geometry_boundary) |
+| `geometry_boundary_coordinates` | method | [section](#method-geometry_boundary_coordinates) |
+| `geometry_types` | method | [section](#method-geometry_types) |
+| `metadata_identifier` | method | [section](#method-metadata_identifier) |
+| `metadata_title` | method | [section](#method-metadata_title) |
+| `parse_arrow_bytes` | method | [section](#method-parse_arrow_bytes) |
+| `parse_document_bytes` | method | [section](#method-parse_document_bytes) |
+| `parse_feature_bytes` | method | [section](#method-parse_feature_bytes) |
+| `parse_feature_with_base_bytes` | method | [section](#method-parse_feature_with_base_bytes) |
+| `parse_parquet_dataset_dir` | method | [section](#method-parse_parquet_dataset_dir) |
+| `parse_parquet_file` | method | [section](#method-parse_parquet_file) |
+| `remove_cityobject` | method | [section](#method-remove_cityobject) |
+| `reproject` | method | [section](#method-reproject) |
+| `reserve_import` | method | [section](#method-reserve_import) |
+| `serialize_arrow_bytes` | method | [section](#method-serialize_arrow_bytes) |
+| `serialize_document` | method | [section](#method-serialize_document) |
+| `serialize_document_bytes` | method | [section](#method-serialize_document_bytes) |
+| `serialize_feature` | method | [section](#method-serialize_feature) |
+| `serialize_feature_bytes` | method | [section](#method-serialize_feature_bytes) |
+| `serialize_parquet_dataset_dir` | method | [section](#method-serialize_parquet_dataset_dir) |
+| `serialize_parquet_file` | method | [section](#method-serialize_parquet_file) |
+| `set_default_material_theme` | method | [section](#method-set_default_material_theme) |
+| `set_default_texture_theme` | method | [section](#method-set_default_texture_theme) |
+| `set_material_ambient_intensity` | method | [section](#method-set_material_ambient_intensity) |
+| `set_material_diffuse_color` | method | [section](#method-set_material_diffuse_color) |
+| `set_material_emissive_color` | method | [section](#method-set_material_emissive_color) |
+| `set_material_is_smooth` | method | [section](#method-set_material_is_smooth) |
+| `set_material_shininess` | method | [section](#method-set_material_shininess) |
+| `set_material_specular_color` | method | [section](#method-set_material_specular_color) |
+| `set_material_transparency` | method | [section](#method-set_material_transparency) |
+| `set_metadata_contact` | method | [section](#method-set_metadata_contact) |
+| `set_metadata_extra` | method | [section](#method-set_metadata_extra) |
+| `set_metadata_geographical_extent` | method | [section](#method-set_metadata_geographical_extent) |
+| `set_metadata_identifier` | method | [section](#method-set_metadata_identifier) |
+| `set_metadata_reference_date` | method | [section](#method-set_metadata_reference_date) |
+| `set_metadata_reference_system` | method | [section](#method-set_metadata_reference_system) |
+| `set_metadata_title` | method | [section](#method-set_metadata_title) |
+| `set_root_extra` | method | [section](#method-set_root_extra) |
+| `set_semantic_extra` | method | [section](#method-set_semantic_extra) |
+| `set_semantic_parent` | method | [section](#method-set_semantic_parent) |
+| `set_template_vertex` | method | [section](#method-set_template_vertex) |
+| `set_texture_border_color` | method | [section](#method-set_texture_border_color) |
+| `set_texture_type` | method | [section](#method-set_texture_type) |
+| `set_texture_wrap_mode` | method | [section](#method-set_texture_wrap_mode) |
+| `set_transform` | method | [section](#method-set_transform) |
+| `set_vertex` | method | [section](#method-set_vertex) |
+| `subset_cityobjects` | method | [section](#method-subset_cityobjects) |
+| `summary` | method | [section](#method-summary) |
+| `to_arrow_bytes` | method | [section](#method-to_arrow_bytes) |
+| `to_json_bytes` | method | [section](#method-to_json_bytes) |
+| `to_parquet_dataset_dir` | method | [section](#method-to_parquet_dataset_dir) |
+| `to_parquet_file` | method | [section](#method-to_parquet_file) |
+| `uv_coordinates` | method | [section](#method-uv_coordinates) |
+
+<section id="method-add_cityobject" class="api-reference-symbol" data-pagefind-body>
+
+### `add_cityobject`
+
+Kind: method.
+
+```python
+add_cityobject(draft)
+```
+
+- **Return type:** `CityObjectId`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_cityobject_geometry" class="api-reference-symbol" data-pagefind-body>
+
+### `add_cityobject_geometry`
+
+Kind: method.
+
+```python
+add_cityobject_geometry(cityobject, geometry)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_cityobject_parent" class="api-reference-symbol" data-pagefind-body>
+
+### `add_cityobject_parent`
+
+Kind: method.
+
+```python
+add_cityobject_parent(child, parent)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_extension" class="api-reference-symbol" data-pagefind-body>
+
+### `add_extension`
+
+Kind: method.
+
+```python
+add_extension(name, url, version)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_geometry" class="api-reference-symbol" data-pagefind-body>
+
+### `add_geometry`
+
+Kind: method.
+
+```python
+add_geometry(draft)
+```
+
+- **Return type:** `GeometryId`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_geometry_template" class="api-reference-symbol" data-pagefind-body>
+
+### `add_geometry_template`
+
+Kind: method.
+
+```python
+add_geometry_template(draft)
+```
+
+- **Return type:** `GeometryTemplateId`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_material" class="api-reference-symbol" data-pagefind-body>
+
+### `add_material`
+
+Kind: method.
+
+```python
+add_material(name)
+```
+
+- **Return type:** `MaterialId`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_semantic" class="api-reference-symbol" data-pagefind-body>
+
+### `add_semantic`
+
+Kind: method.
+
+```python
+add_semantic(semantic_type)
+```
+
+- **Return type:** `SemanticId`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_template_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `add_template_vertex`
+
+Kind: method.
+
+```python
+add_template_vertex(vertex)
+```
+
+- **Return type:** `int`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_texture" class="api-reference-symbol" data-pagefind-body>
+
+### `add_texture`
+
+Kind: method.
+
+```python
+add_texture(image, image_type)
+```
+
+- **Return type:** `TextureId`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_uv_coordinate" class="api-reference-symbol" data-pagefind-body>
+
+### `add_uv_coordinate`
+
+Kind: method.
+
+```python
+add_uv_coordinate(uv)
+```
+
+- **Return type:** `int`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-add_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `add_vertex`
+
+Kind: method.
+
+```python
+add_vertex(vertex)
+```
+
+- **Return type:** `int`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-append_model" class="api-reference-symbol" data-pagefind-body>
+
+### `append_model`
+
+Kind: method.
+
+```python
+append_model(other)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-cityobject_ids" class="api-reference-symbol" data-pagefind-body>
+
+### `cityobject_ids`
+
+Kind: method.
+
+```python
+cityobject_ids()
+```
+
+- **Return type:** `list`\[`str`\]
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-cleanup" class="api-reference-symbol" data-pagefind-body>
+
+### `cleanup`
+
+Kind: method.
+
+```python
+cleanup()
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-clear_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `clear_transform`
+
+Kind: method.
+
+```python
+clear_transform()
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-create" class="api-reference-symbol" data-pagefind-body>
+
+### `create`
+
+Kind: method.
+
+```python
+classmethod create(*, model_type)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-extract_selection" class="api-reference-symbol" data-pagefind-body>
+
+### `extract_selection`
+
+Kind: method.
+
+```python
+extract_selection(selection)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-from_arrow_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `from_arrow_bytes`
+
+Kind: method.
+
+```python
+classmethod from_arrow_bytes(data)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-from_document_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `from_document_bytes`
+
+Kind: method.
+
+```python
+classmethod from_document_bytes(data)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-from_parquet_dataset_dir" class="api-reference-symbol" data-pagefind-body>
+
+### `from_parquet_dataset_dir`
+
+Kind: method.
+
+```python
+classmethod from_parquet_dataset_dir(path)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-from_parquet_file" class="api-reference-symbol" data-pagefind-body>
+
+### `from_parquet_file`
+
+Kind: method.
+
+```python
+classmethod from_parquet_file(path)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-geometry_boundary" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_boundary`
+
+Kind: method.
+
+```python
+geometry_boundary(index)
+```
+
+- **Return type:** `GeometryBoundary`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-geometry_boundary_coordinates" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_boundary_coordinates`
+
+Kind: method.
+
+```python
+geometry_boundary_coordinates(index)
+```
+
+- **Return type:** `list`\[`Vertex`\]
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-geometry_types" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_types`
+
+Kind: method.
+
+```python
+geometry_types()
+```
+
+- **Return type:** `list`\[`GeometryType`\]
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-metadata_identifier" class="api-reference-symbol" data-pagefind-body>
+
+### `metadata_identifier`
+
+Kind: method.
+
+```python
+metadata_identifier()
+```
+
+- **Return type:** `str`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-metadata_title" class="api-reference-symbol" data-pagefind-body>
+
+### `metadata_title`
+
+Kind: method.
+
+```python
+metadata_title()
+```
+
+- **Return type:** `str`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-parse_arrow_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_arrow_bytes`
+
+Kind: method.
+
+```python
+classmethod parse_arrow_bytes(data)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-parse_document_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_document_bytes`
+
+Kind: method.
+
+```python
+classmethod parse_document_bytes(data)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-parse_feature_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_feature_bytes`
+
+Kind: method.
+
+```python
+classmethod parse_feature_bytes(data)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-parse_feature_with_base_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_feature_with_base_bytes`
+
+Kind: method.
+
+```python
+classmethod parse_feature_with_base_bytes(feature_data, base_data)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-parse_parquet_dataset_dir" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_parquet_dataset_dir`
+
+Kind: method.
+
+```python
+classmethod parse_parquet_dataset_dir(path)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-parse_parquet_file" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_parquet_file`
+
+Kind: method.
+
+```python
+classmethod parse_parquet_file(path)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-remove_cityobject" class="api-reference-symbol" data-pagefind-body>
+
+### `remove_cityobject`
+
+Kind: method.
+
+```python
+remove_cityobject(cityobject_id)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-reproject" class="api-reference-symbol" data-pagefind-body>
+
+### `reproject`
+
+Kind: method.
+
+```python
+reproject(target_crs)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-reserve_import" class="api-reference-symbol" data-pagefind-body>
+
+### `reserve_import`
+
+Kind: method.
+
+```python
+reserve_import(capacities)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-serialize_arrow_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_arrow_bytes`
+
+Kind: method.
+
+```python
+serialize_arrow_bytes()
+```
+
+- **Return type:** `bytes`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-serialize_document" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_document`
+
+Kind: method.
+
+```python
+serialize_document(options=None)
+```
+
+- **Return type:** `str`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-serialize_document_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_document_bytes`
+
+Kind: method.
+
+```python
+serialize_document_bytes(options=None)
+```
+
+- **Return type:** `bytes`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-serialize_feature" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_feature`
+
+Kind: method.
+
+```python
+serialize_feature(options=None)
+```
+
+- **Return type:** `str`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-serialize_feature_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_feature_bytes`
+
+Kind: method.
+
+```python
+serialize_feature_bytes(options=None)
+```
+
+- **Return type:** `bytes`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-serialize_parquet_dataset_dir" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_parquet_dataset_dir`
+
+Kind: method.
+
+```python
+serialize_parquet_dataset_dir(path)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-serialize_parquet_file" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_parquet_file`
+
+Kind: method.
+
+```python
+serialize_parquet_file(path)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_default_material_theme" class="api-reference-symbol" data-pagefind-body>
+
+### `set_default_material_theme`
+
+Kind: method.
+
+```python
+set_default_material_theme(theme)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_default_texture_theme" class="api-reference-symbol" data-pagefind-body>
+
+### `set_default_texture_theme`
+
+Kind: method.
+
+```python
+set_default_texture_theme(theme)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_material_ambient_intensity" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_ambient_intensity`
+
+Kind: method.
+
+```python
+set_material_ambient_intensity(material, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_material_diffuse_color" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_diffuse_color`
+
+Kind: method.
+
+```python
+set_material_diffuse_color(material, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_material_emissive_color" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_emissive_color`
+
+Kind: method.
+
+```python
+set_material_emissive_color(material, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_material_is_smooth" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_is_smooth`
+
+Kind: method.
+
+```python
+set_material_is_smooth(material, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_material_shininess" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_shininess`
+
+Kind: method.
+
+```python
+set_material_shininess(material, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_material_specular_color" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_specular_color`
+
+Kind: method.
+
+```python
+set_material_specular_color(material, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_material_transparency" class="api-reference-symbol" data-pagefind-body>
+
+### `set_material_transparency`
+
+Kind: method.
+
+```python
+set_material_transparency(material, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_metadata_contact" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_contact`
+
+Kind: method.
+
+```python
+set_metadata_contact(contact)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_metadata_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_extra`
+
+Kind: method.
+
+```python
+set_metadata_extra(key, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_metadata_geographical_extent" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_geographical_extent`
+
+Kind: method.
+
+```python
+set_metadata_geographical_extent(bbox)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_metadata_identifier" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_identifier`
+
+Kind: method.
+
+```python
+set_metadata_identifier(identifier)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_metadata_reference_date" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_reference_date`
+
+Kind: method.
+
+```python
+set_metadata_reference_date(value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_metadata_reference_system" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_reference_system`
+
+Kind: method.
+
+```python
+set_metadata_reference_system(value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_metadata_title" class="api-reference-symbol" data-pagefind-body>
+
+### `set_metadata_title`
+
+Kind: method.
+
+```python
+set_metadata_title(title)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_root_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `set_root_extra`
+
+Kind: method.
+
+```python
+set_root_extra(key, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_semantic_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `set_semantic_extra`
+
+Kind: method.
+
+```python
+set_semantic_extra(semantic, key, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_semantic_parent" class="api-reference-symbol" data-pagefind-body>
+
+### `set_semantic_parent`
+
+Kind: method.
+
+```python
+set_semantic_parent(semantic, parent)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_template_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `set_template_vertex`
+
+Kind: method.
+
+```python
+set_template_vertex(index, vertex)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_texture_border_color" class="api-reference-symbol" data-pagefind-body>
+
+### `set_texture_border_color`
+
+Kind: method.
+
+```python
+set_texture_border_color(texture, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_texture_type" class="api-reference-symbol" data-pagefind-body>
+
+### `set_texture_type`
+
+Kind: method.
+
+```python
+set_texture_type(texture, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_texture_wrap_mode" class="api-reference-symbol" data-pagefind-body>
+
+### `set_texture_wrap_mode`
+
+Kind: method.
+
+```python
+set_texture_wrap_mode(texture, value)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `set_transform`
+
+Kind: method.
+
+```python
+set_transform(transform)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-set_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `set_vertex`
+
+Kind: method.
+
+```python
+set_vertex(index, vertex)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-subset_cityobjects" class="api-reference-symbol" data-pagefind-body>
+
+### `subset_cityobjects`
+
+Kind: method.
+
+```python
+subset_cityobjects(cityobject_ids, exclude=False)
+```
+
+- **Return type:** `Self`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-summary" class="api-reference-symbol" data-pagefind-body>
+
+### `summary`
+
+Kind: method.
+
+```python
+summary()
+```
+
+- **Return type:** `ModelSummary`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-to_arrow_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `to_arrow_bytes`
+
+Kind: method.
+
+```python
+to_arrow_bytes()
+```
+
+- **Return type:** `bytes`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-to_json_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `to_json_bytes`
+
+Kind: method.
+
+```python
+to_json_bytes(options=None)
+```
+
+- **Return type:** `bytes`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-to_parquet_dataset_dir" class="api-reference-symbol" data-pagefind-body>
+
+### `to_parquet_dataset_dir`
+
+Kind: method.
+
+```python
+to_parquet_dataset_dir(path)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-to_parquet_file" class="api-reference-symbol" data-pagefind-body>
+
+### `to_parquet_file`
+
+Kind: method.
+
+```python
+to_parquet_file(path)
+```
+
+- **Return type:** `None`
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>
+
+<section id="method-uv_coordinates" class="api-reference-symbol" data-pagefind-body>
+
+### `uv_coordinates`
+
+Kind: method.
+
+```python
+uv_coordinates()
+```
+
+- **Return type:** `list`\[`UV`\]
+
+Source metadata: Sphinx XML: .generated/api/sphinx/cityjson_lib/xml/index.xml
+
+</section>

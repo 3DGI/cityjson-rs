@@ -1,0 +1,255 @@
+---
+title: cityjson_lib::ops
+description: Generated Rust owner reference for cityjson-lib.
+languages: ["rust"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/src/lib.rs`
+
+## Contents
+
+- [CityObjectSelectionContext](#struct-cityobjectselectioncontext)
+- [GeometrySelectionContext](#struct-geometryselectioncontext)
+- [ModelSelection](#struct-modelselection)
+- [Transformer](#struct-transformer)
+- [append](#function-append)
+- [cleanup](#function-cleanup)
+- [extract](#function-extract)
+- [merge](#function-merge)
+- [reproject](#function-reproject)
+- [select_cityobjects](#function-select_cityobjects)
+- [select_geometries](#function-select_geometries)
+- [subset](#function-subset)
+- [transformer](#function-transformer)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `CityObjectSelectionContext` | struct | [section](#struct-cityobjectselectioncontext) |
+| `GeometrySelectionContext` | struct | [section](#struct-geometryselectioncontext) |
+| `ModelSelection` | struct | [section](#struct-modelselection) |
+| `Transformer` | struct | [section](#struct-transformer) |
+| `append` | function | [section](#function-append) |
+| `cleanup` | function | [section](#function-cleanup) |
+| `extract` | function | [section](#function-extract) |
+| `merge` | function | [section](#function-merge) |
+| `reproject` | function | [section](#function-reproject) |
+| `select_cityobjects` | function | [section](#function-select_cityobjects) |
+| `select_geometries` | function | [section](#function-select_geometries) |
+| `subset` | function | [section](#function-subset) |
+| `transformer` | function | [section](#function-transformer) |
+
+<section id="struct-cityobjectselectioncontext" class="api-reference-symbol" data-pagefind-body>
+
+### `CityObjectSelectionContext`
+
+Kind: struct.
+
+```rust
+pub struct CityObjectSelectionContext<'a>
+```
+
+Context passed to cityobject-level selection predicates.
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/struct.CityObjectSelectionContext.html)
+
+</section>
+
+<section id="struct-geometryselectioncontext" class="api-reference-symbol" data-pagefind-body>
+
+### `GeometrySelectionContext`
+
+Kind: struct.
+
+```rust
+pub struct GeometrySelectionContext<'a>
+```
+
+Context passed to geometry-level selection predicates.
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/struct.GeometrySelectionContext.html)
+
+</section>
+
+<section id="struct-modelselection" class="api-reference-symbol" data-pagefind-body>
+
+### `ModelSelection`
+
+Kind: struct.
+
+```rust
+pub struct ModelSelection
+```
+
+Opaque selection carrier for selection/extraction workflows.
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/struct.ModelSelection.html)
+
+</section>
+
+<section id="struct-transformer" class="api-reference-symbol" data-pagefind-body>
+
+### `Transformer`
+
+Kind: struct.
+
+```rust
+pub struct Transformer
+```
+
+Cached coordinate transformer backed by PROJ.
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/struct.Transformer.html)
+
+</section>
+
+<section id="function-append" class="api-reference-symbol" data-pagefind-body>
+
+### `append`
+
+Kind: function.
+
+```rust
+pub fn append(target: &mut CityModel, source: &CityModel) -> Result<()>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.append.html)
+
+</section>
+
+<section id="function-cleanup" class="api-reference-symbol" data-pagefind-body>
+
+### `cleanup`
+
+Kind: function.
+
+```rust
+pub fn cleanup(model: &CityModel) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.cleanup.html)
+
+</section>
+
+<section id="function-extract" class="api-reference-symbol" data-pagefind-body>
+
+### `extract`
+
+Kind: function.
+
+```rust
+pub fn extract(model: &CityModel, selection: &ModelSelection) -> Result<CityModel>
+```
+
+Rebuild a model from a selection.
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.extract.html)
+
+</section>
+
+<section id="function-merge" class="api-reference-symbol" data-pagefind-body>
+
+### `merge`
+
+Kind: function.
+
+```rust
+pub fn merge<I>(models: I) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.merge.html)
+
+</section>
+
+<section id="function-reproject" class="api-reference-symbol" data-pagefind-body>
+
+### `reproject`
+
+Kind: function.
+
+```rust
+pub fn reproject(mut model: CityModel, target_crs: &str) -> Result<CityModel>
+```
+
+Reproject the main vertex pool into `target_crs`.
+
+The input model is consumed. Only `vertices` are reprojected; template vertices and
+geometry-instance transforms are preserved. `cityjson-lib` stores parsed vertices as
+real-world coordinates, so any root transform is removed after projection because vertices
+are returned in target real-world coordinates.
+
+#### Errors
+
+Returns an error when `metadata.referenceSystem` is absent or PROJ cannot transform a vertex.
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.reproject.html)
+
+</section>
+
+<section id="function-select_cityobjects" class="api-reference-symbol" data-pagefind-body>
+
+### `select_cityobjects`
+
+Kind: function.
+
+```rust
+pub fn select_cityobjects<F>(model: &CityModel, mut predicate: F) -> Result<ModelSelection>
+```
+
+Build a CityObject selection by evaluating a predicate over each CityObject.
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.select_cityobjects.html)
+
+</section>
+
+<section id="function-select_geometries" class="api-reference-symbol" data-pagefind-body>
+
+### `select_geometries`
+
+Kind: function.
+
+```rust
+pub fn select_geometries<F>(model: &CityModel, mut predicate: F) -> Result<ModelSelection>
+```
+
+Build a geometry selection by evaluating a predicate over every referenced geometry.
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.select_geometries.html)
+
+</section>
+
+<section id="function-subset" class="api-reference-symbol" data-pagefind-body>
+
+### `subset`
+
+Kind: function.
+
+```rust
+pub fn subset<'a, I>(model: &CityModel, cityobject_ids: I, exclude: bool) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.subset.html)
+
+</section>
+
+<section id="function-transformer" class="api-reference-symbol" data-pagefind-body>
+
+### `transformer`
+
+Kind: function.
+
+```rust
+pub fn transformer(source_crs: &str, target_crs: &str) -> Result<Transformer>
+```
+
+Return a cached transformer for the CRS pair.
+
+#### Errors
+
+Returns an error when PROJ cannot create the CRS operation.
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.transformer.html)
+
+</section>

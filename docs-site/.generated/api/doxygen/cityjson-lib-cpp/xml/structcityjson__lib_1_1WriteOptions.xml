@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcityjson__lib_1_1WriteOptions" kind="struct" language="C++" prot="public" final="yes">
+    <compoundname>cityjson_lib::WriteOptions</compoundname>
+    <includes refid="cityjson__lib_8hpp" local="no">cityjson_lib.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcityjson__lib_1_1WriteOptions_1af7c644ae59071e65b365ff86251c42d8" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cityjson_lib::WriteOptions::pretty</definition>
+        <argsstring></argsstring>
+        <name>pretty</name>
+        <qualifiedname>cityjson_lib::WriteOptions::pretty</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="43" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcityjson__lib_1_1WriteOptions_1a60ba56497ee40680f0a242ef4d8d94e1" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cityjson_lib::WriteOptions::validate_default_themes</definition>
+        <argsstring></argsstring>
+        <name>validate_default_themes</name>
+        <qualifiedname>cityjson_lib::WriteOptions::validate_default_themes</qualifiedname>
+        <initializer>= true</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="44" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="42" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="42" bodyend="45"/>
+    <listofallmembers>
+      <member refid="structcityjson__lib_1_1WriteOptions_1af7c644ae59071e65b365ff86251c42d8" prot="public" virt="non-virtual"><scope>cityjson_lib::WriteOptions</scope><name>pretty</name></member>
+      <member refid="structcityjson__lib_1_1WriteOptions_1a60ba56497ee40680f0a242ef4d8d94e1" prot="public" virt="non-virtual"><scope>cityjson_lib::WriteOptions</scope><name>validate_default_themes</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

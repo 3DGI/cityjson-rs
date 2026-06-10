@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__vertex__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_vertex_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__vertex__t_1a8e69f7e4011659aee91841b017e13029" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_vertex_t::x</definition>
+        <argsstring></argsstring>
+        <name>x</name>
+        <qualifiedname>cj_vertex_t::x</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="180" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="180" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__vertex__t_1ad1fdd63def0c0869cec8f32e6721cfef" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_vertex_t::y</definition>
+        <argsstring></argsstring>
+        <name>y</name>
+        <qualifiedname>cj_vertex_t::y</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="181" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="181" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__vertex__t_1a3914d293a947ae538cf9e03148d0e73c" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_vertex_t::z</definition>
+        <argsstring></argsstring>
+        <name>z</name>
+        <qualifiedname>cj_vertex_t::z</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="182" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="182" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Packed 3D coordinate copied across the ABI. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="179" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="179" bodyend="183"/>
+    <listofallmembers>
+      <member refid="structcj__vertex__t_1a8e69f7e4011659aee91841b017e13029" prot="public" virt="non-virtual"><scope>cj_vertex_t</scope><name>x</name></member>
+      <member refid="structcj__vertex__t_1ad1fdd63def0c0869cec8f32e6721cfef" prot="public" virt="non-virtual"><scope>cj_vertex_t</scope><name>y</name></member>
+      <member refid="structcj__vertex__t_1a3914d293a947ae538cf9e03148d0e73c" prot="public" virt="non-virtual"><scope>cj_vertex_t</scope><name>z</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

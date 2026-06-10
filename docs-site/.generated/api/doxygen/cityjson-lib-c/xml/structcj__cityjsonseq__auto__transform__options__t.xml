@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__cityjsonseq__auto__transform__options__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_cityjsonseq_auto_transform_options_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__cityjsonseq__auto__transform__options__t_1a570997656fd1ffd08e211625ad668158" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_cityjsonseq_auto_transform_options_t::scale_x</definition>
+        <argsstring></argsstring>
+        <name>scale_x</name>
+        <qualifiedname>cj_cityjsonseq_auto_transform_options_t::scale_x</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="409" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="409" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__cityjsonseq__auto__transform__options__t_1aabd23d60de364488b266631b9906dcca" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_cityjsonseq_auto_transform_options_t::scale_y</definition>
+        <argsstring></argsstring>
+        <name>scale_y</name>
+        <qualifiedname>cj_cityjsonseq_auto_transform_options_t::scale_y</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="410" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="410" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__cityjsonseq__auto__transform__options__t_1a944c135d6f9ba21c2b9b41620a510f9a" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double cj_cityjsonseq_auto_transform_options_t::scale_z</definition>
+        <argsstring></argsstring>
+        <name>scale_z</name>
+        <qualifiedname>cj_cityjsonseq_auto_transform_options_t::scale_z</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="411" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="411" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__cityjsonseq__auto__transform__options__t_1a0de3dc8666ca8d24fa18ed814a92c730" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_cityjsonseq_auto_transform_options_t::validate_default_themes</definition>
+        <argsstring></argsstring>
+        <name>validate_default_themes</name>
+        <qualifiedname>cj_cityjsonseq_auto_transform_options_t::validate_default_themes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="412" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="412" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__cityjsonseq__auto__transform__options__t_1aef16da41c4c28cf619dc796e04b9008d" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_cityjsonseq_auto_transform_options_t::trailing_newline</definition>
+        <argsstring></argsstring>
+        <name>trailing_newline</name>
+        <qualifiedname>cj_cityjsonseq_auto_transform_options_t::trailing_newline</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="413" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="413" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__cityjsonseq__auto__transform__options__t_1a48f771f47bf01bf87643a63c7c1246c8" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_cityjsonseq_auto_transform_options_t::update_metadata_geographical_extent</definition>
+        <argsstring></argsstring>
+        <name>update_metadata_geographical_extent</name>
+        <qualifiedname>cj_cityjsonseq_auto_transform_options_t::update_metadata_geographical_extent</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="414" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="414" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Auto-transform options for strict <computeroutput>CityJSONSeq</computeroutput> writing. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="408" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="408" bodyend="415"/>
+    <listofallmembers>
+      <member refid="structcj__cityjsonseq__auto__transform__options__t_1a570997656fd1ffd08e211625ad668158" prot="public" virt="non-virtual"><scope>cj_cityjsonseq_auto_transform_options_t</scope><name>scale_x</name></member>
+      <member refid="structcj__cityjsonseq__auto__transform__options__t_1aabd23d60de364488b266631b9906dcca" prot="public" virt="non-virtual"><scope>cj_cityjsonseq_auto_transform_options_t</scope><name>scale_y</name></member>
+      <member refid="structcj__cityjsonseq__auto__transform__options__t_1a944c135d6f9ba21c2b9b41620a510f9a" prot="public" virt="non-virtual"><scope>cj_cityjsonseq_auto_transform_options_t</scope><name>scale_z</name></member>
+      <member refid="structcj__cityjsonseq__auto__transform__options__t_1aef16da41c4c28cf619dc796e04b9008d" prot="public" virt="non-virtual"><scope>cj_cityjsonseq_auto_transform_options_t</scope><name>trailing_newline</name></member>
+      <member refid="structcj__cityjsonseq__auto__transform__options__t_1a48f771f47bf01bf87643a63c7c1246c8" prot="public" virt="non-virtual"><scope>cj_cityjsonseq_auto_transform_options_t</scope><name>update_metadata_geographical_extent</name></member>
+      <member refid="structcj__cityjsonseq__auto__transform__options__t_1a0de3dc8666ca8d24fa18ed814a92c730" prot="public" virt="non-virtual"><scope>cj_cityjsonseq_auto_transform_options_t</scope><name>validate_default_themes</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

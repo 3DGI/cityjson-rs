@@ -1,0 +1,142 @@
+---
+title: Functions
+description: Generated WASM owner reference for cityjson-lib.
+languages: ["wasm"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/ffi/wasm/src/lib.rs`
+
+## Contents
+
+- [build_document_roundtrip](#function-build_document_roundtrip)
+- [extract_coordinate_buffers](#function-extract_coordinate_buffers)
+- [extract_geometry_boundary](#function-extract_geometry_boundary)
+- [extract_geometry_boundary_coordinates](#function-extract_geometry_boundary_coordinates)
+- [merge_feature_stream](#function-merge_feature_stream)
+- [parse_document_summary](#function-parse_document_summary)
+- [probe_bytes](#function-probe_bytes)
+- [serialize_document_with_options](#function-serialize_document_with_options)
+- [serialize_feature_with_options](#function-serialize_feature_with_options)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `build_document_roundtrip` | function | [section](#function-build_document_roundtrip) |
+| `extract_coordinate_buffers` | function | [section](#function-extract_coordinate_buffers) |
+| `extract_geometry_boundary` | function | [section](#function-extract_geometry_boundary) |
+| `extract_geometry_boundary_coordinates` | function | [section](#function-extract_geometry_boundary_coordinates) |
+| `merge_feature_stream` | function | [section](#function-merge_feature_stream) |
+| `parse_document_summary` | function | [section](#function-parse_document_summary) |
+| `probe_bytes` | function | [section](#function-probe_bytes) |
+| `serialize_document_with_options` | function | [section](#function-serialize_document_with_options) |
+| `serialize_feature_with_options` | function | [section](#function-serialize_feature_with_options) |
+
+<section id="function-build_document_roundtrip" class="api-reference-symbol" data-pagefind-body>
+
+### `build_document_roundtrip`
+
+Kind: function.
+
+```rust
+pub fn build_document_roundtrip() -> Result<Vec<u8>, WasmError>
+```
+
+</section>
+
+<section id="function-extract_coordinate_buffers" class="api-reference-symbol" data-pagefind-body>
+
+### `extract_coordinate_buffers`
+
+Kind: function.
+
+```rust
+pub fn extract_coordinate_buffers(bytes: &[u8]) -> Result<CoordinateBuffers, WasmError>
+```
+
+</section>
+
+<section id="function-extract_geometry_boundary" class="api-reference-symbol" data-pagefind-body>
+
+### `extract_geometry_boundary`
+
+Kind: function.
+
+```rust
+pub fn extract_geometry_boundary( bytes: &[u8], geometry_index: usize, ) -> Result<GeometryBoundary, WasmError>
+```
+
+</section>
+
+<section id="function-extract_geometry_boundary_coordinates" class="api-reference-symbol" data-pagefind-body>
+
+### `extract_geometry_boundary_coordinates`
+
+Kind: function.
+
+```rust
+pub fn extract_geometry_boundary_coordinates( bytes: &[u8], geometry_index: usize, ) -> Result<GeometryBoundaryCoordinates, WasmError>
+```
+
+</section>
+
+<section id="function-merge_feature_stream" class="api-reference-symbol" data-pagefind-body>
+
+### `merge_feature_stream`
+
+Kind: function.
+
+```rust
+pub fn merge_feature_stream(bytes: &[u8], options: WriteOptions) -> Result<Vec<u8>, WasmError>
+```
+
+</section>
+
+<section id="function-parse_document_summary" class="api-reference-symbol" data-pagefind-body>
+
+### `parse_document_summary`
+
+Kind: function.
+
+```rust
+pub fn parse_document_summary(bytes: &[u8]) -> Result<DocumentSummary, WasmError>
+```
+
+</section>
+
+<section id="function-probe_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `probe_bytes`
+
+Kind: function.
+
+```rust
+pub fn probe_bytes(bytes: &[u8]) -> Result<ProbeSummary, WasmError>
+```
+
+</section>
+
+<section id="function-serialize_document_with_options" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_document_with_options`
+
+Kind: function.
+
+```rust
+pub fn serialize_document_with_options( bytes: &[u8], options: WriteOptions, ) -> Result<Vec<u8>, WasmError>
+```
+
+</section>
+
+<section id="function-serialize_feature_with_options" class="api-reference-symbol" data-pagefind-body>
+
+### `serialize_feature_with_options`
+
+Kind: function.
+
+```rust
+pub fn serialize_feature_with_options( bytes: &[u8], options: WriteOptions, ) -> Result<Vec<u8>, WasmError>
+```
+
+</section>

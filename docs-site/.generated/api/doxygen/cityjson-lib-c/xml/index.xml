@@ -1,0 +1,493 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.9.8" xml:lang="en-US">
+  <compound refid="structcj__affine__transform__4x4__t" kind="struct"><name>cj_affine_transform_4x4_t</name>
+    <member refid="structcj__affine__transform__4x4__t_1a8289fee910d18ce2f171f4bb90ac4307" kind="variable"><name>elements</name></member>
+  </compound>
+  <compound refid="structcj__bbox__t" kind="struct"><name>cj_bbox_t</name>
+    <member refid="structcj__bbox__t_1adf6c8185b4b2b082fd2a7d3d24855c82" kind="variable"><name>min_x</name></member>
+    <member refid="structcj__bbox__t_1adee9adfdb47ef7a8da35d038b5d514f6" kind="variable"><name>min_y</name></member>
+    <member refid="structcj__bbox__t_1a25dc8c3b091ac0fc4323cac04c02cbd0" kind="variable"><name>min_z</name></member>
+    <member refid="structcj__bbox__t_1afa9b4b976c2cf930664ec2b04cee3ad4" kind="variable"><name>max_x</name></member>
+    <member refid="structcj__bbox__t_1a92349203dc66e44a8a9caff4438f14c0" kind="variable"><name>max_y</name></member>
+    <member refid="structcj__bbox__t_1ae0f4cae083e1ccf4e6153e518afd6a91" kind="variable"><name>max_z</name></member>
+  </compound>
+  <compound refid="structcj__bytes__list__t" kind="struct"><name>cj_bytes_list_t</name>
+    <member refid="structcj__bytes__list__t_1ada6ee7c382b5ad4b7f214f88916a0437" kind="variable"><name>data</name></member>
+    <member refid="structcj__bytes__list__t_1a33d3b98b1ecac22d1ed944526d8f61e7" kind="variable"><name>len</name></member>
+  </compound>
+  <compound refid="structcj__bytes__t" kind="struct"><name>cj_bytes_t</name>
+    <member refid="structcj__bytes__t_1a06e6e877d8a4f7d5bfcadc4e68d55633" kind="variable"><name>data</name></member>
+    <member refid="structcj__bytes__t_1aaddf9173a401d0e4b85384891208c9da" kind="variable"><name>len</name></member>
+  </compound>
+  <compound refid="structcj__cityjsonseq__auto__transform__options__t" kind="struct"><name>cj_cityjsonseq_auto_transform_options_t</name>
+    <member refid="structcj__cityjsonseq__auto__transform__options__t_1a570997656fd1ffd08e211625ad668158" kind="variable"><name>scale_x</name></member>
+    <member refid="structcj__cityjsonseq__auto__transform__options__t_1aabd23d60de364488b266631b9906dcca" kind="variable"><name>scale_y</name></member>
+    <member refid="structcj__cityjsonseq__auto__transform__options__t_1a944c135d6f9ba21c2b9b41620a510f9a" kind="variable"><name>scale_z</name></member>
+    <member refid="structcj__cityjsonseq__auto__transform__options__t_1a0de3dc8666ca8d24fa18ed814a92c730" kind="variable"><name>validate_default_themes</name></member>
+    <member refid="structcj__cityjsonseq__auto__transform__options__t_1aef16da41c4c28cf619dc796e04b9008d" kind="variable"><name>trailing_newline</name></member>
+    <member refid="structcj__cityjsonseq__auto__transform__options__t_1a48f771f47bf01bf87643a63c7c1246c8" kind="variable"><name>update_metadata_geographical_extent</name></member>
+  </compound>
+  <compound refid="structcj__cityjsonseq__write__options__t" kind="struct"><name>cj_cityjsonseq_write_options_t</name>
+    <member refid="structcj__cityjsonseq__write__options__t_1a6101fffbd5e68cb6b32d05db3295676d" kind="variable"><name>validate_default_themes</name></member>
+    <member refid="structcj__cityjsonseq__write__options__t_1af2cf4c524cccfd4eec3fb4c84a2f7447" kind="variable"><name>trailing_newline</name></member>
+    <member refid="structcj__cityjsonseq__write__options__t_1a74ad952c6dfddb51ea5730f9773d0a24" kind="variable"><name>update_metadata_geographical_extent</name></member>
+  </compound>
+  <compound refid="structcj__cityobject__draft__t" kind="struct"><name>cj_cityobject_draft_t</name>
+    <member refid="structcj__cityobject__draft__t_1a2e7fae41c5e405e9ab82694001dff11f" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__cityobject__id__t" kind="struct"><name>cj_cityobject_id_t</name>
+    <member refid="structcj__cityobject__id__t_1abd037d1dc7ec186c015851154d5544ea" kind="variable"><name>slot</name></member>
+    <member refid="structcj__cityobject__id__t_1a7cb7a3a33a7cb3f58d97373849f50a71" kind="variable"><name>generation</name></member>
+    <member refid="structcj__cityobject__id__t_1a8108176e09b021954c258cd55573084f" kind="variable"><name>reserved</name></member>
+  </compound>
+  <compound refid="structcj__contact__t" kind="struct"><name>cj_contact_t</name>
+    <member refid="structcj__contact__t_1a0ab27c5a67f9eedde39be1385db5e0ac" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__geometry__boundary__t" kind="struct"><name>cj_geometry_boundary_t</name>
+    <member refid="structcj__geometry__boundary__t_1ad5a60665b5a72ba56b776d1f9bb37f05" kind="variable"><name>geometry_type</name></member>
+    <member refid="structcj__geometry__boundary__t_1ae5eb29422d558405a03ca8cbb5038980" kind="variable"><name>has_boundaries</name></member>
+    <member refid="structcj__geometry__boundary__t_1a30f4bfbc8f3c0eea6c6d1b4d93e3e791" kind="variable"><name>vertex_indices</name></member>
+    <member refid="structcj__geometry__boundary__t_1abc2d176bb46b3ed51599fec4121e571a" kind="variable"><name>ring_offsets</name></member>
+    <member refid="structcj__geometry__boundary__t_1a46c44992ce8b97804aebeeafafd677ca" kind="variable"><name>surface_offsets</name></member>
+    <member refid="structcj__geometry__boundary__t_1a06ed7f99802a0354739c95df5c06ea08" kind="variable"><name>shell_offsets</name></member>
+    <member refid="structcj__geometry__boundary__t_1abfb7591fd36bf3cc1756ae3519a7e86e" kind="variable"><name>solid_offsets</name></member>
+  </compound>
+  <compound refid="structcj__geometry__boundary__view__t" kind="struct"><name>cj_geometry_boundary_view_t</name>
+    <member refid="structcj__geometry__boundary__view__t_1af7d36469d801603f5d91099d57541df1" kind="variable"><name>geometry_type</name></member>
+    <member refid="structcj__geometry__boundary__view__t_1a9fb537942a85a99adb45c38153ee803a" kind="variable"><name>vertex_indices</name></member>
+    <member refid="structcj__geometry__boundary__view__t_1aa6459c197b832f970a6d0e961d4849dd" kind="variable"><name>ring_offsets</name></member>
+    <member refid="structcj__geometry__boundary__view__t_1aaa962907af6e777247fb3dc1439fa99c" kind="variable"><name>surface_offsets</name></member>
+    <member refid="structcj__geometry__boundary__view__t_1ad30a23fb188c1abf3a316d970d159549" kind="variable"><name>shell_offsets</name></member>
+    <member refid="structcj__geometry__boundary__view__t_1a172175cf45c6b1e685103eadeabd057a" kind="variable"><name>solid_offsets</name></member>
+  </compound>
+  <compound refid="structcj__geometry__draft__t" kind="struct"><name>cj_geometry_draft_t</name>
+    <member refid="structcj__geometry__draft__t_1a085d2a65396897da612cf2714a52536e" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__geometry__id__t" kind="struct"><name>cj_geometry_id_t</name>
+    <member refid="structcj__geometry__id__t_1afa0579b709b82129e4cbf36f56d1653e" kind="variable"><name>slot</name></member>
+    <member refid="structcj__geometry__id__t_1a283be23914c60742b2e0ebdcfe8f1388" kind="variable"><name>generation</name></member>
+    <member refid="structcj__geometry__id__t_1af974b85df621492cdd6f627623e71ba1" kind="variable"><name>reserved</name></member>
+  </compound>
+  <compound refid="structcj__geometry__selection__spec__t" kind="struct"><name>cj_geometry_selection_spec_t</name>
+    <member refid="structcj__geometry__selection__spec__t_1ae827a14cdf6b3c9161c65f9a9650a8e3" kind="variable"><name>cityobject_id</name></member>
+    <member refid="structcj__geometry__selection__spec__t_1aa25bd53af26943656a53fe3100fc2307" kind="variable"><name>geometry_index</name></member>
+  </compound>
+  <compound refid="structcj__geometry__template__id__t" kind="struct"><name>cj_geometry_template_id_t</name>
+    <member refid="structcj__geometry__template__id__t_1a2a568e8b513f7c8140b397a74814dc7d" kind="variable"><name>slot</name></member>
+    <member refid="structcj__geometry__template__id__t_1a3c4d5ae3ff73070845339438c997c26b" kind="variable"><name>generation</name></member>
+    <member refid="structcj__geometry__template__id__t_1ac48553b785e34d992ee0cc2e4f5f7db4" kind="variable"><name>reserved</name></member>
+  </compound>
+  <compound refid="structcj__geometry__types__t" kind="struct"><name>cj_geometry_types_t</name>
+    <member refid="structcj__geometry__types__t_1abb685cae9fad20b2195eb5ef9db28f9e" kind="variable"><name>data</name></member>
+    <member refid="structcj__geometry__types__t_1acb65e67d6f7dab259898156c18183db2" kind="variable"><name>len</name></member>
+  </compound>
+  <compound refid="structcj__indices__t" kind="struct"><name>cj_indices_t</name>
+    <member refid="structcj__indices__t_1ac35912dc92d820409a8df003ce7a49b0" kind="variable"><name>data</name></member>
+    <member refid="structcj__indices__t_1a444b14c4a6e40a6bfc8d4f2ea43cf47c" kind="variable"><name>len</name></member>
+  </compound>
+  <compound refid="structcj__indices__view__t" kind="struct"><name>cj_indices_view_t</name>
+    <member refid="structcj__indices__view__t_1ac82ba90bfeb1e63787ec954afefbbd1b" kind="variable"><name>data</name></member>
+    <member refid="structcj__indices__view__t_1a9a620cf396fddaeb7654411ddf5039d3" kind="variable"><name>len</name></member>
+  </compound>
+  <compound refid="structcj__json__write__options__t" kind="struct"><name>cj_json_write_options_t</name>
+    <member refid="structcj__json__write__options__t_1aa72ac2084ae160a775cecb9fbefa3e4a" kind="variable"><name>pretty</name></member>
+    <member refid="structcj__json__write__options__t_1af8996f0ab04d4c714c720755ac54ab56" kind="variable"><name>validate_default_themes</name></member>
+  </compound>
+  <compound refid="structcj__material__id__t" kind="struct"><name>cj_material_id_t</name>
+    <member refid="structcj__material__id__t_1adb419be60e87d917b57396778be78364" kind="variable"><name>slot</name></member>
+    <member refid="structcj__material__id__t_1a288db3b1369eafcb2348733c4360333d" kind="variable"><name>generation</name></member>
+    <member refid="structcj__material__id__t_1a9eb848a4faee02ebe73acf432167aeb8" kind="variable"><name>reserved</name></member>
+  </compound>
+  <compound refid="structcj__model__capacities__t" kind="struct"><name>cj_model_capacities_t</name>
+    <member refid="structcj__model__capacities__t_1a96d17db6f5384334cdbea89bbe550b38" kind="variable"><name>cityobjects</name></member>
+    <member refid="structcj__model__capacities__t_1a9a998c9907857cc0056b8c73c47b2896" kind="variable"><name>vertices</name></member>
+    <member refid="structcj__model__capacities__t_1a617c1754b7f4057c5b11f0d4c2dab3e5" kind="variable"><name>semantics</name></member>
+    <member refid="structcj__model__capacities__t_1a8d9736e3cb798c24396cc9ef249ee45c" kind="variable"><name>materials</name></member>
+    <member refid="structcj__model__capacities__t_1a65f76a8970f7c80b6e49dd7b00a5edba" kind="variable"><name>textures</name></member>
+    <member refid="structcj__model__capacities__t_1a3890fe74ff23d871388283220bdd96d4" kind="variable"><name>geometries</name></member>
+    <member refid="structcj__model__capacities__t_1a8a3d0b86262e912d24fc2c21f66dcbdb" kind="variable"><name>template_vertices</name></member>
+    <member refid="structcj__model__capacities__t_1a6b76bfa17582a693bb9babcc66226a1f" kind="variable"><name>template_geometries</name></member>
+    <member refid="structcj__model__capacities__t_1ae25eeada8279295d5deef985cc11a8d3" kind="variable"><name>uv_coordinates</name></member>
+  </compound>
+  <compound refid="structcj__model__selection__t" kind="struct"><name>cj_model_selection_t</name>
+    <member refid="structcj__model__selection__t_1aea93f609390db9ed297c55e0316d5e7c" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__model__summary__t" kind="struct"><name>cj_model_summary_t</name>
+    <member refid="structcj__model__summary__t_1ac05d8b01c298649dfbb8fc7dc65ff7e9" kind="variable"><name>model_type</name></member>
+    <member refid="structcj__model__summary__t_1a971ab004814c8cc2fd00387dad5591ad" kind="variable"><name>version</name></member>
+    <member refid="structcj__model__summary__t_1a55d32bc74319cec83d9bdb52b1fbcece" kind="variable"><name>cityobject_count</name></member>
+    <member refid="structcj__model__summary__t_1a9004f86796a00e8bc5ada08d94265ff5" kind="variable"><name>geometry_count</name></member>
+    <member refid="structcj__model__summary__t_1a14e635ad7b3b41479b1b79c1e0278385" kind="variable"><name>geometry_template_count</name></member>
+    <member refid="structcj__model__summary__t_1a812e3106e5c914f96d6593c7998a7c53" kind="variable"><name>vertex_count</name></member>
+    <member refid="structcj__model__summary__t_1a61101957a4053b087406744187433f6f" kind="variable"><name>template_vertex_count</name></member>
+    <member refid="structcj__model__summary__t_1a00bf8673c11084730fafda1a96225ec3" kind="variable"><name>uv_coordinate_count</name></member>
+    <member refid="structcj__model__summary__t_1a73af4694910be1ae76b0fed6af4da13e" kind="variable"><name>semantic_count</name></member>
+    <member refid="structcj__model__summary__t_1a9f676620c39c13b9fea9210c110edb9d" kind="variable"><name>material_count</name></member>
+    <member refid="structcj__model__summary__t_1a457617df2e4025399fe457b7d9cbabab" kind="variable"><name>texture_count</name></member>
+    <member refid="structcj__model__summary__t_1aae289a8443ea89086e4b119c5ce06681" kind="variable"><name>extension_count</name></member>
+    <member refid="structcj__model__summary__t_1a6cfa34c554e7d0b33765b94133b0be8f" kind="variable"><name>has_metadata</name></member>
+    <member refid="structcj__model__summary__t_1a5a266a00f53d7936a1e5a33583cdf4ff" kind="variable"><name>has_transform</name></member>
+    <member refid="structcj__model__summary__t_1a2454911585587facdcf2d6c947c3ebb7" kind="variable"><name>has_templates</name></member>
+    <member refid="structcj__model__summary__t_1a28d6ea96603800031dd765d2622d9706" kind="variable"><name>has_appearance</name></member>
+  </compound>
+  <compound refid="structcj__model__t" kind="struct"><name>cj_model_t</name>
+    <member refid="structcj__model__t_1ab678d7ea1265ae3f5e07837aac4fb981" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__probe__t" kind="struct"><name>cj_probe_t</name>
+    <member refid="structcj__probe__t_1aa6831e0560d5cf44d58d61428b61f50d" kind="variable"><name>root_kind</name></member>
+    <member refid="structcj__probe__t_1a56cd93049ab8c40e4c2ec231560a970f" kind="variable"><name>version</name></member>
+    <member refid="structcj__probe__t_1a32fd7c07f4c8ec1ae638b166c098dac1" kind="variable"><name>has_version</name></member>
+  </compound>
+  <compound refid="structcj__proj__transformer__t" kind="struct"><name>cj_proj_transformer_t</name>
+    <member refid="structcj__proj__transformer__t_1a4108c03efe477d57d03d13b53c56ec57" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__rgb__t" kind="struct"><name>cj_rgb_t</name>
+    <member refid="structcj__rgb__t_1a3347dd5d31c125e1b75c7fda9aec0612" kind="variable"><name>r</name></member>
+    <member refid="structcj__rgb__t_1a40e27fca85bddebc9fe9ba689aa9a286" kind="variable"><name>g</name></member>
+    <member refid="structcj__rgb__t_1a202e311bfadaacfb7db11c2cd78b7748" kind="variable"><name>b</name></member>
+  </compound>
+  <compound refid="structcj__rgba__t" kind="struct"><name>cj_rgba_t</name>
+    <member refid="structcj__rgba__t_1aeac633cf1e0e278078e188f82e002003" kind="variable"><name>r</name></member>
+    <member refid="structcj__rgba__t_1a1be37ea272133b91485d7125dfc17179" kind="variable"><name>g</name></member>
+    <member refid="structcj__rgba__t_1a4c5ca1caf4f40592031f34fffe865301" kind="variable"><name>b</name></member>
+    <member refid="structcj__rgba__t_1abc683d78c83c40c14d38ff84f351ce76" kind="variable"><name>a</name></member>
+  </compound>
+  <compound refid="structcj__ring__draft__t" kind="struct"><name>cj_ring_draft_t</name>
+    <member refid="structcj__ring__draft__t_1aa0be7e80ffafd77cab816638024c2089" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__semantic__id__t" kind="struct"><name>cj_semantic_id_t</name>
+    <member refid="structcj__semantic__id__t_1a1d3a807c009485dbf73871e6f287e446" kind="variable"><name>slot</name></member>
+    <member refid="structcj__semantic__id__t_1a6b128c555157fa0b18ad8f672432f822" kind="variable"><name>generation</name></member>
+    <member refid="structcj__semantic__id__t_1a5a633d7dac69996e46ccb5d1a3bd05b9" kind="variable"><name>reserved</name></member>
+  </compound>
+  <compound refid="structcj__shell__draft__t" kind="struct"><name>cj_shell_draft_t</name>
+    <member refid="structcj__shell__draft__t_1a4f2ce033208d804455066ded3913a1ec" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__solid__draft__t" kind="struct"><name>cj_solid_draft_t</name>
+    <member refid="structcj__solid__draft__t_1ac6447abc32c0103bf3df4454db195665" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__string__view__t" kind="struct"><name>cj_string_view_t</name>
+    <member refid="structcj__string__view__t_1ab06255e14945dff565483c5674704419" kind="variable"><name>data</name></member>
+    <member refid="structcj__string__view__t_1aa272cedadde75a82d25807094689ca19" kind="variable"><name>len</name></member>
+  </compound>
+  <compound refid="structcj__surface__draft__t" kind="struct"><name>cj_surface_draft_t</name>
+    <member refid="structcj__surface__draft__t_1a22bb335d0e13a0a8c4475df1c9e39861" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__texture__id__t" kind="struct"><name>cj_texture_id_t</name>
+    <member refid="structcj__texture__id__t_1ae6c9dbec05a807ccffd7fc2de80795a6" kind="variable"><name>slot</name></member>
+    <member refid="structcj__texture__id__t_1a077ec73948b6e4f991a3afcce2bf3844" kind="variable"><name>generation</name></member>
+    <member refid="structcj__texture__id__t_1a613c4426b442b6a1e11dfe5aa4bda9eb" kind="variable"><name>reserved</name></member>
+  </compound>
+  <compound refid="structcj__transform__t" kind="struct"><name>cj_transform_t</name>
+    <member refid="structcj__transform__t_1a70d8c7bddc3bc0764d12008cc992b7a7" kind="variable"><name>scale_x</name></member>
+    <member refid="structcj__transform__t_1a54de8651a93377a8d77f4c5a9adae865" kind="variable"><name>scale_y</name></member>
+    <member refid="structcj__transform__t_1abe71a25658ad083f82cf26f0a07f4272" kind="variable"><name>scale_z</name></member>
+    <member refid="structcj__transform__t_1a96d0959b8bc124b5d28b5fa72485e9ca" kind="variable"><name>translate_x</name></member>
+    <member refid="structcj__transform__t_1a017bbb0740af2151b40f33653781c5e9" kind="variable"><name>translate_y</name></member>
+    <member refid="structcj__transform__t_1a9996c091e4a13a3fd7c7e1fb840613e6" kind="variable"><name>translate_z</name></member>
+  </compound>
+  <compound refid="structcj__uv__t" kind="struct"><name>cj_uv_t</name>
+    <member refid="structcj__uv__t_1a64bf3851f2fa633d449e0c8dea8241fc" kind="variable"><name>u</name></member>
+    <member refid="structcj__uv__t_1a7edd22a065ed1ad8f94979d22d1f4084" kind="variable"><name>v</name></member>
+  </compound>
+  <compound refid="structcj__uvs__t" kind="struct"><name>cj_uvs_t</name>
+    <member refid="structcj__uvs__t_1a979e8cd2be6e8c37f922a01e720dff41" kind="variable"><name>data</name></member>
+    <member refid="structcj__uvs__t_1a258cd48357f08a02f1e98a2f1d3af19c" kind="variable"><name>len</name></member>
+  </compound>
+  <compound refid="structcj__value__t" kind="struct"><name>cj_value_t</name>
+    <member refid="structcj__value__t_1a2acde04a04fd7d79d8756dbb50bc9284" kind="variable"><name>_private</name></member>
+  </compound>
+  <compound refid="structcj__vertex__t" kind="struct"><name>cj_vertex_t</name>
+    <member refid="structcj__vertex__t_1a8e69f7e4011659aee91841b017e13029" kind="variable"><name>x</name></member>
+    <member refid="structcj__vertex__t_1ad1fdd63def0c0869cec8f32e6721cfef" kind="variable"><name>y</name></member>
+    <member refid="structcj__vertex__t_1a3914d293a947ae538cf9e03148d0e73c" kind="variable"><name>z</name></member>
+  </compound>
+  <compound refid="structcj__vertices__t" kind="struct"><name>cj_vertices_t</name>
+    <member refid="structcj__vertices__t_1ac7729ad68cb80590204b4203e6013720" kind="variable"><name>data</name></member>
+    <member refid="structcj__vertices__t_1a3a598421095d73e9c933cb73adb9a9d5" kind="variable"><name>len</name></member>
+  </compound>
+  <compound refid="cityjson__lib_8h" kind="file"><name>cityjson_lib.h</name>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74" kind="enum"><name>cj_status_t</name></member>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74ab2d16c53e56b27e7eebd37417d06047d" kind="enumvalue"><name>CJ_STATUS_SUCCESS</name></member>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74a3f3e1bb4a43848f31cfe740e639cb9aa" kind="enumvalue"><name>CJ_STATUS_INVALID_ARGUMENT</name></member>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74a8a5d589e3aa21e567d7ef25783511e08" kind="enumvalue"><name>CJ_STATUS_IO</name></member>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74aad79304c3534db8a205eb2fdb8d847aa" kind="enumvalue"><name>CJ_STATUS_SYNTAX</name></member>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74a4a5f46a64c4e9c358e0b7ef0f3132330" kind="enumvalue"><name>CJ_STATUS_VERSION</name></member>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74a08ebedcf272b869fd4e168ed0658e43f" kind="enumvalue"><name>CJ_STATUS_SHAPE</name></member>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74ab3ee9688b639ab69278297733a4e3b88" kind="enumvalue"><name>CJ_STATUS_UNSUPPORTED</name></member>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74a160c52687dd9d83c1e908628f85bdf63" kind="enumvalue"><name>CJ_STATUS_MODEL</name></member>
+    <member refid="cityjson__lib_8h_1a75447fbbce6046d9ae681c921c49ba74a976c3765f0aa62ec857b2ec461e6ad2e" kind="enumvalue"><name>CJ_STATUS_INTERNAL</name></member>
+    <member refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93" kind="enum"><name>cj_geometry_type_t</name></member>
+    <member refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93a1aa4c70dfdcc833c2aad598f995693e3" kind="enumvalue"><name>CJ_GEOMETRY_TYPE_MULTI_POINT</name></member>
+    <member refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93affc913733f6f95352d963fd15042ba88" kind="enumvalue"><name>CJ_GEOMETRY_TYPE_MULTI_LINE_STRING</name></member>
+    <member refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93a6450c3f4779daea9a0624446345a5baf" kind="enumvalue"><name>CJ_GEOMETRY_TYPE_MULTI_SURFACE</name></member>
+    <member refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93a8c48a9cf55cd0416ed3ff43f23b39bf3" kind="enumvalue"><name>CJ_GEOMETRY_TYPE_COMPOSITE_SURFACE</name></member>
+    <member refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93a3446ea3957472d8b6c98778632959988" kind="enumvalue"><name>CJ_GEOMETRY_TYPE_SOLID</name></member>
+    <member refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93a12c6622353ed5c6d95c15e6a061811c6" kind="enumvalue"><name>CJ_GEOMETRY_TYPE_MULTI_SOLID</name></member>
+    <member refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93a641f615dcbd6cf23d37d60082a7958a7" kind="enumvalue"><name>CJ_GEOMETRY_TYPE_COMPOSITE_SOLID</name></member>
+    <member refid="cityjson__lib_8h_1a9f2267d8c560ee9cf11028c5963b3d93ad49a93481eba8365b77c12a875c1abfe" kind="enumvalue"><name>CJ_GEOMETRY_TYPE_GEOMETRY_INSTANCE</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731" kind="enum"><name>cj_error_kind_t</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731a294acb902c848a52a2d97787afe9319b" kind="enumvalue"><name>CJ_ERROR_KIND_NONE</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731a5f3fbf7f213bbbfb3ead8c1077031bc3" kind="enumvalue"><name>CJ_ERROR_KIND_INVALID_ARGUMENT</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731a650e90298d278615334a441be432181d" kind="enumvalue"><name>CJ_ERROR_KIND_IO</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731a35f1a486a3176fd6c86bf1ad07089672" kind="enumvalue"><name>CJ_ERROR_KIND_SYNTAX</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731a58d69ad59e0f99b71328b29f78bb55a7" kind="enumvalue"><name>CJ_ERROR_KIND_VERSION</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731adc41ad2a2b55c812a50545c23412d982" kind="enumvalue"><name>CJ_ERROR_KIND_SHAPE</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731acd5845df244c161df9de9d43248924b4" kind="enumvalue"><name>CJ_ERROR_KIND_UNSUPPORTED</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731a9c5fed6224e11162b131351bf185b1f6" kind="enumvalue"><name>CJ_ERROR_KIND_MODEL</name></member>
+    <member refid="cityjson__lib_8h_1aa36e21603c298f9069a6301fa3eca731ae84156b2d1b961c9070735acb1f632fd" kind="enumvalue"><name>CJ_ERROR_KIND_INTERNAL</name></member>
+    <member refid="cityjson__lib_8h_1a6f1b57ef348b43219edc63d8714ee712" kind="enum"><name>cj_root_kind_t</name></member>
+    <member refid="cityjson__lib_8h_1a6f1b57ef348b43219edc63d8714ee712adbad23d17328f5258b60fdd30f2888c8" kind="enumvalue"><name>CJ_ROOT_KIND_CITY_JSON</name></member>
+    <member refid="cityjson__lib_8h_1a6f1b57ef348b43219edc63d8714ee712a5cf0fb73cf7866afcc1e67b0cce64357" kind="enumvalue"><name>CJ_ROOT_KIND_CITY_JSON_FEATURE</name></member>
+    <member refid="cityjson__lib_8h_1a600d048dc538cf570544de344b48691f" kind="enum"><name>cj_version_t</name></member>
+    <member refid="cityjson__lib_8h_1a600d048dc538cf570544de344b48691fa7149500b4966401ea12d53de1368fac1" kind="enumvalue"><name>CJ_VERSION_UNKNOWN</name></member>
+    <member refid="cityjson__lib_8h_1a600d048dc538cf570544de344b48691faaef58e9a350de223c1c202025cc7e5ba" kind="enumvalue"><name>CJ_VERSION_V1_0</name></member>
+    <member refid="cityjson__lib_8h_1a600d048dc538cf570544de344b48691faa0784fab2f3d721ef6a8f8677aad013b" kind="enumvalue"><name>CJ_VERSION_V1_1</name></member>
+    <member refid="cityjson__lib_8h_1a600d048dc538cf570544de344b48691fa586089ff96c37258ef42f7a64897666f" kind="enumvalue"><name>CJ_VERSION_V2_0</name></member>
+    <member refid="cityjson__lib_8h_1ab9eb5af78e8c2794ae96241eeb21fac6" kind="enum"><name>cj_model_type_t</name></member>
+    <member refid="cityjson__lib_8h_1ab9eb5af78e8c2794ae96241eeb21fac6adee1e02e90e99043cab4ddda13a2e033" kind="enumvalue"><name>CJ_MODEL_TYPE_CITY_JSON</name></member>
+    <member refid="cityjson__lib_8h_1ab9eb5af78e8c2794ae96241eeb21fac6aa27724425926878746b14f3d50f805bf" kind="enumvalue"><name>CJ_MODEL_TYPE_CITY_JSON_FEATURE</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bd" kind="enum"><name>cj_contact_role_t</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda02026bf826e9a53c6ed8c87c8c9a6587" kind="enumvalue"><name>CJ_CONTACT_ROLE_AUTHOR</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda74a64adf132c456c060aebad512bbd97" kind="enumvalue"><name>CJ_CONTACT_ROLE_CO_AUTHOR</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda09c76c6ba09f824fc4724d1adfee47bd" kind="enumvalue"><name>CJ_CONTACT_ROLE_PROCESSOR</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda0d62886156084b82192bd1272870728e" kind="enumvalue"><name>CJ_CONTACT_ROLE_POINT_OF_CONTACT</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda70053a9c94d5d0a6a6140062c8bdd104" kind="enumvalue"><name>CJ_CONTACT_ROLE_OWNER</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda588eb883ded2f2bb6f6ec8d4a1811979" kind="enumvalue"><name>CJ_CONTACT_ROLE_USER</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda6d98647f740d96fd58ef034d6ee7c26f" kind="enumvalue"><name>CJ_CONTACT_ROLE_DISTRIBUTOR</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda66d5cedbcc2b091d55b5be28f18a0b83" kind="enumvalue"><name>CJ_CONTACT_ROLE_ORIGINATOR</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda2cb8594d38d6659e063db0aec045d281" kind="enumvalue"><name>CJ_CONTACT_ROLE_CUSTODIAN</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bdab9766dc3733b14edfac52352ca7a94f0" kind="enumvalue"><name>CJ_CONTACT_ROLE_RESOURCE_PROVIDER</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda2d9e198519ab65744abc82af6ce56446" kind="enumvalue"><name>CJ_CONTACT_ROLE_RIGHTS_HOLDER</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bdad7e1da66b04be5803a6b82315a1ba297" kind="enumvalue"><name>CJ_CONTACT_ROLE_SPONSOR</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda4ab3abc2bab3070afd7f1b5ec1e50741" kind="enumvalue"><name>CJ_CONTACT_ROLE_PRINCIPAL_INVESTIGATOR</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bda70bc9bc1f2e9ed4e45cbef39c9a35261" kind="enumvalue"><name>CJ_CONTACT_ROLE_STAKEHOLDER</name></member>
+    <member refid="cityjson__lib_8h_1a93c64c2504dc1b2c6ef9675d64d6c8bdac911a154eea7c5c0d5f384fd3828caf2" kind="enumvalue"><name>CJ_CONTACT_ROLE_PUBLISHER</name></member>
+    <member refid="cityjson__lib_8h_1a07772d1d5689feef69d201dcd16aaa3c" kind="enum"><name>cj_contact_type_t</name></member>
+    <member refid="cityjson__lib_8h_1a07772d1d5689feef69d201dcd16aaa3ca0f7828efdfbe175f46ea751f30afd091" kind="enumvalue"><name>CJ_CONTACT_TYPE_INDIVIDUAL</name></member>
+    <member refid="cityjson__lib_8h_1a07772d1d5689feef69d201dcd16aaa3cade78b46c93e554113526afdc4e9fb1b5" kind="enumvalue"><name>CJ_CONTACT_TYPE_ORGANIZATION</name></member>
+    <member refid="cityjson__lib_8h_1a712dc573c7ef7ee6cfd58d27dd64ef48" kind="enum"><name>cj_image_type_t</name></member>
+    <member refid="cityjson__lib_8h_1a712dc573c7ef7ee6cfd58d27dd64ef48ab3cf54596dbe8f947668e56387e2f50e" kind="enumvalue"><name>CJ_IMAGE_TYPE_PNG</name></member>
+    <member refid="cityjson__lib_8h_1a712dc573c7ef7ee6cfd58d27dd64ef48abcf5f9282e2f30988f1c07d4f73d6821" kind="enumvalue"><name>CJ_IMAGE_TYPE_JPG</name></member>
+    <member refid="cityjson__lib_8h_1aec98d47f10a9efa9e4b9aa13b940c8ba" kind="enum"><name>cj_wrap_mode_t</name></member>
+    <member refid="cityjson__lib_8h_1aec98d47f10a9efa9e4b9aa13b940c8baa92e0c8311c886d29b79506c7f26101b7" kind="enumvalue"><name>CJ_WRAP_MODE_WRAP</name></member>
+    <member refid="cityjson__lib_8h_1aec98d47f10a9efa9e4b9aa13b940c8baaec4c35c473bfc9ec4a7240aa9fa36601" kind="enumvalue"><name>CJ_WRAP_MODE_MIRROR</name></member>
+    <member refid="cityjson__lib_8h_1aec98d47f10a9efa9e4b9aa13b940c8baaa158a0ac025085d2f8d32c67c62d3045" kind="enumvalue"><name>CJ_WRAP_MODE_CLAMP</name></member>
+    <member refid="cityjson__lib_8h_1aec98d47f10a9efa9e4b9aa13b940c8baa552aff2f951974bc18a25ca6e4f1687d" kind="enumvalue"><name>CJ_WRAP_MODE_BORDER</name></member>
+    <member refid="cityjson__lib_8h_1aec98d47f10a9efa9e4b9aa13b940c8baa4cbbdb16a3e9acb7efd167673685c25d" kind="enumvalue"><name>CJ_WRAP_MODE_NONE</name></member>
+    <member refid="cityjson__lib_8h_1ae168352ebe0b835d46b9779fe8f2bfd4" kind="enum"><name>cj_texture_type_t</name></member>
+    <member refid="cityjson__lib_8h_1ae168352ebe0b835d46b9779fe8f2bfd4ae645e42cf13a5b5bbd3465fa36b68a98" kind="enumvalue"><name>CJ_TEXTURE_TYPE_UNKNOWN</name></member>
+    <member refid="cityjson__lib_8h_1ae168352ebe0b835d46b9779fe8f2bfd4a0288e134b87e550cdd3b010a28234a4f" kind="enumvalue"><name>CJ_TEXTURE_TYPE_SPECIFIC</name></member>
+    <member refid="cityjson__lib_8h_1ae168352ebe0b835d46b9779fe8f2bfd4ae8a125c5bacc397646fc25601f0bd8c3" kind="enumvalue"><name>CJ_TEXTURE_TYPE_TYPICAL</name></member>
+    <member refid="cityjson__lib_8h_1acb381f89f9570d156fcee6a40233f518" kind="typedef"><name>cj_status_t</name></member>
+    <member refid="cityjson__lib_8h_1a2055f4ac4fac212e13bd00488429720e" kind="typedef"><name>cj_geometry_type_t</name></member>
+    <member refid="cityjson__lib_8h_1a1182fe5d961361533a32da40c0253284" kind="typedef"><name>cj_error_kind_t</name></member>
+    <member refid="cityjson__lib_8h_1aadd7853ae27fc1fade7c36a8aad7b512" kind="typedef"><name>cj_root_kind_t</name></member>
+    <member refid="cityjson__lib_8h_1a67aa14bb7b4b1d71fd21248a0a4a60c2" kind="typedef"><name>cj_version_t</name></member>
+    <member refid="cityjson__lib_8h_1ad210bc6200914cb2482b5dceb38ff735" kind="typedef"><name>cj_model_type_t</name></member>
+    <member refid="cityjson__lib_8h_1a4fb13aa3fcf1e83721b837a2c8d66971" kind="typedef"><name>cj_contact_role_t</name></member>
+    <member refid="cityjson__lib_8h_1aae664f8e4b99c810bb21e21521905cfd" kind="typedef"><name>cj_contact_type_t</name></member>
+    <member refid="cityjson__lib_8h_1acc4230f019f36ea9fbde00e0eab9c65d" kind="typedef"><name>cj_image_type_t</name></member>
+    <member refid="cityjson__lib_8h_1a2cb820c99d7008aa3e1227d06d00a3c3" kind="typedef"><name>cj_wrap_mode_t</name></member>
+    <member refid="cityjson__lib_8h_1abccc453c8952d40a107144097d9ea2ea" kind="typedef"><name>cj_texture_type_t</name></member>
+    <member refid="cityjson__lib_8h_1a36739c568a7b5172b15eda6d4fe3ed4c" kind="typedef"><name>cj_model_t</name></member>
+    <member refid="cityjson__lib_8h_1a6e9bf3cf4ee827bb268e9ca26dcf7da3" kind="typedef"><name>cj_model_selection_t</name></member>
+    <member refid="cityjson__lib_8h_1a14570da7f5baf4e8188048bf84fe02cb" kind="typedef"><name>cj_bytes_t</name></member>
+    <member refid="cityjson__lib_8h_1a15c58c4e9390f216dbdb244992bdbfd1" kind="typedef"><name>cj_bytes_list_t</name></member>
+    <member refid="cityjson__lib_8h_1a18458b453cb374bb4fd95febef8ea5b0" kind="typedef"><name>cj_vertex_t</name></member>
+    <member refid="cityjson__lib_8h_1af1a5f1485f90fb87414d28e89f849a2b" kind="typedef"><name>cj_vertices_t</name></member>
+    <member refid="cityjson__lib_8h_1a64f13b6b9831e18b1c4370a56eafbc41" kind="typedef"><name>cj_geometry_types_t</name></member>
+    <member refid="cityjson__lib_8h_1a02c0530952815226b1a3c621c9954fd4" kind="typedef"><name>cj_uv_t</name></member>
+    <member refid="cityjson__lib_8h_1ae12d6c35f38daeab6890b8b0f232cb16" kind="typedef"><name>cj_uvs_t</name></member>
+    <member refid="cityjson__lib_8h_1a72e2df373d44fd7842f675bfa8bab51e" kind="typedef"><name>cj_indices_t</name></member>
+    <member refid="cityjson__lib_8h_1a259335f623fc24adfb2f81b3b6a20d55" kind="typedef"><name>cj_geometry_boundary_t</name></member>
+    <member refid="cityjson__lib_8h_1a9d8165636a55d60d28d92fa37d989504" kind="typedef"><name>cj_value_t</name></member>
+    <member refid="cityjson__lib_8h_1ad5dabbc68cecfc27c9ae494bf77bf1b9" kind="typedef"><name>cj_contact_t</name></member>
+    <member refid="cityjson__lib_8h_1acaa02732c0eff905650247801cdf0297" kind="typedef"><name>cj_cityobject_draft_t</name></member>
+    <member refid="cityjson__lib_8h_1ad909d76d1ff99221b6df4107a1336972" kind="typedef"><name>cj_ring_draft_t</name></member>
+    <member refid="cityjson__lib_8h_1a203fd81d63e5af2dfc827f67504e259b" kind="typedef"><name>cj_surface_draft_t</name></member>
+    <member refid="cityjson__lib_8h_1a3638a0f6c3e7035ea7b936c6ba5fb75d" kind="typedef"><name>cj_shell_draft_t</name></member>
+    <member refid="cityjson__lib_8h_1a430962a277212c8fd1c213052e9b42a4" kind="typedef"><name>cj_solid_draft_t</name></member>
+    <member refid="cityjson__lib_8h_1a3f1ec3e91bb6afd9d7d8c8d0f966b233" kind="typedef"><name>cj_geometry_draft_t</name></member>
+    <member refid="cityjson__lib_8h_1a84cf28f729346aae03959a04602c4f17" kind="typedef"><name>cj_probe_t</name></member>
+    <member refid="cityjson__lib_8h_1a2b52f1ebb7f38a7735e44e1ac52cf3d9" kind="typedef"><name>cj_string_view_t</name></member>
+    <member refid="cityjson__lib_8h_1a8240f71e6af7c232a5eb51b4aa74d4ec" kind="typedef"><name>cj_model_summary_t</name></member>
+    <member refid="cityjson__lib_8h_1a210592359c788c695c7ee696e439273f" kind="typedef"><name>cj_model_capacities_t</name></member>
+    <member refid="cityjson__lib_8h_1a5e506e3c46141b620d6a036a626d2407" kind="typedef"><name>cj_transform_t</name></member>
+    <member refid="cityjson__lib_8h_1a14b787e5ffd0690ddf1c81fbb43d3b62" kind="typedef"><name>cj_indices_view_t</name></member>
+    <member refid="cityjson__lib_8h_1a9a7ccc0316ef2b07cd139127fc35a98a" kind="typedef"><name>cj_geometry_boundary_view_t</name></member>
+    <member refid="cityjson__lib_8h_1ae65d6ed39bba20c71fb563d3ea593011" kind="typedef"><name>cj_geometry_selection_spec_t</name></member>
+    <member refid="cityjson__lib_8h_1a3c28fe43dda73fe7a4460e3ea9c7976c" kind="typedef"><name>cj_json_write_options_t</name></member>
+    <member refid="cityjson__lib_8h_1aa3f36d2448eba4a8df6d78d16b554a71" kind="typedef"><name>cj_cityjsonseq_write_options_t</name></member>
+    <member refid="cityjson__lib_8h_1a9335977e45ce463984a815deb43dd43c" kind="typedef"><name>cj_cityjsonseq_auto_transform_options_t</name></member>
+    <member refid="cityjson__lib_8h_1adff4556d8e0e97354c4dc07e596861bd" kind="typedef"><name>cj_geometry_id_t</name></member>
+    <member refid="cityjson__lib_8h_1a5e8047fed550c215b7a4f24cb2928ce8" kind="typedef"><name>cj_bbox_t</name></member>
+    <member refid="cityjson__lib_8h_1aba534a7e37920ab9f8e3ba19bb36360b" kind="typedef"><name>cj_semantic_id_t</name></member>
+    <member refid="cityjson__lib_8h_1ac47cade963ab6c13ed8387f96703d131" kind="typedef"><name>cj_material_id_t</name></member>
+    <member refid="cityjson__lib_8h_1a3dae077261441a9d996f11522a3162be" kind="typedef"><name>cj_rgb_t</name></member>
+    <member refid="cityjson__lib_8h_1af00d5ed4ddef9b4aa807dddc4616be02" kind="typedef"><name>cj_texture_id_t</name></member>
+    <member refid="cityjson__lib_8h_1a850e49bf24ec351bafe106850f5820dc" kind="typedef"><name>cj_rgba_t</name></member>
+    <member refid="cityjson__lib_8h_1ad7c5648a077cd2a0e53bb4b2f4ddf60f" kind="typedef"><name>cj_cityobject_id_t</name></member>
+    <member refid="cityjson__lib_8h_1a45392c95daa7dffe475a21c3d6657df6" kind="typedef"><name>cj_geometry_template_id_t</name></member>
+    <member refid="cityjson__lib_8h_1a6b22bca4810b5169ff9913fa6b781d07" kind="typedef"><name>cj_affine_transform_4x4_t</name></member>
+    <member refid="cityjson__lib_8h_1aebbe99e218eab863be9fb07cb35fa957" kind="typedef"><name>cj_proj_transformer_t</name></member>
+    <member refid="cityjson__lib_8h_1a86850176ba3ba106f73101d6fc7852e0" kind="function"><name>cj_model_free</name></member>
+    <member refid="cityjson__lib_8h_1a574db69f722acd0a8a9b1700249da7ec" kind="function"><name>cj_model_selection_free</name></member>
+    <member refid="cityjson__lib_8h_1a1da06af6f7d4d10ccc86e13e42850399" kind="function"><name>cj_bytes_free</name></member>
+    <member refid="cityjson__lib_8h_1a855c33948a2668e593c944065b6ca545" kind="function"><name>cj_bytes_list_free</name></member>
+    <member refid="cityjson__lib_8h_1aead1fc0d79538218896f94d8e7b8846b" kind="function"><name>cj_vertices_free</name></member>
+    <member refid="cityjson__lib_8h_1a2db63fe04cf8ac3b1660c68de5fe8d81" kind="function"><name>cj_geometry_types_free</name></member>
+    <member refid="cityjson__lib_8h_1a926e8f3722c09f05af2eca6678905aa3" kind="function"><name>cj_uvs_free</name></member>
+    <member refid="cityjson__lib_8h_1ae2b68b36fd0f297d817b532e95d00d09" kind="function"><name>cj_indices_free</name></member>
+    <member refid="cityjson__lib_8h_1ab437f7300face79cd0b0c01174101171" kind="function"><name>cj_geometry_boundary_free</name></member>
+    <member refid="cityjson__lib_8h_1a4e19aa0e38c29ca11003feed7968a228" kind="function"><name>cj_value_free</name></member>
+    <member refid="cityjson__lib_8h_1a9e8d1b25d7da926cafb0e691b01d5fc3" kind="function"><name>cj_contact_free</name></member>
+    <member refid="cityjson__lib_8h_1a62eb830897ac0bcd94166bfdf35fd1be" kind="function"><name>cj_cityobject_draft_free</name></member>
+    <member refid="cityjson__lib_8h_1aa1e053f7ebcd3926599eebabb5355582" kind="function"><name>cj_ring_draft_free</name></member>
+    <member refid="cityjson__lib_8h_1a0879fb01d7d083301ae5f7c71884e159" kind="function"><name>cj_surface_draft_free</name></member>
+    <member refid="cityjson__lib_8h_1a38e9dbc38a72d816a22b93bdc459db7c" kind="function"><name>cj_shell_draft_free</name></member>
+    <member refid="cityjson__lib_8h_1a062922fffbea8b30e2ddb32fff69c976" kind="function"><name>cj_solid_draft_free</name></member>
+    <member refid="cityjson__lib_8h_1a73e71a6ac4aaab4d0fe3280f70fc660a" kind="function"><name>cj_geometry_draft_free</name></member>
+    <member refid="cityjson__lib_8h_1a6210bac600d4ec33b1bb0bf32d994d1d" kind="function"><name>cj_last_error_kind</name></member>
+    <member refid="cityjson__lib_8h_1a8914d93daa81e2f844919cadf9983a8a" kind="function"><name>cj_last_error_message_len</name></member>
+    <member refid="cityjson__lib_8h_1a9ed424526086bf736566f3af723cfff6" kind="function"><name>cj_last_error_message_copy</name></member>
+    <member refid="cityjson__lib_8h_1a6c4694ab2854c920640cf2d786909935" kind="function"><name>cj_clear_error</name></member>
+    <member refid="cityjson__lib_8h_1aa2675c44c2a7d752fc5d89f7a3cedcaa" kind="function"><name>cj_probe_bytes</name></member>
+    <member refid="cityjson__lib_8h_1a55a3c8560c1ca2c551a62492cdb2656e" kind="function"><name>cj_model_parse_document_bytes</name></member>
+    <member refid="cityjson__lib_8h_1ae07ff9754b290c85df522c2b07259241" kind="function"><name>cj_model_parse_feature_bytes</name></member>
+    <member refid="cityjson__lib_8h_1a4bef044002b1ea58c3a698261278fa2e" kind="function"><name>cj_model_parse_feature_with_base_bytes</name></member>
+    <member refid="cityjson__lib_8h_1a564228be0fda5601858839b9a035e5ec" kind="function"><name>cj_model_serialize_document</name></member>
+    <member refid="cityjson__lib_8h_1aeb87c1ce1d06523d7c2dc850487f836a" kind="function"><name>cj_model_serialize_feature</name></member>
+    <member refid="cityjson__lib_8h_1ab2fcd578ff8e67f9ee0bc669e91ef852" kind="function"><name>cj_model_get_summary</name></member>
+    <member refid="cityjson__lib_8h_1a7063a187695ff0be8acac20bd52d3d3a" kind="function"><name>cj_model_get_metadata_title</name></member>
+    <member refid="cityjson__lib_8h_1abe5c8a0dfe219d9afccb3db70d8f160d" kind="function"><name>cj_model_get_metadata_identifier</name></member>
+    <member refid="cityjson__lib_8h_1a2ef8061bd9968d34018d09ae9837b12b" kind="function"><name>cj_model_get_cityobject_id</name></member>
+    <member refid="cityjson__lib_8h_1a55dd595f2160abe9d05658fe0c350477" kind="function"><name>cj_model_copy_cityobject_ids</name></member>
+    <member refid="cityjson__lib_8h_1a11d756a55ef2d5bdcf3098b4a553411c" kind="function"><name>cj_model_get_geometry_type</name></member>
+    <member refid="cityjson__lib_8h_1a90735466312572209c5c66cea954dd99" kind="function"><name>cj_model_copy_geometry_types</name></member>
+    <member refid="cityjson__lib_8h_1abf431c37f406c6c2fb7700b503a68dbf" kind="function"><name>cj_model_copy_geometry_boundary</name></member>
+    <member refid="cityjson__lib_8h_1ab130d0e2dde170677e933a63220ae90b" kind="function"><name>cj_model_copy_geometry_boundary_coordinates</name></member>
+    <member refid="cityjson__lib_8h_1a3f6559bfee6739d676d3364ec5fcba84" kind="function"><name>cj_model_copy_vertices</name></member>
+    <member refid="cityjson__lib_8h_1aa21b4050915b0c347e8ac474a99d3f9c" kind="function"><name>cj_model_copy_template_vertices</name></member>
+    <member refid="cityjson__lib_8h_1a55da8f1a58d843aa2e4c6a061a8f674a" kind="function"><name>cj_model_copy_uv_coordinates</name></member>
+    <member refid="cityjson__lib_8h_1a949dcefd96d8ef2ce0549e45f698d579" kind="function"><name>cj_model_create</name></member>
+    <member refid="cityjson__lib_8h_1aa177745cb15df6a1eb58c87c1a8fedd5" kind="function"><name>cj_model_reserve_import</name></member>
+    <member refid="cityjson__lib_8h_1afb2ab273bb0ff20bd918d6b5ed0c43a3" kind="function"><name>cj_model_add_vertex</name></member>
+    <member refid="cityjson__lib_8h_1a3c8e3f0a8441daaa7d26b310af806e8f" kind="function"><name>cj_model_add_template_vertex</name></member>
+    <member refid="cityjson__lib_8h_1a5995b0f6494ae3496d40ac70b4dc5f95" kind="function"><name>cj_model_set_vertex</name></member>
+    <member refid="cityjson__lib_8h_1a9f242e6a775c51332f2486c6bb644866" kind="function"><name>cj_model_set_template_vertex</name></member>
+    <member refid="cityjson__lib_8h_1a9d3d4569770ccfb880656a8c60680acc" kind="function"><name>cj_model_add_uv_coordinate</name></member>
+    <member refid="cityjson__lib_8h_1a5b43307e7643bdccf98f546542f3926d" kind="function"><name>cj_model_set_metadata_title</name></member>
+    <member refid="cityjson__lib_8h_1a2ddf258e09e824e8cb12786d5bba8650" kind="function"><name>cj_model_set_metadata_identifier</name></member>
+    <member refid="cityjson__lib_8h_1ad14e7609bb1c91f59f32f6e9a0647eee" kind="function"><name>cj_model_set_transform</name></member>
+    <member refid="cityjson__lib_8h_1ac24103e2b2915f16ddae7a83c1757999" kind="function"><name>cj_model_clear_transform</name></member>
+    <member refid="cityjson__lib_8h_1a5c81a09c6193e44e11a36f164005dbab" kind="function"><name>cj_model_reproject</name></member>
+    <member refid="cityjson__lib_8h_1aa3454b4d53a01276246843eb5e03bbda" kind="function"><name>cj_model_remove_cityobject</name></member>
+    <member refid="cityjson__lib_8h_1a4bdb0fe6baddc767f492ee5f955e1503" kind="function"><name>cj_model_attach_geometry_to_cityobject</name></member>
+    <member refid="cityjson__lib_8h_1a336ae85e5bb74f9af1e3e09bbc2c1d3b" kind="function"><name>cj_model_clear_cityobject_geometry</name></member>
+    <member refid="cityjson__lib_8h_1af26c6191b4962383a1d01902a80a3c4d" kind="function"><name>cj_model_add_geometry_from_boundary</name></member>
+    <member refid="cityjson__lib_8h_1a5f66c3fb1b8f383d326080b05997f100" kind="function"><name>cj_model_cleanup</name></member>
+    <member refid="cityjson__lib_8h_1abb94af7fda16deefa22a40035ef8eaba" kind="function"><name>cj_model_append_model</name></member>
+    <member refid="cityjson__lib_8h_1a308e95df1a1994c16a4d027470598d97" kind="function"><name>cj_model_subset_cityobjects</name></member>
+    <member refid="cityjson__lib_8h_1ad97b4f1d85239318dfc4a9439cc624ae" kind="function"><name>cj_model_select_cityobjects_by_id</name></member>
+    <member refid="cityjson__lib_8h_1a7f3c70a8377c71089232d791bd279d9b" kind="function"><name>cj_model_select_geometries_by_cityobject_id_and_index</name></member>
+    <member refid="cityjson__lib_8h_1a12d8747888486250a7df3c381fe464ee" kind="function"><name>cj_model_selection_include_relatives</name></member>
+    <member refid="cityjson__lib_8h_1ace6ebf71edef9f0de401dc73631e40b8" kind="function"><name>cj_model_selection_union</name></member>
+    <member refid="cityjson__lib_8h_1a7a4760da5fb1f0e54ecddb2aa624c82c" kind="function"><name>cj_model_selection_intersection</name></member>
+    <member refid="cityjson__lib_8h_1aa5e5c0072b25ff70767375ffe9c4b7c8" kind="function"><name>cj_model_selection_is_empty</name></member>
+    <member refid="cityjson__lib_8h_1a728155502896ff05c4ce3c21df31b19d" kind="function"><name>cj_model_extract_selection</name></member>
+    <member refid="cityjson__lib_8h_1a25557ac0cf71b4975792f588738993cf" kind="function"><name>cj_model_merge_models</name></member>
+    <member refid="cityjson__lib_8h_1a706f58f71e381a30a58a9ad56623ce62" kind="function"><name>cj_model_serialize_document_with_options</name></member>
+    <member refid="cityjson__lib_8h_1a48874f72865fdcd7f90daba9509024a7" kind="function"><name>cj_model_serialize_feature_with_options</name></member>
+    <member refid="cityjson__lib_8h_1af9f54c014bbcb8468d0f2c6aa61defe3" kind="function"><name>cj_model_parse_feature_stream_merge_bytes</name></member>
+    <member refid="cityjson__lib_8h_1ac402d05d541e87a47f5d8b2f65774acb" kind="function"><name>cj_model_serialize_feature_stream</name></member>
+    <member refid="cityjson__lib_8h_1ac65207ee507fa1794bfbb8f7beb4ccfd" kind="function"><name>cj_model_serialize_cityjsonseq_with_transform</name></member>
+    <member refid="cityjson__lib_8h_1a533115cac423182d2c2036267b1a8a40" kind="function"><name>cj_model_serialize_cityjsonseq_auto_transform</name></member>
+    <member refid="cityjson__lib_8h_1ad97fbc8abe322147b122d0c85f50e6fe" kind="function"><name>cj_value_new_null</name></member>
+    <member refid="cityjson__lib_8h_1a46c2eb3efe71e1c8d57ea938841a3080" kind="function"><name>cj_value_new_bool</name></member>
+    <member refid="cityjson__lib_8h_1a233ce51684f53c0dad7395139c81acae" kind="function"><name>cj_value_new_int64</name></member>
+    <member refid="cityjson__lib_8h_1a8eba24b5a13b674bce7873404320b93e" kind="function"><name>cj_value_new_float64</name></member>
+    <member refid="cityjson__lib_8h_1af26bda23e9728a4beddad2c09c4328d8" kind="function"><name>cj_value_new_string</name></member>
+    <member refid="cityjson__lib_8h_1a93310d54f5871829e4675c66cf754245" kind="function"><name>cj_value_new_array</name></member>
+    <member refid="cityjson__lib_8h_1aad671b2deaa3fe50c44316a14e511c28" kind="function"><name>cj_value_new_object</name></member>
+    <member refid="cityjson__lib_8h_1a37a97a408786c424de8aa7766a3cd708" kind="function"><name>cj_value_new_geometry_ref</name></member>
+    <member refid="cityjson__lib_8h_1a4491bcf763906d64f21c1a728b30e89b" kind="function"><name>cj_value_array_push</name></member>
+    <member refid="cityjson__lib_8h_1a8b36dbb7289c470a50966a19706ec7f7" kind="function"><name>cj_value_object_insert</name></member>
+    <member refid="cityjson__lib_8h_1a0b4f7262bf0a0edebd7385591cc536c3" kind="function"><name>cj_contact_new</name></member>
+    <member refid="cityjson__lib_8h_1abc43d059d08ed29c71479288aba78edc" kind="function"><name>cj_contact_set_name</name></member>
+    <member refid="cityjson__lib_8h_1a2fa4a5dd5d29650be1f71f2d8be2481b" kind="function"><name>cj_contact_set_email</name></member>
+    <member refid="cityjson__lib_8h_1a00c4f95948f3babd384d245601d013b6" kind="function"><name>cj_contact_set_role</name></member>
+    <member refid="cityjson__lib_8h_1a6db674765b96005a3814e7674ab6e067" kind="function"><name>cj_contact_set_website</name></member>
+    <member refid="cityjson__lib_8h_1a6b962ef944430d582f3193a567079212" kind="function"><name>cj_contact_set_type</name></member>
+    <member refid="cityjson__lib_8h_1a36d18d586f099161fd80c7ea69c86eaf" kind="function"><name>cj_contact_set_phone</name></member>
+    <member refid="cityjson__lib_8h_1ad2e055163f6282c52b91d89b22433151" kind="function"><name>cj_contact_set_organization</name></member>
+    <member refid="cityjson__lib_8h_1abc9337dce2fa3d07e6a901e0a212c93e" kind="function"><name>cj_contact_set_address</name></member>
+    <member refid="cityjson__lib_8h_1ab2aed5466ecb74b5be80e5ff62d54d13" kind="function"><name>cj_model_set_metadata_geographical_extent</name></member>
+    <member refid="cityjson__lib_8h_1a45601aed7504ea372443eb2f9c883ae3" kind="function"><name>cj_model_set_metadata_reference_date</name></member>
+    <member refid="cityjson__lib_8h_1a7fd0bd413221c84b7f77559dd6dbd19c" kind="function"><name>cj_model_set_metadata_reference_system</name></member>
+    <member refid="cityjson__lib_8h_1aed456a2589c43703152d7d7f3cadb1e8" kind="function"><name>cj_model_set_metadata_contact</name></member>
+    <member refid="cityjson__lib_8h_1ab22532a6366f69897f5b94f275baf685" kind="function"><name>cj_model_set_metadata_extra</name></member>
+    <member refid="cityjson__lib_8h_1a8806f3bd1a5c63f81e53034a59a65dd5" kind="function"><name>cj_model_set_root_extra</name></member>
+    <member refid="cityjson__lib_8h_1a22bc2bb4fc893e21f46aa098781f89ca" kind="function"><name>cj_model_add_extension</name></member>
+    <member refid="cityjson__lib_8h_1a9e8ad44ae3eeb2a103547202f6465855" kind="function"><name>cj_model_add_semantic</name></member>
+    <member refid="cityjson__lib_8h_1abde9acbaa4c306e90a9ae5f47b89b90f" kind="function"><name>cj_model_set_semantic_parent</name></member>
+    <member refid="cityjson__lib_8h_1a6ca378a2d430d8d874882f8ff5bcbf41" kind="function"><name>cj_model_semantic_set_extra</name></member>
+    <member refid="cityjson__lib_8h_1a081bd76e1262b80642789e2996c16813" kind="function"><name>cj_model_add_material</name></member>
+    <member refid="cityjson__lib_8h_1a2ac11982d0624fba3f4085e2b17f1107" kind="function"><name>cj_model_material_set_ambient_intensity</name></member>
+    <member refid="cityjson__lib_8h_1a44ee2bc486f14b37edf351f135622931" kind="function"><name>cj_model_material_set_diffuse_color</name></member>
+    <member refid="cityjson__lib_8h_1a69bd7557ba5634dbb63253c811cc16e7" kind="function"><name>cj_model_material_set_emissive_color</name></member>
+    <member refid="cityjson__lib_8h_1a205d6d2f9863a38aac805d1afb14f4a5" kind="function"><name>cj_model_material_set_specular_color</name></member>
+    <member refid="cityjson__lib_8h_1a702b8ded149b7fddec3c7ea75096890f" kind="function"><name>cj_model_material_set_shininess</name></member>
+    <member refid="cityjson__lib_8h_1ad4a4cc97abf02a27a5fff2a430c08458" kind="function"><name>cj_model_material_set_transparency</name></member>
+    <member refid="cityjson__lib_8h_1acff4dbc73827cb376323ccecb68901e9" kind="function"><name>cj_model_material_set_is_smooth</name></member>
+    <member refid="cityjson__lib_8h_1a67e7a61091ef82bdbcc5bbb138a31696" kind="function"><name>cj_model_add_texture</name></member>
+    <member refid="cityjson__lib_8h_1a9ac8b5f64ed0f8456c4f3febed75884a" kind="function"><name>cj_model_texture_set_wrap_mode</name></member>
+    <member refid="cityjson__lib_8h_1a887505c0df847d09a84d7e58d7a9d179" kind="function"><name>cj_model_texture_set_texture_type</name></member>
+    <member refid="cityjson__lib_8h_1a3e650c8280f00f93079c15010bcf9f13" kind="function"><name>cj_model_texture_set_border_color</name></member>
+    <member refid="cityjson__lib_8h_1a4c1a544da239d2b9e9bcf70fa788f128" kind="function"><name>cj_model_set_default_material_theme</name></member>
+    <member refid="cityjson__lib_8h_1a9c57d3cd14d527519caa7029d0c39bcc" kind="function"><name>cj_model_set_default_texture_theme</name></member>
+    <member refid="cityjson__lib_8h_1a8ffcc860f403308ce74e9ba52ca13c1b" kind="function"><name>cj_cityobject_draft_new</name></member>
+    <member refid="cityjson__lib_8h_1a408e490bb8022d51f5a9586dc380ac41" kind="function"><name>cj_cityobject_draft_set_geographical_extent</name></member>
+    <member refid="cityjson__lib_8h_1afab83da4559cb92124f90ac0bba57eb9" kind="function"><name>cj_cityobject_draft_set_attribute</name></member>
+    <member refid="cityjson__lib_8h_1a22450e700f4c1f8ac3e3940501219237" kind="function"><name>cj_cityobject_draft_set_extra</name></member>
+    <member refid="cityjson__lib_8h_1abf898f0fe7a180729c23adf155938ad6" kind="function"><name>cj_model_add_cityobject</name></member>
+    <member refid="cityjson__lib_8h_1a7b98e48d17e4091d8ccd0ca73a7023df" kind="function"><name>cj_model_cityobject_add_geometry</name></member>
+    <member refid="cityjson__lib_8h_1a5f4f3190358fdfa7395f832ba023dfa8" kind="function"><name>cj_model_cityobject_add_parent</name></member>
+    <member refid="cityjson__lib_8h_1a278d460d4229db5f8860d3b9f912d53a" kind="function"><name>cj_ring_draft_new</name></member>
+    <member refid="cityjson__lib_8h_1a16b9b4b0ce6cf658042505de1bd0b004" kind="function"><name>cj_ring_draft_push_vertex_index</name></member>
+    <member refid="cityjson__lib_8h_1adb3abd7fe969875c70cd55b05f5780af" kind="function"><name>cj_ring_draft_push_vertex</name></member>
+    <member refid="cityjson__lib_8h_1a61dfb402687c2883a575a2b6d9e2a4b3" kind="function"><name>cj_ring_draft_add_texture</name></member>
+    <member refid="cityjson__lib_8h_1abc84fcf1e854009ab2624e2359956ecb" kind="function"><name>cj_ring_draft_add_texture_uvs</name></member>
+    <member refid="cityjson__lib_8h_1ae3ff8b1914f528c353ef388e59bc9c0f" kind="function"><name>cj_surface_draft_new</name></member>
+    <member refid="cityjson__lib_8h_1ae93892a1e56863003d8a3650190f3726" kind="function"><name>cj_surface_draft_add_inner_ring</name></member>
+    <member refid="cityjson__lib_8h_1a938d02e6c771034e35095f7170906b12" kind="function"><name>cj_surface_draft_set_semantic</name></member>
+    <member refid="cityjson__lib_8h_1aa50ead12dd962740e270a555ccd73938" kind="function"><name>cj_surface_draft_add_material</name></member>
+    <member refid="cityjson__lib_8h_1aaf7aa6a4927e83cf875f849783ed0f8b" kind="function"><name>cj_shell_draft_new</name></member>
+    <member refid="cityjson__lib_8h_1a604f1e0119603fab1b0a21264d1cba1e" kind="function"><name>cj_shell_draft_add_surface</name></member>
+    <member refid="cityjson__lib_8h_1aa7d668739b82958ef9899a222ec33cf6" kind="function"><name>cj_solid_draft_new</name></member>
+    <member refid="cityjson__lib_8h_1ae250ebbd76ad3947fc599736539d0007" kind="function"><name>cj_solid_draft_add_inner_shell</name></member>
+    <member refid="cityjson__lib_8h_1a61a4927e677c20dcc89a9da8c6039c96" kind="function"><name>cj_geometry_draft_new</name></member>
+    <member refid="cityjson__lib_8h_1a8707a9a620d7b79ebb4294c0541cd17b" kind="function"><name>cj_geometry_draft_new_instance</name></member>
+    <member refid="cityjson__lib_8h_1a6195f67c86247c9c28252e790380f68f" kind="function"><name>cj_geometry_draft_add_point_vertex_index</name></member>
+    <member refid="cityjson__lib_8h_1a922199415fbaf87873d06b4f12df75da" kind="function"><name>cj_geometry_draft_add_linestring</name></member>
+    <member refid="cityjson__lib_8h_1a9ced946575163438b2432a4126522bd9" kind="function"><name>cj_geometry_draft_add_surface</name></member>
+    <member refid="cityjson__lib_8h_1af2891d297bbda568f4e78f91cfa4af55" kind="function"><name>cj_geometry_draft_add_solid</name></member>
+    <member refid="cityjson__lib_8h_1a12b93a768e1f1c7f943e28fafa6ae888" kind="function"><name>cj_model_add_geometry</name></member>
+    <member refid="cityjson__lib_8h_1a81455d8541773014fb0c8e7606979bf3" kind="function"><name>cj_model_add_geometry_template</name></member>
+    <member refid="cityjson__lib_8h_1a4c1d2c2ec788d535ff969486c46abee4" kind="function"><name>cj_proj_transformer_create</name></member>
+    <member refid="cityjson__lib_8h_1a098c577bee1cb335a56e4848eda6c5d7" kind="function"><name>cj_proj_transformer_free</name></member>
+    <member refid="cityjson__lib_8h_1a4ff4e9230c7d371ed14de3e42c9a63a7" kind="function"><name>cj_proj_transformer_transform</name></member>
+  </compound>
+  <compound refid="dir_73606d6d5a3c74af6d32e161e1481e2a" kind="dir"><name>/home/balazs/Development/cityjson-rs/crates/cityjson-lib</name>
+  </compound>
+  <compound refid="dir_1aa9d364b0111309b5ff6417430ee0e3" kind="dir"><name>/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib</name>
+  </compound>
+  <compound refid="dir_91bdcab2daaad6e926d9c91f7304c7a1" kind="dir"><name>/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core</name>
+  </compound>
+  <compound refid="dir_d36735940847719355f0be60950235b6" kind="dir"><name>/home/balazs/Development/cityjson-rs/crates</name>
+  </compound>
+  <compound refid="dir_72a540ea7083b268f834352afe522700" kind="dir"><name>/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi</name>
+  </compound>
+  <compound refid="dir_de7daf55e160b83c665fdf0805c85d29" kind="dir"><name>/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include</name>
+  </compound>
+</doxygenindex>

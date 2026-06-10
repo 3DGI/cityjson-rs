@@ -1,0 +1,311 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classcityjson__lib_1_1ModelSelection" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>cityjson_lib::ModelSelection</compoundname>
+    <includes refid="cityjson__lib_8hpp" local="no">cityjson_lib.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcityjson__lib_1_1ModelSelection_1a05e33663c28ac33abdfd5f9540fab0c6" prot="private" static="no" mutable="no">
+        <type>detail::OwnedHandle&lt; cj_model_selection_t, cj_model_selection_free &gt;</type>
+        <definition>detail::OwnedHandle&lt;cj_model_selection_t, cj_model_selection_free&gt; cityjson_lib::ModelSelection::handle_</definition>
+        <argsstring></argsstring>
+        <name>handle_</name>
+        <qualifiedname>cityjson_lib::ModelSelection::handle_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1435" column="23" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1435" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="friend">
+      <memberdef kind="friend" id="classcityjson__lib_1_1ModelSelection_1a2bf2a0e9b454c55aa5dcb5aa4698697b" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class Model</definition>
+        <argsstring></argsstring>
+        <name>Model</name>
+        <qualifiedname>cityjson_lib::ModelSelection::Model</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1437" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1437" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1abf7015660f9d5b75a228ccb57ba95625" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::ModelSelection::ModelSelection</definition>
+        <argsstring>()=default</argsstring>
+        <name>ModelSelection</name>
+        <qualifiedname>cityjson_lib::ModelSelection::ModelSelection</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1361" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1afefacec3865f14bcb26b575ae3653034" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::ModelSelection::ModelSelection</definition>
+        <argsstring>(const ModelSelection &amp;)=delete</argsstring>
+        <name>ModelSelection</name>
+        <qualifiedname>cityjson_lib::ModelSelection::ModelSelection</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1363" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1a3245358163b2a88f2b94b03b1b11ad1a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref> &amp;</type>
+        <definition>ModelSelection &amp; cityjson_lib::ModelSelection::operator=</definition>
+        <argsstring>(const ModelSelection &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::ModelSelection::operator=</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1364" column="18"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1a391eb8f1eebcaa1395f29bfcfc5185e6" prot="public" static="no" const="no" explicit="no" inline="no" noexcept="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::ModelSelection::ModelSelection</definition>
+        <argsstring>(ModelSelection &amp;&amp;) noexcept=default</argsstring>
+        <name>ModelSelection</name>
+        <qualifiedname>cityjson_lib::ModelSelection::ModelSelection</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1365" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1a6e0d7e258fe91e3f99310f8ce2115278" prot="public" static="no" const="no" explicit="no" inline="no" noexcept="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref> &amp;</type>
+        <definition>ModelSelection &amp; cityjson_lib::ModelSelection::operator=</definition>
+        <argsstring>(ModelSelection &amp;&amp;) noexcept=default</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::ModelSelection::operator=</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1366" column="18"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1a05822b43b1b11db2d6fc5d4bda709afe" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool cityjson_lib::ModelSelection::valid</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>valid</name>
+        <qualifiedname>cityjson_lib::ModelSelection::valid</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1404" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1404" bodyend="1404"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1abbb4cbdc4afb86e24a47cdd36d90f34e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref></type>
+        <definition>ModelSelection cityjson_lib::ModelSelection::include_relatives</definition>
+        <argsstring>(const Model &amp;model) const</argsstring>
+        <name>include_relatives</name>
+        <qualifiedname>cityjson_lib::ModelSelection::include_relatives</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1406" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1406" bodyend="1410"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1a0c597823e8004fdd2528b4c84f7f6a0f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref></type>
+        <definition>ModelSelection cityjson_lib::ModelSelection::union_with</definition>
+        <argsstring>(const ModelSelection &amp;other) const</argsstring>
+        <name>union_with</name>
+        <qualifiedname>cityjson_lib::ModelSelection::union_with</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1412" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1412" bodyend="1416"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1ac55617f8f87f7c13b35e814ce7a5a848" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref></type>
+        <definition>ModelSelection cityjson_lib::ModelSelection::intersection_with</definition>
+        <argsstring>(const ModelSelection &amp;other) const</argsstring>
+        <name>intersection_with</name>
+        <qualifiedname>cityjson_lib::ModelSelection::intersection_with</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1418" column="19" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1418" bodyend="1422"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1aff0ec26982d0e91117a34e8ad4e1ff4b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool cityjson_lib::ModelSelection::is_empty</definition>
+        <argsstring>() const</argsstring>
+        <name>is_empty</name>
+        <qualifiedname>cityjson_lib::ModelSelection::is_empty</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1424" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1424" bodyend="1428"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1ae2665a9c4482f67fc18513610c426a67" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref></type>
+        <definition>static ModelSelection cityjson_lib::ModelSelection::select_cityobjects_by_id</definition>
+        <argsstring>(const Model &amp;model, std::span&lt; const std::string_view &gt; ids)</argsstring>
+        <name>select_cityobjects_by_id</name>
+        <qualifiedname>cityjson_lib::ModelSelection::select_cityobjects_by_id</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>std::span&lt; const std::string_view &gt;</type>
+          <declname>ids</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1368" column="26" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1368" bodyend="1381"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1a0b5e5aab1d0b3598c0ad6ed40923d9fb" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref></type>
+        <definition>static ModelSelection cityjson_lib::ModelSelection::select_geometries_by_cityobject_id_and_index</definition>
+        <argsstring>(const Model &amp;model, std::span&lt; const GeometrySelectionSpec &gt; specs)</argsstring>
+        <name>select_geometries_by_cityobject_id_and_index</name>
+        <qualifiedname>cityjson_lib::ModelSelection::select_geometries_by_cityobject_id_and_index</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;</type>
+          <declname>model</declname>
+        </param>
+        <param>
+          <type>std::span&lt; const <ref refid="structcityjson__lib_1_1GeometrySelectionSpec" kindref="compound">GeometrySelectionSpec</ref> &gt;</type>
+          <declname>specs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1383" column="26" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1383" bodyend="1402"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1a76d5112bf7982aec51317457d31288a4" prot="private" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::ModelSelection::ModelSelection</definition>
+        <argsstring>(cj_model_selection_t *handle)</argsstring>
+        <name>ModelSelection</name>
+        <qualifiedname>cityjson_lib::ModelSelection::ModelSelection</qualifiedname>
+        <param>
+          <type>cj_model_selection_t *</type>
+          <declname>handle</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1431" column="12" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1431" bodyend="1431"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1ModelSelection_1a680738e3807a1c5a2e96767248eaedec" prot="private" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>cj_model_selection_t *</type>
+        <definition>cj_model_selection_t * cityjson_lib::ModelSelection::raw_handle</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>raw_handle</name>
+        <qualifiedname>cityjson_lib::ModelSelection::raw_handle</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1433" column="25" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1433" bodyend="1433"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1359" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1359" bodyend="1438"/>
+    <listofallmembers>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a05e33663c28ac33abdfd5f9540fab0c6" prot="private" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>handle_</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1abbb4cbdc4afb86e24a47cdd36d90f34e" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>include_relatives</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1ac55617f8f87f7c13b35e814ce7a5a848" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>intersection_with</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1aff0ec26982d0e91117a34e8ad4e1ff4b" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>is_empty</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a2bf2a0e9b454c55aa5dcb5aa4698697b" prot="private" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>Model</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1abf7015660f9d5b75a228ccb57ba95625" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>ModelSelection</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1afefacec3865f14bcb26b575ae3653034" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>ModelSelection</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a391eb8f1eebcaa1395f29bfcfc5185e6" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>ModelSelection</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a76d5112bf7982aec51317457d31288a4" prot="private" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>ModelSelection</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a3245358163b2a88f2b94b03b1b11ad1a" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a6e0d7e258fe91e3f99310f8ce2115278" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a680738e3807a1c5a2e96767248eaedec" prot="private" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>raw_handle</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1ae2665a9c4482f67fc18513610c426a67" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>select_cityobjects_by_id</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a0b5e5aab1d0b3598c0ad6ed40923d9fb" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>select_geometries_by_cityobject_id_and_index</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a0c597823e8004fdd2528b4c84f7f6a0f" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>union_with</name></member>
+      <member refid="classcityjson__lib_1_1ModelSelection_1a05822b43b1b11db2d6fc5d4bda709afe" prot="public" virt="non-virtual"><scope>cityjson_lib::ModelSelection</scope><name>valid</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

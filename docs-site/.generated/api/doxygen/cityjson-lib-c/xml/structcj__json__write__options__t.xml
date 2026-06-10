@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__json__write__options__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_json_write_options_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__json__write__options__t_1aa72ac2084ae160a775cecb9fbefa3e4a" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_json_write_options_t::pretty</definition>
+        <argsstring></argsstring>
+        <name>pretty</name>
+        <qualifiedname>cj_json_write_options_t::pretty</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="392" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="392" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structcj__json__write__options__t_1af8996f0ab04d4c714c720755ac54ab56" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cj_json_write_options_t::validate_default_themes</definition>
+        <argsstring></argsstring>
+        <name>validate_default_themes</name>
+        <qualifiedname>cj_json_write_options_t::validate_default_themes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="393" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="393" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Explicit JSON write options for document, feature, and feature-stream output. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="391" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="391" bodyend="394"/>
+    <listofallmembers>
+      <member refid="structcj__json__write__options__t_1aa72ac2084ae160a775cecb9fbefa3e4a" prot="public" virt="non-virtual"><scope>cj_json_write_options_t</scope><name>pretty</name></member>
+      <member refid="structcj__json__write__options__t_1af8996f0ab04d4c714c720755ac54ab56" prot="public" virt="non-virtual"><scope>cj_json_write_options_t</scope><name>validate_default_themes</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

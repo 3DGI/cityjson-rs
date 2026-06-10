@@ -1,0 +1,341 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classcityjson__lib_1_1RingDraft" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>cityjson_lib::RingDraft</compoundname>
+    <includes refid="cityjson__lib_8hpp" local="no">cityjson_lib.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcityjson__lib_1_1RingDraft_1ab7989dec9a7a5bde1e4a9505e79eccb5" prot="private" static="no" mutable="no">
+        <type>detail::OwnedHandle&lt; cj_ring_draft_t, cj_ring_draft_free &gt;</type>
+        <definition>detail::OwnedHandle&lt;cj_ring_draft_t, cj_ring_draft_free&gt; cityjson_lib::RingDraft::handle_</definition>
+        <argsstring></argsstring>
+        <name>handle_</name>
+        <qualifiedname>cityjson_lib::RingDraft::handle_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="661" column="23" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="661" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="friend">
+      <memberdef kind="friend" id="classcityjson__lib_1_1RingDraft_1a50ec84d0cf160705ba1252dc4a5135bc" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class SurfaceDraft</definition>
+        <argsstring></argsstring>
+        <name>SurfaceDraft</name>
+        <qualifiedname>cityjson_lib::RingDraft::SurfaceDraft</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1SurfaceDraft" kindref="compound">SurfaceDraft</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="663" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="663" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1ac4510875d15d6c1cd2625be306405500" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::RingDraft::RingDraft</definition>
+        <argsstring>()</argsstring>
+        <name>RingDraft</name>
+        <qualifiedname>cityjson_lib::RingDraft::RingDraft</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="575" column="3" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="575" bodyend="579"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1ab15a28659a0f8c194c44efd3000269c6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::RingDraft::RingDraft</definition>
+        <argsstring>(const RingDraft &amp;)=delete</argsstring>
+        <name>RingDraft</name>
+        <qualifiedname>cityjson_lib::RingDraft::RingDraft</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="581" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1a977fe1349c6a44e0639a7eaabcbea92b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;</type>
+        <definition>RingDraft &amp; cityjson_lib::RingDraft::operator=</definition>
+        <argsstring>(const RingDraft &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::RingDraft::operator=</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="582" column="13"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1af95a85e5a363095c4c09a15305cb134c" prot="public" static="no" const="no" explicit="no" inline="no" noexcept="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::RingDraft::RingDraft</definition>
+        <argsstring>(RingDraft &amp;&amp;) noexcept=default</argsstring>
+        <name>RingDraft</name>
+        <qualifiedname>cityjson_lib::RingDraft::RingDraft</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="583" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1adb8eab7e0bdcdd0aa08d26aec8efa7bf" prot="public" static="no" const="no" explicit="no" inline="no" noexcept="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;</type>
+        <definition>RingDraft &amp; cityjson_lib::RingDraft::operator=</definition>
+        <argsstring>(RingDraft &amp;&amp;) noexcept=default</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::RingDraft::operator=</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="584" column="13"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1a586fe844a854ba33388d90a45e8a4732" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="lvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;</type>
+        <definition>RingDraft &amp; cityjson_lib::RingDraft::push_vertex_index</definition>
+        <argsstring>(std::uint32_t index) &amp;</argsstring>
+        <name>push_vertex_index</name>
+        <qualifiedname>cityjson_lib::RingDraft::push_vertex_index</qualifiedname>
+        <param>
+          <type>std::uint32_t</type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="586" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="586" bodyend="589"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1a5784df3bb08650377362dd75985fe7b9" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="rvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;&amp;</type>
+        <definition>RingDraft &amp;&amp; cityjson_lib::RingDraft::push_vertex_index</definition>
+        <argsstring>(std::uint32_t index) &amp;&amp;</argsstring>
+        <name>push_vertex_index</name>
+        <qualifiedname>cityjson_lib::RingDraft::push_vertex_index</qualifiedname>
+        <param>
+          <type>std::uint32_t</type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="591" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="591" bodyend="594"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1a432cd2d37e45c8fadf39d4c67f680cf3" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="lvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;</type>
+        <definition>RingDraft &amp; cityjson_lib::RingDraft::push_vertex</definition>
+        <argsstring>(const Vertex &amp;vertex) &amp;</argsstring>
+        <name>push_vertex</name>
+        <qualifiedname>cityjson_lib::RingDraft::push_vertex</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1ab64bafefdf67dabd1d3567af1b91a7ff" kindref="member">Vertex</ref> &amp;</type>
+          <declname>vertex</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="596" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="596" bodyend="599"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1a5ba185dc8d2003d3fcb6e4f1b3053855" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="rvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;&amp;</type>
+        <definition>RingDraft &amp;&amp; cityjson_lib::RingDraft::push_vertex</definition>
+        <argsstring>(const Vertex &amp;vertex) &amp;&amp;</argsstring>
+        <name>push_vertex</name>
+        <qualifiedname>cityjson_lib::RingDraft::push_vertex</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1ab64bafefdf67dabd1d3567af1b91a7ff" kindref="member">Vertex</ref> &amp;</type>
+          <declname>vertex</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="601" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="601" bodyend="604"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1a5f4882deaca7ed2d4e61d97551a73b5d" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="lvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;</type>
+        <definition>RingDraft &amp; cityjson_lib::RingDraft::add_texture</definition>
+        <argsstring>(std::string_view theme, TextureId texture, std::span&lt; const std::uint32_t &gt; uv_indices) &amp;</argsstring>
+        <name>add_texture</name>
+        <qualifiedname>cityjson_lib::RingDraft::add_texture</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>theme</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1TextureId" kindref="compound">TextureId</ref></type>
+          <declname>texture</declname>
+        </param>
+        <param>
+          <type>std::span&lt; const std::uint32_t &gt;</type>
+          <declname>uv_indices</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="606" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="606" bodyend="617"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1a5f9b907039b3d56d0f03f7dc18b7c67c" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="lvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;</type>
+        <definition>RingDraft &amp; cityjson_lib::RingDraft::add_texture</definition>
+        <argsstring>(std::string_view theme, TextureId texture, std::span&lt; const UV &gt; uvs) &amp;</argsstring>
+        <name>add_texture</name>
+        <qualifiedname>cityjson_lib::RingDraft::add_texture</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>theme</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1TextureId" kindref="compound">TextureId</ref></type>
+          <declname>texture</declname>
+        </param>
+        <param>
+          <type>std::span&lt; const <ref refid="namespacecityjson__lib_1a4960cad219c4d11026a145959aafff58" kindref="member">UV</ref> &gt;</type>
+          <declname>uvs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="619" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="619" bodyend="630"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1ac4be30f9fe43fb92f1a0465f8c2240a7" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="rvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;&amp;</type>
+        <definition>RingDraft &amp;&amp; cityjson_lib::RingDraft::add_texture</definition>
+        <argsstring>(std::string_view theme, TextureId texture, std::span&lt; const std::uint32_t &gt; uv_indices) &amp;&amp;</argsstring>
+        <name>add_texture</name>
+        <qualifiedname>cityjson_lib::RingDraft::add_texture</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>theme</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1TextureId" kindref="compound">TextureId</ref></type>
+          <declname>texture</declname>
+        </param>
+        <param>
+          <type>std::span&lt; const std::uint32_t &gt;</type>
+          <declname>uv_indices</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="632" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="632" bodyend="643"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1a176113ed76f88cbf761829f80aa0b8b5" prot="public" static="no" const="no" explicit="no" inline="yes" refqual="rvalue" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1RingDraft" kindref="compound">RingDraft</ref> &amp;&amp;</type>
+        <definition>RingDraft &amp;&amp; cityjson_lib::RingDraft::add_texture</definition>
+        <argsstring>(std::string_view theme, TextureId texture, std::span&lt; const UV &gt; uvs) &amp;&amp;</argsstring>
+        <name>add_texture</name>
+        <qualifiedname>cityjson_lib::RingDraft::add_texture</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>theme</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1TextureId" kindref="compound">TextureId</ref></type>
+          <declname>texture</declname>
+        </param>
+        <param>
+          <type>std::span&lt; const <ref refid="namespacecityjson__lib_1a4960cad219c4d11026a145959aafff58" kindref="member">UV</ref> &gt;</type>
+          <declname>uvs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="645" column="13" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="645" bodyend="656"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1RingDraft_1a1e35bd6db41f092cb500f0469b397a9e" prot="private" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>cj_ring_draft_t *</type>
+        <definition>cj_ring_draft_t * cityjson_lib::RingDraft::release</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>release</name>
+        <qualifiedname>cityjson_lib::RingDraft::release</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="659" column="20" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="659" bodyend="659"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="573" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="573" bodyend="664"/>
+    <listofallmembers>
+      <member refid="classcityjson__lib_1_1RingDraft_1a5f4882deaca7ed2d4e61d97551a73b5d" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>add_texture</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1a5f9b907039b3d56d0f03f7dc18b7c67c" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>add_texture</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1ac4be30f9fe43fb92f1a0465f8c2240a7" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>add_texture</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1a176113ed76f88cbf761829f80aa0b8b5" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>add_texture</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1ab7989dec9a7a5bde1e4a9505e79eccb5" prot="private" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>handle_</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1a977fe1349c6a44e0639a7eaabcbea92b" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1adb8eab7e0bdcdd0aa08d26aec8efa7bf" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1a432cd2d37e45c8fadf39d4c67f680cf3" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>push_vertex</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1a5ba185dc8d2003d3fcb6e4f1b3053855" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>push_vertex</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1a586fe844a854ba33388d90a45e8a4732" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>push_vertex_index</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1a5784df3bb08650377362dd75985fe7b9" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>push_vertex_index</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1a1e35bd6db41f092cb500f0469b397a9e" prot="private" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>release</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1ac4510875d15d6c1cd2625be306405500" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>RingDraft</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1ab15a28659a0f8c194c44efd3000269c6" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>RingDraft</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1af95a85e5a363095c4c09a15305cb134c" prot="public" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>RingDraft</name></member>
+      <member refid="classcityjson__lib_1_1RingDraft_1a50ec84d0cf160705ba1252dc4a5135bc" prot="private" virt="non-virtual"><scope>cityjson_lib::RingDraft</scope><name>SurfaceDraft</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

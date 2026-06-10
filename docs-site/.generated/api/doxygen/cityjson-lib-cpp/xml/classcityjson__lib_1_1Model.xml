@@ -1,0 +1,1623 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classcityjson__lib_1_1Model" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>cityjson_lib::Model</compoundname>
+    <includes refid="cityjson__lib_8hpp" local="no">cityjson_lib.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcityjson__lib_1_1Model_1acc3ffc426a331dfc3e4793a845fb66fb" prot="private" static="no" mutable="no">
+        <type>cj_model_t *</type>
+        <definition>cj_model_t* cityjson_lib::Model::handle_</definition>
+        <argsstring></argsstring>
+        <name>handle_</name>
+        <qualifiedname>cityjson_lib::Model::handle_</qualifiedname>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1356" column="14" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1356" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a757c1e2a0401a0228e7ab6363fdf4b9e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::Model::Model</definition>
+        <argsstring>()=default</argsstring>
+        <name>Model</name>
+        <qualifiedname>cityjson_lib::Model::Model</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="945" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a61f007a1b72ff31e58886577b3b36976" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::Model::Model</definition>
+        <argsstring>(cj_model_t *handle)</argsstring>
+        <name>Model</name>
+        <qualifiedname>cityjson_lib::Model::Model</qualifiedname>
+        <param>
+          <type>cj_model_t *</type>
+          <declname>handle</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="947" column="12" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="947" bodyend="947"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a2a9b5ba85664bb792f36e186f5906e1d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::Model::Model</definition>
+        <argsstring>(const Model &amp;)=delete</argsstring>
+        <name>Model</name>
+        <qualifiedname>cityjson_lib::Model::Model</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="949" column="3"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a1901b0c85ee192f39cc6c6827a967443" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;</type>
+        <definition>Model &amp; cityjson_lib::Model::operator=</definition>
+        <argsstring>(const Model &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::Model::operator=</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="950" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a38d8a67c599f9263a0bf1fdf74391779" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::Model::Model</definition>
+        <argsstring>(Model &amp;&amp;other) noexcept</argsstring>
+        <name>Model</name>
+        <qualifiedname>cityjson_lib::Model::Model</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="952" column="3" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="952" bodyend="952"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1acb9ed2f8aab0fd103fcfc6a7055c84d5" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;</type>
+        <definition>Model &amp; cityjson_lib::Model::operator=</definition>
+        <argsstring>(Model &amp;&amp;other) noexcept</argsstring>
+        <name>operator=</name>
+        <qualifiedname>cityjson_lib::Model::operator=</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="954" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="954" bodyend="960"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1aca7a4f106cd9c0a441aa50af90256a4a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>cityjson_lib::Model::~Model</definition>
+        <argsstring>()</argsstring>
+        <name>~Model</name>
+        <qualifiedname>cityjson_lib::Model::~Model</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="962" column="3" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="962" bodyend="962"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a2960847018604b34837f2a326a010def" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool cityjson_lib::Model::valid</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>valid</name>
+        <qualifiedname>cityjson_lib::Model::valid</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1016" column="9" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1016" bodyend="1016"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a3512cf2775983f8e326ed8b24967de63" prot="public" static="no" const="no" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::reset</definition>
+        <argsstring>() noexcept</argsstring>
+        <name>reset</name>
+        <qualifiedname>cityjson_lib::Model::reset</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1018" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1018" bodyend="1023"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a4d6d8e96a305d1735fd7e0c346c36733" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacecityjson__lib_1a51fa44c7f6b4f5988f7286e0635139f0" kindref="member">ModelSummary</ref></type>
+        <definition>ModelSummary cityjson_lib::Model::summary</definition>
+        <argsstring>() const</argsstring>
+        <name>summary</name>
+        <qualifiedname>cityjson_lib::Model::summary</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1025" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1025" bodyend="1029"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1abe5fe2cb76a0a110e02cd1bf1341a596" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string cityjson_lib::Model::metadata_title</definition>
+        <argsstring>() const</argsstring>
+        <name>metadata_title</name>
+        <qualifiedname>cityjson_lib::Model::metadata_title</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1031" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1031" bodyend="1035"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ab3559ef87d574d0f9820c03a14eba0a9" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string cityjson_lib::Model::metadata_identifier</definition>
+        <argsstring>() const</argsstring>
+        <name>metadata_identifier</name>
+        <qualifiedname>cityjson_lib::Model::metadata_identifier</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1037" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1037" bodyend="1041"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ab9d0d5509c2bc42b67e276b6a414eb2a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_metadata_title</definition>
+        <argsstring>(std::string_view title)</argsstring>
+        <name>set_metadata_title</name>
+        <qualifiedname>cityjson_lib::Model::set_metadata_title</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>title</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1043" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1043" bodyend="1045"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1acfb08db261ba8fd1c7b3bb09968a43c9" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_metadata_identifier</definition>
+        <argsstring>(std::string_view identifier)</argsstring>
+        <name>set_metadata_identifier</name>
+        <qualifiedname>cityjson_lib::Model::set_metadata_identifier</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>identifier</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1047" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1047" bodyend="1049"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ab9a57a801538ee6b842eef3d0cf74262" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_metadata_geographical_extent</definition>
+        <argsstring>(const BBox &amp;bbox)</argsstring>
+        <name>set_metadata_geographical_extent</name>
+        <qualifiedname>cityjson_lib::Model::set_metadata_geographical_extent</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1a9c9dcf76ba84f11461c5568fe81b1fb3" kindref="member">BBox</ref> &amp;</type>
+          <declname>bbox</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1051" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1051" bodyend="1053"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a88c6ff41c8f712331f02392de9dad1a2" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_metadata_reference_date</definition>
+        <argsstring>(std::string_view value)</argsstring>
+        <name>set_metadata_reference_date</name>
+        <qualifiedname>cityjson_lib::Model::set_metadata_reference_date</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1055" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1055" bodyend="1057"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a25d16177fd2e3ae2e44ed775a3179ca1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_metadata_reference_system</definition>
+        <argsstring>(std::string_view value)</argsstring>
+        <name>set_metadata_reference_system</name>
+        <qualifiedname>cityjson_lib::Model::set_metadata_reference_system</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1059" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1059" bodyend="1061"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a48db2eb5743081cbb379647e495763ef" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_metadata_contact</definition>
+        <argsstring>(Contact contact)</argsstring>
+        <name>set_metadata_contact</name>
+        <qualifiedname>cityjson_lib::Model::set_metadata_contact</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Contact" kindref="compound">Contact</ref></type>
+          <declname>contact</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1063" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1063" bodyend="1065"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ab68d7012720b6779fa3ef903c7fb8ebf" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_metadata_extra</definition>
+        <argsstring>(std::string_view key, Value value)</argsstring>
+        <name>set_metadata_extra</name>
+        <qualifiedname>cityjson_lib::Model::set_metadata_extra</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Value" kindref="compound">Value</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1067" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1067" bodyend="1069"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1acc64c2ad429c8b7b621dca9132364a00" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_root_extra</definition>
+        <argsstring>(std::string_view key, Value value)</argsstring>
+        <name>set_root_extra</name>
+        <qualifiedname>cityjson_lib::Model::set_root_extra</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Value" kindref="compound">Value</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1071" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1071" bodyend="1073"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a2853bc6d25ea7ac6cb1ecf8c838f0e06" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::add_extension</definition>
+        <argsstring>(std::string_view name, std::string_view url, std::string_view version)</argsstring>
+        <name>add_extension</name>
+        <qualifiedname>cityjson_lib::Model::add_extension</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>name</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>url</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>version</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1075" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1075" bodyend="1077"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a3c61b7e39a436204dc7614637d325e73" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_transform</definition>
+        <argsstring>(const Transform &amp;transform)</argsstring>
+        <name>set_transform</name>
+        <qualifiedname>cityjson_lib::Model::set_transform</qualifiedname>
+        <param>
+          <type>const <ref refid="structcityjson__lib_1_1Transform" kindref="compound">Transform</ref> &amp;</type>
+          <declname>transform</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1079" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1079" bodyend="1081"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a3fc1207a2a66460b6c2bc2083b369115" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::clear_transform</definition>
+        <argsstring>()</argsstring>
+        <name>clear_transform</name>
+        <qualifiedname>cityjson_lib::Model::clear_transform</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1083" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1083" bodyend="1085"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ad15ac46d897cb9f93ecb1e6c8dd65aa1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::reproject</definition>
+        <argsstring>(std::string_view target_crs)</argsstring>
+        <name>reproject</name>
+        <qualifiedname>cityjson_lib::Model::reproject</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>target_crs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1087" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1087" bodyend="1089"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1aa9ae86e5a2d2047ebbfc260ceab8496c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt; std::string &gt; cityjson_lib::Model::cityobject_ids</definition>
+        <argsstring>() const</argsstring>
+        <name>cityobject_ids</name>
+        <qualifiedname>cityjson_lib::Model::cityobject_ids</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1091" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1091" bodyend="1095"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a6641ed7232e4f75e5b42e6cd60c4d466" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::remove_cityobject</definition>
+        <argsstring>(std::string_view id)</argsstring>
+        <name>remove_cityobject</name>
+        <qualifiedname>cityjson_lib::Model::remove_cityobject</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>id</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1097" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1097" bodyend="1099"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ab58aca2c5eac71661c998c3b9d9ad703" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="namespacecityjson__lib_1a8d3fbcfd7bda3f5ef9f6b85a4ec90c3b" kindref="member">GeometryType</ref> &gt;</type>
+        <definition>std::vector&lt; GeometryType &gt; cityjson_lib::Model::geometry_types</definition>
+        <argsstring>() const</argsstring>
+        <name>geometry_types</name>
+        <qualifiedname>cityjson_lib::Model::geometry_types</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1101" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1101" bodyend="1105"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a7ba205b357389be2c2c93f23ba7f022f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="namespacecityjson__lib_1a4960cad219c4d11026a145959aafff58" kindref="member">UV</ref> &gt;</type>
+        <definition>std::vector&lt; UV &gt; cityjson_lib::Model::uv_coordinates</definition>
+        <argsstring>() const</argsstring>
+        <name>uv_coordinates</name>
+        <qualifiedname>cityjson_lib::Model::uv_coordinates</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1107" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1107" bodyend="1111"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ab4f7baae20527e4e6f4d6e2415200f6e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structcityjson__lib_1_1GeometryBoundary" kindref="compound">GeometryBoundary</ref></type>
+        <definition>GeometryBoundary cityjson_lib::Model::geometry_boundary</definition>
+        <argsstring>(std::size_t index) const</argsstring>
+        <name>geometry_boundary</name>
+        <qualifiedname>cityjson_lib::Model::geometry_boundary</qualifiedname>
+        <param>
+          <type>std::size_t</type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1113" column="21" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1113" bodyend="1117"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1af60a60cd24efd7249f0a7ced8829f126" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="namespacecityjson__lib_1ab64bafefdf67dabd1d3567af1b91a7ff" kindref="member">Vertex</ref> &gt;</type>
+        <definition>std::vector&lt; Vertex &gt; cityjson_lib::Model::geometry_boundary_coordinates</definition>
+        <argsstring>(std::size_t index) const</argsstring>
+        <name>geometry_boundary_coordinates</name>
+        <qualifiedname>cityjson_lib::Model::geometry_boundary_coordinates</qualifiedname>
+        <param>
+          <type>std::size_t</type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1119" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1119" bodyend="1123"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a6579235e21e61211618cb1967c3e4f4b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::uint8_t &gt;</type>
+        <definition>std::vector&lt; std::uint8_t &gt; cityjson_lib::Model::serialize_document_bytes</definition>
+        <argsstring>(const WriteOptions &amp;options={}) const</argsstring>
+        <name>serialize_document_bytes</name>
+        <qualifiedname>cityjson_lib::Model::serialize_document_bytes</qualifiedname>
+        <param>
+          <type>const <ref refid="structcityjson__lib_1_1WriteOptions" kindref="compound">WriteOptions</ref> &amp;</type>
+          <declname>options</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1125" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1125" bodyend="1130"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a5bfbc7537f6ab43bc63ed8660762a195" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string cityjson_lib::Model::serialize_document</definition>
+        <argsstring>(const WriteOptions &amp;options={}) const</argsstring>
+        <name>serialize_document</name>
+        <qualifiedname>cityjson_lib::Model::serialize_document</qualifiedname>
+        <param>
+          <type>const <ref refid="structcityjson__lib_1_1WriteOptions" kindref="compound">WriteOptions</ref> &amp;</type>
+          <declname>options</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1132" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1132" bodyend="1135"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a9003cdb006a4b83c5e53737e0ee56347" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::uint8_t &gt;</type>
+        <definition>std::vector&lt; std::uint8_t &gt; cityjson_lib::Model::serialize_feature_bytes</definition>
+        <argsstring>(const WriteOptions &amp;options={}) const</argsstring>
+        <name>serialize_feature_bytes</name>
+        <qualifiedname>cityjson_lib::Model::serialize_feature_bytes</qualifiedname>
+        <param>
+          <type>const <ref refid="structcityjson__lib_1_1WriteOptions" kindref="compound">WriteOptions</ref> &amp;</type>
+          <declname>options</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1137" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1137" bodyend="1142"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a115007f387e4d06660cd9fc3d3d3e34e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string cityjson_lib::Model::serialize_feature</definition>
+        <argsstring>(const WriteOptions &amp;options={}) const</argsstring>
+        <name>serialize_feature</name>
+        <qualifiedname>cityjson_lib::Model::serialize_feature</qualifiedname>
+        <param>
+          <type>const <ref refid="structcityjson__lib_1_1WriteOptions" kindref="compound">WriteOptions</ref> &amp;</type>
+          <declname>options</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1144" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1144" bodyend="1147"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a4b02a0a9203d402687ea8a2d44b38e9b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::uint8_t &gt;</type>
+        <definition>std::vector&lt; std::uint8_t &gt; cityjson_lib::Model::serialize_arrow_bytes</definition>
+        <argsstring>() const</argsstring>
+        <name>serialize_arrow_bytes</name>
+        <qualifiedname>cityjson_lib::Model::serialize_arrow_bytes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1149" column="16" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1149" bodyend="1153"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1aa89f25d178d448f10d8d468d66351c7d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::serialize_parquet_file</definition>
+        <argsstring>(std::string_view path) const</argsstring>
+        <name>serialize_parquet_file</name>
+        <qualifiedname>cityjson_lib::Model::serialize_parquet_file</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1155" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1155" bodyend="1157"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a98a9cd8b8508c6c7988d9503b7cbfb2c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::serialize_parquet_dataset_dir</definition>
+        <argsstring>(std::string_view path) const</argsstring>
+        <name>serialize_parquet_dataset_dir</name>
+        <qualifiedname>cityjson_lib::Model::serialize_parquet_dataset_dir</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1159" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1159" bodyend="1161"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a2bf4b233aeea38787b5c0196e0213714" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>Model cityjson_lib::Model::subset_cityobjects</definition>
+        <argsstring>(std::span&lt; const std::string_view &gt; ids, bool exclude=false) const</argsstring>
+        <name>subset_cityobjects</name>
+        <qualifiedname>cityjson_lib::Model::subset_cityobjects</qualifiedname>
+        <param>
+          <type>std::span&lt; const std::string_view &gt;</type>
+          <declname>ids</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>exclude</declname>
+          <defval>false</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1198" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1198" bodyend="1211"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ad78d074d6ecbfaf553686af894e45177" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>Model cityjson_lib::Model::extract_selection</definition>
+        <argsstring>(const ModelSelection &amp;selection) const</argsstring>
+        <name>extract_selection</name>
+        <qualifiedname>cityjson_lib::Model::extract_selection</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1ModelSelection" kindref="compound">ModelSelection</ref> &amp;</type>
+          <declname>selection</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1213" column="10" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1440" bodyend="1444"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a359a5ca845b016919ed76f006483dc42" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::append_model</definition>
+        <argsstring>(const Model &amp;source)</argsstring>
+        <name>append_model</name>
+        <qualifiedname>cityjson_lib::Model::append_model</qualifiedname>
+        <param>
+          <type>const <ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> &amp;</type>
+          <declname>source</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1215" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1215" bodyend="1217"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ab8daf8bf0467cb41ccdf6ec2282cf175" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::cleanup</definition>
+        <argsstring>()</argsstring>
+        <name>cleanup</name>
+        <qualifiedname>cityjson_lib::Model::cleanup</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1219" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1219" bodyend="1221"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a3a6f8fd2fe2553cf073221159c2252ed" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::reserve_import</definition>
+        <argsstring>(const ModelCapacities &amp;capacities)</argsstring>
+        <name>reserve_import</name>
+        <qualifiedname>cityjson_lib::Model::reserve_import</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1a99bd70a600b908655927e520d68eaa67" kindref="member">ModelCapacities</ref> &amp;</type>
+          <declname>capacities</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1223" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1223" bodyend="1225"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a9e7442d06cc032a8694c51472e0eccb8" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::uint32_t</type>
+        <definition>std::uint32_t cityjson_lib::Model::add_vertex</definition>
+        <argsstring>(const Vertex &amp;vertex)</argsstring>
+        <name>add_vertex</name>
+        <qualifiedname>cityjson_lib::Model::add_vertex</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1ab64bafefdf67dabd1d3567af1b91a7ff" kindref="member">Vertex</ref> &amp;</type>
+          <declname>vertex</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1227" column="18" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1227" bodyend="1231"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a24fe48922caafae3ecc4e4e568c84aef" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::uint32_t</type>
+        <definition>std::uint32_t cityjson_lib::Model::add_template_vertex</definition>
+        <argsstring>(const Vertex &amp;vertex)</argsstring>
+        <name>add_template_vertex</name>
+        <qualifiedname>cityjson_lib::Model::add_template_vertex</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1ab64bafefdf67dabd1d3567af1b91a7ff" kindref="member">Vertex</ref> &amp;</type>
+          <declname>vertex</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1233" column="18" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1233" bodyend="1237"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1adea571156452ec4193a628b27d88af0b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_vertex</definition>
+        <argsstring>(std::size_t index, const Vertex &amp;vertex)</argsstring>
+        <name>set_vertex</name>
+        <qualifiedname>cityjson_lib::Model::set_vertex</qualifiedname>
+        <param>
+          <type>std::size_t</type>
+          <declname>index</declname>
+        </param>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1ab64bafefdf67dabd1d3567af1b91a7ff" kindref="member">Vertex</ref> &amp;</type>
+          <declname>vertex</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1239" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1239" bodyend="1241"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ae9a1985847bb05e1a84a333825013b81" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_template_vertex</definition>
+        <argsstring>(std::size_t index, const Vertex &amp;vertex)</argsstring>
+        <name>set_template_vertex</name>
+        <qualifiedname>cityjson_lib::Model::set_template_vertex</qualifiedname>
+        <param>
+          <type>std::size_t</type>
+          <declname>index</declname>
+        </param>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1ab64bafefdf67dabd1d3567af1b91a7ff" kindref="member">Vertex</ref> &amp;</type>
+          <declname>vertex</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1243" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1243" bodyend="1245"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a660355d653f1470a66be5e06e1fdd965" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::uint32_t</type>
+        <definition>std::uint32_t cityjson_lib::Model::add_uv_coordinate</definition>
+        <argsstring>(const UV &amp;uv)</argsstring>
+        <name>add_uv_coordinate</name>
+        <qualifiedname>cityjson_lib::Model::add_uv_coordinate</qualifiedname>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1a4960cad219c4d11026a145959aafff58" kindref="member">UV</ref> &amp;</type>
+          <declname>uv</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1247" column="18" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1247" bodyend="1251"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a37466781d6965c36068a6dd05a764bae" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1SemanticId" kindref="compound">SemanticId</ref></type>
+        <definition>SemanticId cityjson_lib::Model::add_semantic</definition>
+        <argsstring>(std::string_view semantic_type)</argsstring>
+        <name>add_semantic</name>
+        <qualifiedname>cityjson_lib::Model::add_semantic</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>semantic_type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1253" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1253" bodyend="1257"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ae8887b55f28757bff102cbac6e01d0a0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_semantic_parent</definition>
+        <argsstring>(SemanticId semantic, SemanticId parent)</argsstring>
+        <name>set_semantic_parent</name>
+        <qualifiedname>cityjson_lib::Model::set_semantic_parent</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1SemanticId" kindref="compound">SemanticId</ref></type>
+          <declname>semantic</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1SemanticId" kindref="compound">SemanticId</ref></type>
+          <declname>parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1259" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1259" bodyend="1261"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1abb35aa95acf2c8f0ab788599fe9c6470" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_semantic_extra</definition>
+        <argsstring>(SemanticId semantic, std::string_view key, Value value)</argsstring>
+        <name>set_semantic_extra</name>
+        <qualifiedname>cityjson_lib::Model::set_semantic_extra</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1SemanticId" kindref="compound">SemanticId</ref></type>
+          <declname>semantic</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1Value" kindref="compound">Value</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1263" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1263" bodyend="1265"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a396bc9b3f7874f65facb93989547972d" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1MaterialId" kindref="compound">MaterialId</ref></type>
+        <definition>MaterialId cityjson_lib::Model::add_material</definition>
+        <argsstring>(std::string_view name)</argsstring>
+        <name>add_material</name>
+        <qualifiedname>cityjson_lib::Model::add_material</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1267" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1267" bodyend="1271"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a6cb0c33ab427ce2799f54dd23cdab6dd" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_material_ambient_intensity</definition>
+        <argsstring>(MaterialId id, float value)</argsstring>
+        <name>set_material_ambient_intensity</name>
+        <qualifiedname>cityjson_lib::Model::set_material_ambient_intensity</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1MaterialId" kindref="compound">MaterialId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1273" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1273" bodyend="1275"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ae31239bdb2a933c8a21f03e13b074c44" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_material_diffuse_color</definition>
+        <argsstring>(MaterialId id, const Rgb &amp;value)</argsstring>
+        <name>set_material_diffuse_color</name>
+        <qualifiedname>cityjson_lib::Model::set_material_diffuse_color</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1MaterialId" kindref="compound">MaterialId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1a91849fcafc7bce7fbeebce85064aea34" kindref="member">Rgb</ref> &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1277" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1277" bodyend="1279"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a4586994cabb48db9bbace48b257ae93e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_material_emissive_color</definition>
+        <argsstring>(MaterialId id, const Rgb &amp;value)</argsstring>
+        <name>set_material_emissive_color</name>
+        <qualifiedname>cityjson_lib::Model::set_material_emissive_color</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1MaterialId" kindref="compound">MaterialId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1a91849fcafc7bce7fbeebce85064aea34" kindref="member">Rgb</ref> &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1281" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1281" bodyend="1283"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a0dbab41bb628a16433ef32eab9712eab" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_material_specular_color</definition>
+        <argsstring>(MaterialId id, const Rgb &amp;value)</argsstring>
+        <name>set_material_specular_color</name>
+        <qualifiedname>cityjson_lib::Model::set_material_specular_color</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1MaterialId" kindref="compound">MaterialId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1a91849fcafc7bce7fbeebce85064aea34" kindref="member">Rgb</ref> &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1285" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1285" bodyend="1287"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1aac981f7d78f885a7615d5f5c6f35a3b7" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_material_shininess</definition>
+        <argsstring>(MaterialId id, float value)</argsstring>
+        <name>set_material_shininess</name>
+        <qualifiedname>cityjson_lib::Model::set_material_shininess</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1MaterialId" kindref="compound">MaterialId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1289" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1289" bodyend="1291"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1aa096ad8c3f97990ca34c0c743e9799ed" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_material_transparency</definition>
+        <argsstring>(MaterialId id, float value)</argsstring>
+        <name>set_material_transparency</name>
+        <qualifiedname>cityjson_lib::Model::set_material_transparency</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1MaterialId" kindref="compound">MaterialId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1293" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1293" bodyend="1295"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a62cc4d03fb771876cf010c4cc9d0c978" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_material_is_smooth</definition>
+        <argsstring>(MaterialId id, bool value)</argsstring>
+        <name>set_material_is_smooth</name>
+        <qualifiedname>cityjson_lib::Model::set_material_is_smooth</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1MaterialId" kindref="compound">MaterialId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1297" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1297" bodyend="1299"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a1e4fcfc775bbb176e0cd78289c0bd091" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1TextureId" kindref="compound">TextureId</ref></type>
+        <definition>TextureId cityjson_lib::Model::add_texture</definition>
+        <argsstring>(std::string_view image, ImageType image_type)</argsstring>
+        <name>add_texture</name>
+        <qualifiedname>cityjson_lib::Model::add_texture</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>image</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacecityjson__lib_1a3b6d04f40c268a7f7ccdf547089c5b94" kindref="member">ImageType</ref></type>
+          <declname>image_type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1301" column="14" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1301" bodyend="1305"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a7b87202d8fe45561e9deb95f2e9c80f1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_texture_wrap_mode</definition>
+        <argsstring>(TextureId id, WrapMode value)</argsstring>
+        <name>set_texture_wrap_mode</name>
+        <qualifiedname>cityjson_lib::Model::set_texture_wrap_mode</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1TextureId" kindref="compound">TextureId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacecityjson__lib_1ad4720d0fda3d82c3c7cea024e91f2b9e" kindref="member">WrapMode</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1307" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1307" bodyend="1309"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a0b038c54d80317ca7d63db78434a4f9e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_texture_type</definition>
+        <argsstring>(TextureId id, TextureType value)</argsstring>
+        <name>set_texture_type</name>
+        <qualifiedname>cityjson_lib::Model::set_texture_type</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1TextureId" kindref="compound">TextureId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type><ref refid="namespacecityjson__lib_1a3c8dd8c75c6e59d4fce0d41cc4a94393" kindref="member">TextureType</ref></type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1311" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1311" bodyend="1313"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a6b17bc02fbcad684c7ccbeb33795eb28" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_texture_border_color</definition>
+        <argsstring>(TextureId id, const Rgba &amp;value)</argsstring>
+        <name>set_texture_border_color</name>
+        <qualifiedname>cityjson_lib::Model::set_texture_border_color</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1TextureId" kindref="compound">TextureId</ref></type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>const <ref refid="namespacecityjson__lib_1a0ae27cfb0e6aad90273bd2853c47e4f8" kindref="member">Rgba</ref> &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1315" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1315" bodyend="1317"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1adf882412ea94f7f116ab24f9711c0a6e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_default_material_theme</definition>
+        <argsstring>(std::string_view theme)</argsstring>
+        <name>set_default_material_theme</name>
+        <qualifiedname>cityjson_lib::Model::set_default_material_theme</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>theme</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1319" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1319" bodyend="1321"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a243c4bffed8e98d77711c284270cbef9" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::set_default_texture_theme</definition>
+        <argsstring>(std::string_view theme)</argsstring>
+        <name>set_default_texture_theme</name>
+        <qualifiedname>cityjson_lib::Model::set_default_texture_theme</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>theme</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1323" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1323" bodyend="1325"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a53ff7cf5ff8fb85c10d09d14dc9d6826" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1GeometryId" kindref="compound">GeometryId</ref></type>
+        <definition>GeometryId cityjson_lib::Model::add_geometry</definition>
+        <argsstring>(GeometryDraft draft)</argsstring>
+        <name>add_geometry</name>
+        <qualifiedname>cityjson_lib::Model::add_geometry</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1GeometryDraft" kindref="compound">GeometryDraft</ref></type>
+          <declname>draft</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1327" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1327" bodyend="1331"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1aa1f8eeaf6665e2b23ffec94df6622ad8" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1GeometryTemplateId" kindref="compound">GeometryTemplateId</ref></type>
+        <definition>GeometryTemplateId cityjson_lib::Model::add_geometry_template</definition>
+        <argsstring>(GeometryDraft draft)</argsstring>
+        <name>add_geometry_template</name>
+        <qualifiedname>cityjson_lib::Model::add_geometry_template</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1GeometryDraft" kindref="compound">GeometryDraft</ref></type>
+          <declname>draft</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1333" column="23" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1333" bodyend="1337"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a6ac09691c38ab3f085a3c802bfd42522" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1CityObjectId" kindref="compound">CityObjectId</ref></type>
+        <definition>CityObjectId cityjson_lib::Model::add_cityobject</definition>
+        <argsstring>(CityObjectDraft draft)</argsstring>
+        <name>add_cityobject</name>
+        <qualifiedname>cityjson_lib::Model::add_cityobject</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1CityObjectDraft" kindref="compound">CityObjectDraft</ref></type>
+          <declname>draft</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1339" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1339" bodyend="1343"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a9032995d16e8f7dc1e61cd47e3bf06d6" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::add_cityobject_geometry</definition>
+        <argsstring>(CityObjectId cityobject, GeometryId geometry)</argsstring>
+        <name>add_cityobject_geometry</name>
+        <qualifiedname>cityjson_lib::Model::add_cityobject_geometry</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1CityObjectId" kindref="compound">CityObjectId</ref></type>
+          <declname>cityobject</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1GeometryId" kindref="compound">GeometryId</ref></type>
+          <declname>geometry</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1345" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1345" bodyend="1347"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1ac30c653a66f903384dba6d638bf380f5" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void cityjson_lib::Model::add_cityobject_parent</definition>
+        <argsstring>(CityObjectId child, CityObjectId parent)</argsstring>
+        <name>add_cityobject_parent</name>
+        <qualifiedname>cityjson_lib::Model::add_cityobject_parent</qualifiedname>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1CityObjectId" kindref="compound">CityObjectId</ref></type>
+          <declname>child</declname>
+        </param>
+        <param>
+          <type><ref refid="classcityjson__lib_1_1CityObjectId" kindref="compound">CityObjectId</ref></type>
+          <declname>parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1349" column="8" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1349" bodyend="1351"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a3f0c11814b03d6ddddc870e214834612" prot="public" static="no" const="yes" explicit="no" inline="yes" noexcept="yes" virt="non-virtual">
+        <type>cj_model_t *</type>
+        <definition>cj_model_t * cityjson_lib::Model::raw_handle</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>raw_handle</name>
+        <qualifiedname>cityjson_lib::Model::raw_handle</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1353" column="15" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1353" bodyend="1353"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a478411a6b92aba9bf46ffa54266cbbe8" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespacecityjson__lib_1ac5680b6c4729999142a7b429dba27839" kindref="member">Probe</ref></type>
+        <definition>static Probe cityjson_lib::Model::probe</definition>
+        <argsstring>(std::span&lt; const std::uint8_t &gt; bytes)</argsstring>
+        <name>probe</name>
+        <qualifiedname>cityjson_lib::Model::probe</qualifiedname>
+        <param>
+          <type>std::span&lt; const std::uint8_t &gt;</type>
+          <declname>bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="964" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="964" bodyend="968"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1abd87c788791b90e150a97218a7925574" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>static Model cityjson_lib::Model::parse_document</definition>
+        <argsstring>(std::span&lt; const std::uint8_t &gt; bytes)</argsstring>
+        <name>parse_document</name>
+        <qualifiedname>cityjson_lib::Model::parse_document</qualifiedname>
+        <param>
+          <type>std::span&lt; const std::uint8_t &gt;</type>
+          <declname>bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="970" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="970" bodyend="974"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a8eff1fa7f189cc223d01f6321865e68d" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>static Model cityjson_lib::Model::parse_feature</definition>
+        <argsstring>(std::span&lt; const std::uint8_t &gt; bytes)</argsstring>
+        <name>parse_feature</name>
+        <qualifiedname>cityjson_lib::Model::parse_feature</qualifiedname>
+        <param>
+          <type>std::span&lt; const std::uint8_t &gt;</type>
+          <declname>bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="976" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="976" bodyend="980"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1af5877b0d374762c7866e95c0bd1e29a2" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>static Model cityjson_lib::Model::parse_feature_with_base</definition>
+        <argsstring>(std::span&lt; const std::uint8_t &gt; feature_bytes, std::span&lt; const std::uint8_t &gt; base_bytes)</argsstring>
+        <name>parse_feature_with_base</name>
+        <qualifiedname>cityjson_lib::Model::parse_feature_with_base</qualifiedname>
+        <param>
+          <type>std::span&lt; const std::uint8_t &gt;</type>
+          <declname>feature_bytes</declname>
+        </param>
+        <param>
+          <type>std::span&lt; const std::uint8_t &gt;</type>
+          <declname>base_bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="982" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="982" bodyend="990"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a2a7b774b19d47c01e9f278fe6d5de369" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>static Model cityjson_lib::Model::parse_arrow</definition>
+        <argsstring>(std::span&lt; const std::uint8_t &gt; bytes)</argsstring>
+        <name>parse_arrow</name>
+        <qualifiedname>cityjson_lib::Model::parse_arrow</qualifiedname>
+        <param>
+          <type>std::span&lt; const std::uint8_t &gt;</type>
+          <declname>bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="992" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="992" bodyend="996"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a5c8fc3308a68867d400f3a96885c131d" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>static Model cityjson_lib::Model::parse_parquet_file</definition>
+        <argsstring>(std::string_view path)</argsstring>
+        <name>parse_parquet_file</name>
+        <qualifiedname>cityjson_lib::Model::parse_parquet_file</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="998" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="998" bodyend="1002"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a5c17f8dab9fe21e2ef0e660c4bb49bbd" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>static Model cityjson_lib::Model::parse_parquet_dataset_dir</definition>
+        <argsstring>(std::string_view path)</argsstring>
+        <name>parse_parquet_dataset_dir</name>
+        <qualifiedname>cityjson_lib::Model::parse_parquet_dataset_dir</qualifiedname>
+        <param>
+          <type>std::string_view</type>
+          <declname>path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1004" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1004" bodyend="1008"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a877b709f80e375f25c295d06c874f8cd" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>static Model cityjson_lib::Model::create</definition>
+        <argsstring>(ModelType type)</argsstring>
+        <name>create</name>
+        <qualifiedname>cityjson_lib::Model::create</qualifiedname>
+        <param>
+          <type><ref refid="namespacecityjson__lib_1a9baa0142d3cf803a9f43c3d8130d33f5" kindref="member">ModelType</ref></type>
+          <declname>type</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1010" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1010" bodyend="1014"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a339b761383f20d8fa1b2fec9fd324b76" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::uint8_t &gt;</type>
+        <definition>static std::vector&lt; std::uint8_t &gt; cityjson_lib::Model::serialize_feature_stream</definition>
+        <argsstring>(std::span&lt; const Model *const &gt; models, const WriteOptions &amp;options={})</argsstring>
+        <name>serialize_feature_stream</name>
+        <qualifiedname>cityjson_lib::Model::serialize_feature_stream</qualifiedname>
+        <param>
+          <type>std::span&lt; const <ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> *const &gt;</type>
+          <declname>models</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structcityjson__lib_1_1WriteOptions" kindref="compound">WriteOptions</ref> &amp;</type>
+          <declname>options</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1163" column="23" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1163" bodyend="1176"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1acf26711abab4c51ee535d32f0c0c9da3" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>static Model cityjson_lib::Model::merge_feature_stream</definition>
+        <argsstring>(std::span&lt; const std::uint8_t &gt; bytes)</argsstring>
+        <name>merge_feature_stream</name>
+        <qualifiedname>cityjson_lib::Model::merge_feature_stream</qualifiedname>
+        <param>
+          <type>std::span&lt; const std::uint8_t &gt;</type>
+          <declname>bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1178" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1178" bodyend="1183"/>
+      </memberdef>
+      <memberdef kind="function" id="classcityjson__lib_1_1Model_1a33db6dd64efbaf29f1c97996683397a3" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref></type>
+        <definition>static Model cityjson_lib::Model::merge_models</definition>
+        <argsstring>(std::span&lt; const Model *const &gt; models)</argsstring>
+        <name>merge_models</name>
+        <qualifiedname>cityjson_lib::Model::merge_models</qualifiedname>
+        <param>
+          <type>std::span&lt; const <ref refid="classcityjson__lib_1_1Model" kindref="compound">Model</ref> *const &gt;</type>
+          <declname>models</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="1185" column="17" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="1185" bodyend="1196"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" line="943" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/cpp/include/cityjson_lib/cityjson_lib.hpp" bodystart="943" bodyend="1357"/>
+    <listofallmembers>
+      <member refid="classcityjson__lib_1_1Model_1a6ac09691c38ab3f085a3c802bfd42522" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_cityobject</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a9032995d16e8f7dc1e61cd47e3bf06d6" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_cityobject_geometry</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ac30c653a66f903384dba6d638bf380f5" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_cityobject_parent</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a2853bc6d25ea7ac6cb1ecf8c838f0e06" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_extension</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a53ff7cf5ff8fb85c10d09d14dc9d6826" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_geometry</name></member>
+      <member refid="classcityjson__lib_1_1Model_1aa1f8eeaf6665e2b23ffec94df6622ad8" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_geometry_template</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a396bc9b3f7874f65facb93989547972d" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_material</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a37466781d6965c36068a6dd05a764bae" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_semantic</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a24fe48922caafae3ecc4e4e568c84aef" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_template_vertex</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a1e4fcfc775bbb176e0cd78289c0bd091" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_texture</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a660355d653f1470a66be5e06e1fdd965" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_uv_coordinate</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a9e7442d06cc032a8694c51472e0eccb8" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>add_vertex</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a359a5ca845b016919ed76f006483dc42" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>append_model</name></member>
+      <member refid="classcityjson__lib_1_1Model_1aa9ae86e5a2d2047ebbfc260ceab8496c" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>cityobject_ids</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ab8daf8bf0467cb41ccdf6ec2282cf175" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>cleanup</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a3fc1207a2a66460b6c2bc2083b369115" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>clear_transform</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a877b709f80e375f25c295d06c874f8cd" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>create</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ad78d074d6ecbfaf553686af894e45177" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>extract_selection</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ab4f7baae20527e4e6f4d6e2415200f6e" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>geometry_boundary</name></member>
+      <member refid="classcityjson__lib_1_1Model_1af60a60cd24efd7249f0a7ced8829f126" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>geometry_boundary_coordinates</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ab58aca2c5eac71661c998c3b9d9ad703" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>geometry_types</name></member>
+      <member refid="classcityjson__lib_1_1Model_1acc3ffc426a331dfc3e4793a845fb66fb" prot="private" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>handle_</name></member>
+      <member refid="classcityjson__lib_1_1Model_1acf26711abab4c51ee535d32f0c0c9da3" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>merge_feature_stream</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a33db6dd64efbaf29f1c97996683397a3" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>merge_models</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ab3559ef87d574d0f9820c03a14eba0a9" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>metadata_identifier</name></member>
+      <member refid="classcityjson__lib_1_1Model_1abe5fe2cb76a0a110e02cd1bf1341a596" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>metadata_title</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a757c1e2a0401a0228e7ab6363fdf4b9e" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>Model</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a61f007a1b72ff31e58886577b3b36976" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>Model</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a2a9b5ba85664bb792f36e186f5906e1d" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>Model</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a38d8a67c599f9263a0bf1fdf74391779" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>Model</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a1901b0c85ee192f39cc6c6827a967443" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1Model_1acb9ed2f8aab0fd103fcfc6a7055c84d5" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>operator=</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a2a7b774b19d47c01e9f278fe6d5de369" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>parse_arrow</name></member>
+      <member refid="classcityjson__lib_1_1Model_1abd87c788791b90e150a97218a7925574" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>parse_document</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a8eff1fa7f189cc223d01f6321865e68d" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>parse_feature</name></member>
+      <member refid="classcityjson__lib_1_1Model_1af5877b0d374762c7866e95c0bd1e29a2" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>parse_feature_with_base</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a5c17f8dab9fe21e2ef0e660c4bb49bbd" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>parse_parquet_dataset_dir</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a5c8fc3308a68867d400f3a96885c131d" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>parse_parquet_file</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a478411a6b92aba9bf46ffa54266cbbe8" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>probe</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a3f0c11814b03d6ddddc870e214834612" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>raw_handle</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a6641ed7232e4f75e5b42e6cd60c4d466" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>remove_cityobject</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ad15ac46d897cb9f93ecb1e6c8dd65aa1" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>reproject</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a3a6f8fd2fe2553cf073221159c2252ed" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>reserve_import</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a3512cf2775983f8e326ed8b24967de63" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>reset</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a4b02a0a9203d402687ea8a2d44b38e9b" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>serialize_arrow_bytes</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a5bfbc7537f6ab43bc63ed8660762a195" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>serialize_document</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a6579235e21e61211618cb1967c3e4f4b" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>serialize_document_bytes</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a115007f387e4d06660cd9fc3d3d3e34e" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>serialize_feature</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a9003cdb006a4b83c5e53737e0ee56347" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>serialize_feature_bytes</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a339b761383f20d8fa1b2fec9fd324b76" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>serialize_feature_stream</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a98a9cd8b8508c6c7988d9503b7cbfb2c" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>serialize_parquet_dataset_dir</name></member>
+      <member refid="classcityjson__lib_1_1Model_1aa89f25d178d448f10d8d468d66351c7d" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>serialize_parquet_file</name></member>
+      <member refid="classcityjson__lib_1_1Model_1adf882412ea94f7f116ab24f9711c0a6e" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_default_material_theme</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a243c4bffed8e98d77711c284270cbef9" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_default_texture_theme</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a6cb0c33ab427ce2799f54dd23cdab6dd" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_material_ambient_intensity</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ae31239bdb2a933c8a21f03e13b074c44" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_material_diffuse_color</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a4586994cabb48db9bbace48b257ae93e" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_material_emissive_color</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a62cc4d03fb771876cf010c4cc9d0c978" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_material_is_smooth</name></member>
+      <member refid="classcityjson__lib_1_1Model_1aac981f7d78f885a7615d5f5c6f35a3b7" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_material_shininess</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a0dbab41bb628a16433ef32eab9712eab" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_material_specular_color</name></member>
+      <member refid="classcityjson__lib_1_1Model_1aa096ad8c3f97990ca34c0c743e9799ed" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_material_transparency</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a48db2eb5743081cbb379647e495763ef" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_metadata_contact</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ab68d7012720b6779fa3ef903c7fb8ebf" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_metadata_extra</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ab9a57a801538ee6b842eef3d0cf74262" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_metadata_geographical_extent</name></member>
+      <member refid="classcityjson__lib_1_1Model_1acfb08db261ba8fd1c7b3bb09968a43c9" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_metadata_identifier</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a88c6ff41c8f712331f02392de9dad1a2" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_metadata_reference_date</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a25d16177fd2e3ae2e44ed775a3179ca1" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_metadata_reference_system</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ab9d0d5509c2bc42b67e276b6a414eb2a" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_metadata_title</name></member>
+      <member refid="classcityjson__lib_1_1Model_1acc64c2ad429c8b7b621dca9132364a00" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_root_extra</name></member>
+      <member refid="classcityjson__lib_1_1Model_1abb35aa95acf2c8f0ab788599fe9c6470" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_semantic_extra</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ae8887b55f28757bff102cbac6e01d0a0" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_semantic_parent</name></member>
+      <member refid="classcityjson__lib_1_1Model_1ae9a1985847bb05e1a84a333825013b81" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_template_vertex</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a6b17bc02fbcad684c7ccbeb33795eb28" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_texture_border_color</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a0b038c54d80317ca7d63db78434a4f9e" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_texture_type</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a7b87202d8fe45561e9deb95f2e9c80f1" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_texture_wrap_mode</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a3c61b7e39a436204dc7614637d325e73" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_transform</name></member>
+      <member refid="classcityjson__lib_1_1Model_1adea571156452ec4193a628b27d88af0b" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>set_vertex</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a2bf4b233aeea38787b5c0196e0213714" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>subset_cityobjects</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a4d6d8e96a305d1735fd7e0c346c36733" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>summary</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a7ba205b357389be2c2c93f23ba7f022f" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>uv_coordinates</name></member>
+      <member refid="classcityjson__lib_1_1Model_1a2960847018604b34837f2a326a010def" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>valid</name></member>
+      <member refid="classcityjson__lib_1_1Model_1aca7a4f106cd9c0a441aa50af90256a4a" prot="public" virt="non-virtual"><scope>cityjson_lib::Model</scope><name>~Model</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -94,6 +94,7 @@ ffi *args:
 # Install the Starlight documentation POC dependencies.
 docs-poc-install:
     cd docs-site && npm install
+    cd docs-site && uv sync --locked
 
 # Build the Starlight documentation POC and Pagefind index.
 docs-poc-build:

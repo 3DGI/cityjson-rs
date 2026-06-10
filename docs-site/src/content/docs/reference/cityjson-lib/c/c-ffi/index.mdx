@@ -1,0 +1,4404 @@
+---
+title: C FFI
+description: Generated C FFI owner reference for cityjson-lib.
+languages: ["c"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h`
+
+## Contents
+
+- [cj_contact_role_t](#enum-cj_contact_role_t)
+- [cj_contact_type_t](#enum-cj_contact_type_t)
+- [cj_error_kind_t](#enum-cj_error_kind_t)
+- [cj_geometry_type_t](#enum-cj_geometry_type_t)
+- [cj_image_type_t](#enum-cj_image_type_t)
+- [cj_model_type_t](#enum-cj_model_type_t)
+- [cj_root_kind_t](#enum-cj_root_kind_t)
+- [cj_status_t](#enum-cj_status_t)
+- [cj_texture_type_t](#enum-cj_texture_type_t)
+- [cj_version_t](#enum-cj_version_t)
+- [cj_wrap_mode_t](#enum-cj_wrap_mode_t)
+- [cj_affine_transform_4x4_t](#type-alias-cj_affine_transform_4x4_t)
+- [cj_bbox_t](#type-alias-cj_bbox_t)
+- [cj_bytes_list_t](#type-alias-cj_bytes_list_t)
+- [cj_bytes_t](#type-alias-cj_bytes_t)
+- [cj_cityjsonseq_auto_transform_options_t](#type-alias-cj_cityjsonseq_auto_transform_options_t)
+- [cj_cityjsonseq_write_options_t](#type-alias-cj_cityjsonseq_write_options_t)
+- [cj_cityobject_draft_t](#type-alias-cj_cityobject_draft_t)
+- [cj_cityobject_id_t](#type-alias-cj_cityobject_id_t)
+- [cj_contact_role_t](#type-alias-cj_contact_role_t)
+- [cj_contact_t](#type-alias-cj_contact_t)
+- [cj_contact_type_t](#type-alias-cj_contact_type_t)
+- [cj_error_kind_t](#type-alias-cj_error_kind_t)
+- [cj_geometry_boundary_t](#type-alias-cj_geometry_boundary_t)
+- [cj_geometry_boundary_view_t](#type-alias-cj_geometry_boundary_view_t)
+- [cj_geometry_draft_t](#type-alias-cj_geometry_draft_t)
+- [cj_geometry_id_t](#type-alias-cj_geometry_id_t)
+- [cj_geometry_selection_spec_t](#type-alias-cj_geometry_selection_spec_t)
+- [cj_geometry_template_id_t](#type-alias-cj_geometry_template_id_t)
+- [cj_geometry_type_t](#type-alias-cj_geometry_type_t)
+- [cj_geometry_types_t](#type-alias-cj_geometry_types_t)
+- [cj_image_type_t](#type-alias-cj_image_type_t)
+- [cj_indices_t](#type-alias-cj_indices_t)
+- [cj_indices_view_t](#type-alias-cj_indices_view_t)
+- [cj_json_write_options_t](#type-alias-cj_json_write_options_t)
+- [cj_material_id_t](#type-alias-cj_material_id_t)
+- [cj_model_capacities_t](#type-alias-cj_model_capacities_t)
+- [cj_model_selection_t](#type-alias-cj_model_selection_t)
+- [cj_model_summary_t](#type-alias-cj_model_summary_t)
+- [cj_model_t](#type-alias-cj_model_t)
+- [cj_model_type_t](#type-alias-cj_model_type_t)
+- [cj_probe_t](#type-alias-cj_probe_t)
+- [cj_proj_transformer_t](#type-alias-cj_proj_transformer_t)
+- [cj_rgb_t](#type-alias-cj_rgb_t)
+- [cj_rgba_t](#type-alias-cj_rgba_t)
+- [cj_ring_draft_t](#type-alias-cj_ring_draft_t)
+- [cj_root_kind_t](#type-alias-cj_root_kind_t)
+- [cj_semantic_id_t](#type-alias-cj_semantic_id_t)
+- [cj_shell_draft_t](#type-alias-cj_shell_draft_t)
+- [cj_solid_draft_t](#type-alias-cj_solid_draft_t)
+- [cj_status_t](#type-alias-cj_status_t)
+- [cj_string_view_t](#type-alias-cj_string_view_t)
+- [cj_surface_draft_t](#type-alias-cj_surface_draft_t)
+- [cj_texture_id_t](#type-alias-cj_texture_id_t)
+- [cj_texture_type_t](#type-alias-cj_texture_type_t)
+- [cj_transform_t](#type-alias-cj_transform_t)
+- [cj_uv_t](#type-alias-cj_uv_t)
+- [cj_uvs_t](#type-alias-cj_uvs_t)
+- [cj_value_t](#type-alias-cj_value_t)
+- [cj_version_t](#type-alias-cj_version_t)
+- [cj_vertex_t](#type-alias-cj_vertex_t)
+- [cj_vertices_t](#type-alias-cj_vertices_t)
+- [cj_wrap_mode_t](#type-alias-cj_wrap_mode_t)
+- [_private](#constant-_private)
+- [a](#constant-a)
+- [b](#constant-b)
+- [cityobject_count](#constant-cityobject_count)
+- [cityobject_id](#constant-cityobject_id)
+- [cityobjects](#constant-cityobjects)
+- [data](#constant-data)
+- [elements](#constant-elements)
+- [extension_count](#constant-extension_count)
+- [g](#constant-g)
+- [generation](#constant-generation)
+- [geometries](#constant-geometries)
+- [geometry_count](#constant-geometry_count)
+- [geometry_index](#constant-geometry_index)
+- [geometry_template_count](#constant-geometry_template_count)
+- [geometry_type](#constant-geometry_type)
+- [has_appearance](#constant-has_appearance)
+- [has_boundaries](#constant-has_boundaries)
+- [has_metadata](#constant-has_metadata)
+- [has_templates](#constant-has_templates)
+- [has_transform](#constant-has_transform)
+- [has_version](#constant-has_version)
+- [len](#constant-len)
+- [material_count](#constant-material_count)
+- [materials](#constant-materials)
+- [max_x](#constant-max_x)
+- [max_y](#constant-max_y)
+- [max_z](#constant-max_z)
+- [min_x](#constant-min_x)
+- [min_y](#constant-min_y)
+- [min_z](#constant-min_z)
+- [model_type](#constant-model_type)
+- [pretty](#constant-pretty)
+- [r](#constant-r)
+- [reserved](#constant-reserved)
+- [ring_offsets](#constant-ring_offsets)
+- [root_kind](#constant-root_kind)
+- [scale_x](#constant-scale_x)
+- [scale_y](#constant-scale_y)
+- [scale_z](#constant-scale_z)
+- [semantic_count](#constant-semantic_count)
+- [semantics](#constant-semantics)
+- [shell_offsets](#constant-shell_offsets)
+- [slot](#constant-slot)
+- [solid_offsets](#constant-solid_offsets)
+- [surface_offsets](#constant-surface_offsets)
+- [template_geometries](#constant-template_geometries)
+- [template_vertex_count](#constant-template_vertex_count)
+- [template_vertices](#constant-template_vertices)
+- [texture_count](#constant-texture_count)
+- [textures](#constant-textures)
+- [trailing_newline](#constant-trailing_newline)
+- [translate_x](#constant-translate_x)
+- [translate_y](#constant-translate_y)
+- [translate_z](#constant-translate_z)
+- [u](#constant-u)
+- [update_metadata_geographical_extent](#constant-update_metadata_geographical_extent)
+- [uv_coordinate_count](#constant-uv_coordinate_count)
+- [uv_coordinates](#constant-uv_coordinates)
+- [v](#constant-v)
+- [validate_default_themes](#constant-validate_default_themes)
+- [version](#constant-version)
+- [vertex_count](#constant-vertex_count)
+- [vertex_indices](#constant-vertex_indices)
+- [vertices](#constant-vertices)
+- [x](#constant-x)
+- [y](#constant-y)
+- [z](#constant-z)
+- [cj_bytes_free](#function-cj_bytes_free)
+- [cj_bytes_list_free](#function-cj_bytes_list_free)
+- [cj_cityobject_draft_free](#function-cj_cityobject_draft_free)
+- [cj_cityobject_draft_new](#function-cj_cityobject_draft_new)
+- [cj_cityobject_draft_set_attribute](#function-cj_cityobject_draft_set_attribute)
+- [cj_cityobject_draft_set_extra](#function-cj_cityobject_draft_set_extra)
+- [cj_cityobject_draft_set_geographical_extent](#function-cj_cityobject_draft_set_geographical_extent)
+- [cj_clear_error](#function-cj_clear_error)
+- [cj_contact_free](#function-cj_contact_free)
+- [cj_contact_new](#function-cj_contact_new)
+- [cj_contact_set_address](#function-cj_contact_set_address)
+- [cj_contact_set_email](#function-cj_contact_set_email)
+- [cj_contact_set_name](#function-cj_contact_set_name)
+- [cj_contact_set_organization](#function-cj_contact_set_organization)
+- [cj_contact_set_phone](#function-cj_contact_set_phone)
+- [cj_contact_set_role](#function-cj_contact_set_role)
+- [cj_contact_set_type](#function-cj_contact_set_type)
+- [cj_contact_set_website](#function-cj_contact_set_website)
+- [cj_geometry_boundary_free](#function-cj_geometry_boundary_free)
+- [cj_geometry_draft_add_linestring](#function-cj_geometry_draft_add_linestring)
+- [cj_geometry_draft_add_point_vertex_index](#function-cj_geometry_draft_add_point_vertex_index)
+- [cj_geometry_draft_add_solid](#function-cj_geometry_draft_add_solid)
+- [cj_geometry_draft_add_surface](#function-cj_geometry_draft_add_surface)
+- [cj_geometry_draft_free](#function-cj_geometry_draft_free)
+- [cj_geometry_draft_new](#function-cj_geometry_draft_new)
+- [cj_geometry_draft_new_instance](#function-cj_geometry_draft_new_instance)
+- [cj_geometry_types_free](#function-cj_geometry_types_free)
+- [cj_indices_free](#function-cj_indices_free)
+- [cj_last_error_kind](#function-cj_last_error_kind)
+- [cj_last_error_message_copy](#function-cj_last_error_message_copy)
+- [cj_last_error_message_len](#function-cj_last_error_message_len)
+- [cj_model_add_cityobject](#function-cj_model_add_cityobject)
+- [cj_model_add_extension](#function-cj_model_add_extension)
+- [cj_model_add_geometry](#function-cj_model_add_geometry)
+- [cj_model_add_geometry_from_boundary](#function-cj_model_add_geometry_from_boundary)
+- [cj_model_add_geometry_template](#function-cj_model_add_geometry_template)
+- [cj_model_add_material](#function-cj_model_add_material)
+- [cj_model_add_semantic](#function-cj_model_add_semantic)
+- [cj_model_add_template_vertex](#function-cj_model_add_template_vertex)
+- [cj_model_add_texture](#function-cj_model_add_texture)
+- [cj_model_add_uv_coordinate](#function-cj_model_add_uv_coordinate)
+- [cj_model_add_vertex](#function-cj_model_add_vertex)
+- [cj_model_append_model](#function-cj_model_append_model)
+- [cj_model_attach_geometry_to_cityobject](#function-cj_model_attach_geometry_to_cityobject)
+- [cj_model_cityobject_add_geometry](#function-cj_model_cityobject_add_geometry)
+- [cj_model_cityobject_add_parent](#function-cj_model_cityobject_add_parent)
+- [cj_model_cleanup](#function-cj_model_cleanup)
+- [cj_model_clear_cityobject_geometry](#function-cj_model_clear_cityobject_geometry)
+- [cj_model_clear_transform](#function-cj_model_clear_transform)
+- [cj_model_copy_cityobject_ids](#function-cj_model_copy_cityobject_ids)
+- [cj_model_copy_geometry_boundary](#function-cj_model_copy_geometry_boundary)
+- [cj_model_copy_geometry_boundary_coordinates](#function-cj_model_copy_geometry_boundary_coordinates)
+- [cj_model_copy_geometry_types](#function-cj_model_copy_geometry_types)
+- [cj_model_copy_template_vertices](#function-cj_model_copy_template_vertices)
+- [cj_model_copy_uv_coordinates](#function-cj_model_copy_uv_coordinates)
+- [cj_model_copy_vertices](#function-cj_model_copy_vertices)
+- [cj_model_create](#function-cj_model_create)
+- [cj_model_extract_selection](#function-cj_model_extract_selection)
+- [cj_model_free](#function-cj_model_free)
+- [cj_model_get_cityobject_id](#function-cj_model_get_cityobject_id)
+- [cj_model_get_geometry_type](#function-cj_model_get_geometry_type)
+- [cj_model_get_metadata_identifier](#function-cj_model_get_metadata_identifier)
+- [cj_model_get_metadata_title](#function-cj_model_get_metadata_title)
+- [cj_model_get_summary](#function-cj_model_get_summary)
+- [cj_model_material_set_ambient_intensity](#function-cj_model_material_set_ambient_intensity)
+- [cj_model_material_set_diffuse_color](#function-cj_model_material_set_diffuse_color)
+- [cj_model_material_set_emissive_color](#function-cj_model_material_set_emissive_color)
+- [cj_model_material_set_is_smooth](#function-cj_model_material_set_is_smooth)
+- [cj_model_material_set_shininess](#function-cj_model_material_set_shininess)
+- [cj_model_material_set_specular_color](#function-cj_model_material_set_specular_color)
+- [cj_model_material_set_transparency](#function-cj_model_material_set_transparency)
+- [cj_model_merge_models](#function-cj_model_merge_models)
+- [cj_model_parse_document_bytes](#function-cj_model_parse_document_bytes)
+- [cj_model_parse_feature_bytes](#function-cj_model_parse_feature_bytes)
+- [cj_model_parse_feature_stream_merge_bytes](#function-cj_model_parse_feature_stream_merge_bytes)
+- [cj_model_parse_feature_with_base_bytes](#function-cj_model_parse_feature_with_base_bytes)
+- [cj_model_remove_cityobject](#function-cj_model_remove_cityobject)
+- [cj_model_reproject](#function-cj_model_reproject)
+- [cj_model_reserve_import](#function-cj_model_reserve_import)
+- [cj_model_select_cityobjects_by_id](#function-cj_model_select_cityobjects_by_id)
+- [cj_model_select_geometries_by_cityobject_id_and_index](#function-cj_model_select_geometries_by_cityobject_id_and_index)
+- [cj_model_selection_free](#function-cj_model_selection_free)
+- [cj_model_selection_include_relatives](#function-cj_model_selection_include_relatives)
+- [cj_model_selection_intersection](#function-cj_model_selection_intersection)
+- [cj_model_selection_is_empty](#function-cj_model_selection_is_empty)
+- [cj_model_selection_union](#function-cj_model_selection_union)
+- [cj_model_semantic_set_extra](#function-cj_model_semantic_set_extra)
+- [cj_model_serialize_cityjsonseq_auto_transform](#function-cj_model_serialize_cityjsonseq_auto_transform)
+- [cj_model_serialize_cityjsonseq_with_transform](#function-cj_model_serialize_cityjsonseq_with_transform)
+- [cj_model_serialize_document](#function-cj_model_serialize_document)
+- [cj_model_serialize_document_with_options](#function-cj_model_serialize_document_with_options)
+- [cj_model_serialize_feature](#function-cj_model_serialize_feature)
+- [cj_model_serialize_feature_stream](#function-cj_model_serialize_feature_stream)
+- [cj_model_serialize_feature_with_options](#function-cj_model_serialize_feature_with_options)
+- [cj_model_set_default_material_theme](#function-cj_model_set_default_material_theme)
+- [cj_model_set_default_texture_theme](#function-cj_model_set_default_texture_theme)
+- [cj_model_set_metadata_contact](#function-cj_model_set_metadata_contact)
+- [cj_model_set_metadata_extra](#function-cj_model_set_metadata_extra)
+- [cj_model_set_metadata_geographical_extent](#function-cj_model_set_metadata_geographical_extent)
+- [cj_model_set_metadata_identifier](#function-cj_model_set_metadata_identifier)
+- [cj_model_set_metadata_reference_date](#function-cj_model_set_metadata_reference_date)
+- [cj_model_set_metadata_reference_system](#function-cj_model_set_metadata_reference_system)
+- [cj_model_set_metadata_title](#function-cj_model_set_metadata_title)
+- [cj_model_set_root_extra](#function-cj_model_set_root_extra)
+- [cj_model_set_semantic_parent](#function-cj_model_set_semantic_parent)
+- [cj_model_set_template_vertex](#function-cj_model_set_template_vertex)
+- [cj_model_set_transform](#function-cj_model_set_transform)
+- [cj_model_set_vertex](#function-cj_model_set_vertex)
+- [cj_model_subset_cityobjects](#function-cj_model_subset_cityobjects)
+- [cj_model_texture_set_border_color](#function-cj_model_texture_set_border_color)
+- [cj_model_texture_set_texture_type](#function-cj_model_texture_set_texture_type)
+- [cj_model_texture_set_wrap_mode](#function-cj_model_texture_set_wrap_mode)
+- [cj_probe_bytes](#function-cj_probe_bytes)
+- [cj_proj_transformer_create](#function-cj_proj_transformer_create)
+- [cj_proj_transformer_free](#function-cj_proj_transformer_free)
+- [cj_proj_transformer_transform](#function-cj_proj_transformer_transform)
+- [cj_ring_draft_add_texture](#function-cj_ring_draft_add_texture)
+- [cj_ring_draft_add_texture_uvs](#function-cj_ring_draft_add_texture_uvs)
+- [cj_ring_draft_free](#function-cj_ring_draft_free)
+- [cj_ring_draft_new](#function-cj_ring_draft_new)
+- [cj_ring_draft_push_vertex](#function-cj_ring_draft_push_vertex)
+- [cj_ring_draft_push_vertex_index](#function-cj_ring_draft_push_vertex_index)
+- [cj_shell_draft_add_surface](#function-cj_shell_draft_add_surface)
+- [cj_shell_draft_free](#function-cj_shell_draft_free)
+- [cj_shell_draft_new](#function-cj_shell_draft_new)
+- [cj_solid_draft_add_inner_shell](#function-cj_solid_draft_add_inner_shell)
+- [cj_solid_draft_free](#function-cj_solid_draft_free)
+- [cj_solid_draft_new](#function-cj_solid_draft_new)
+- [cj_surface_draft_add_inner_ring](#function-cj_surface_draft_add_inner_ring)
+- [cj_surface_draft_add_material](#function-cj_surface_draft_add_material)
+- [cj_surface_draft_free](#function-cj_surface_draft_free)
+- [cj_surface_draft_new](#function-cj_surface_draft_new)
+- [cj_surface_draft_set_semantic](#function-cj_surface_draft_set_semantic)
+- [cj_uvs_free](#function-cj_uvs_free)
+- [cj_value_array_push](#function-cj_value_array_push)
+- [cj_value_free](#function-cj_value_free)
+- [cj_value_new_array](#function-cj_value_new_array)
+- [cj_value_new_bool](#function-cj_value_new_bool)
+- [cj_value_new_float64](#function-cj_value_new_float64)
+- [cj_value_new_geometry_ref](#function-cj_value_new_geometry_ref)
+- [cj_value_new_int64](#function-cj_value_new_int64)
+- [cj_value_new_null](#function-cj_value_new_null)
+- [cj_value_new_object](#function-cj_value_new_object)
+- [cj_value_new_string](#function-cj_value_new_string)
+- [cj_value_object_insert](#function-cj_value_object_insert)
+- [cj_vertices_free](#function-cj_vertices_free)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `cj_contact_role_t` | enum | [section](#enum-cj_contact_role_t) |
+| `cj_contact_type_t` | enum | [section](#enum-cj_contact_type_t) |
+| `cj_error_kind_t` | enum | [section](#enum-cj_error_kind_t) |
+| `cj_geometry_type_t` | enum | [section](#enum-cj_geometry_type_t) |
+| `cj_image_type_t` | enum | [section](#enum-cj_image_type_t) |
+| `cj_model_type_t` | enum | [section](#enum-cj_model_type_t) |
+| `cj_root_kind_t` | enum | [section](#enum-cj_root_kind_t) |
+| `cj_status_t` | enum | [section](#enum-cj_status_t) |
+| `cj_texture_type_t` | enum | [section](#enum-cj_texture_type_t) |
+| `cj_version_t` | enum | [section](#enum-cj_version_t) |
+| `cj_wrap_mode_t` | enum | [section](#enum-cj_wrap_mode_t) |
+| `cj_affine_transform_4x4_t` | type alias | [section](#type-alias-cj_affine_transform_4x4_t) |
+| `cj_bbox_t` | type alias | [section](#type-alias-cj_bbox_t) |
+| `cj_bytes_list_t` | type alias | [section](#type-alias-cj_bytes_list_t) |
+| `cj_bytes_t` | type alias | [section](#type-alias-cj_bytes_t) |
+| `cj_cityjsonseq_auto_transform_options_t` | type alias | [section](#type-alias-cj_cityjsonseq_auto_transform_options_t) |
+| `cj_cityjsonseq_write_options_t` | type alias | [section](#type-alias-cj_cityjsonseq_write_options_t) |
+| `cj_cityobject_draft_t` | type alias | [section](#type-alias-cj_cityobject_draft_t) |
+| `cj_cityobject_id_t` | type alias | [section](#type-alias-cj_cityobject_id_t) |
+| `cj_contact_role_t` | type alias | [section](#type-alias-cj_contact_role_t) |
+| `cj_contact_t` | type alias | [section](#type-alias-cj_contact_t) |
+| `cj_contact_type_t` | type alias | [section](#type-alias-cj_contact_type_t) |
+| `cj_error_kind_t` | type alias | [section](#type-alias-cj_error_kind_t) |
+| `cj_geometry_boundary_t` | type alias | [section](#type-alias-cj_geometry_boundary_t) |
+| `cj_geometry_boundary_view_t` | type alias | [section](#type-alias-cj_geometry_boundary_view_t) |
+| `cj_geometry_draft_t` | type alias | [section](#type-alias-cj_geometry_draft_t) |
+| `cj_geometry_id_t` | type alias | [section](#type-alias-cj_geometry_id_t) |
+| `cj_geometry_selection_spec_t` | type alias | [section](#type-alias-cj_geometry_selection_spec_t) |
+| `cj_geometry_template_id_t` | type alias | [section](#type-alias-cj_geometry_template_id_t) |
+| `cj_geometry_type_t` | type alias | [section](#type-alias-cj_geometry_type_t) |
+| `cj_geometry_types_t` | type alias | [section](#type-alias-cj_geometry_types_t) |
+| `cj_image_type_t` | type alias | [section](#type-alias-cj_image_type_t) |
+| `cj_indices_t` | type alias | [section](#type-alias-cj_indices_t) |
+| `cj_indices_view_t` | type alias | [section](#type-alias-cj_indices_view_t) |
+| `cj_json_write_options_t` | type alias | [section](#type-alias-cj_json_write_options_t) |
+| `cj_material_id_t` | type alias | [section](#type-alias-cj_material_id_t) |
+| `cj_model_capacities_t` | type alias | [section](#type-alias-cj_model_capacities_t) |
+| `cj_model_selection_t` | type alias | [section](#type-alias-cj_model_selection_t) |
+| `cj_model_summary_t` | type alias | [section](#type-alias-cj_model_summary_t) |
+| `cj_model_t` | type alias | [section](#type-alias-cj_model_t) |
+| `cj_model_type_t` | type alias | [section](#type-alias-cj_model_type_t) |
+| `cj_probe_t` | type alias | [section](#type-alias-cj_probe_t) |
+| `cj_proj_transformer_t` | type alias | [section](#type-alias-cj_proj_transformer_t) |
+| `cj_rgb_t` | type alias | [section](#type-alias-cj_rgb_t) |
+| `cj_rgba_t` | type alias | [section](#type-alias-cj_rgba_t) |
+| `cj_ring_draft_t` | type alias | [section](#type-alias-cj_ring_draft_t) |
+| `cj_root_kind_t` | type alias | [section](#type-alias-cj_root_kind_t) |
+| `cj_semantic_id_t` | type alias | [section](#type-alias-cj_semantic_id_t) |
+| `cj_shell_draft_t` | type alias | [section](#type-alias-cj_shell_draft_t) |
+| `cj_solid_draft_t` | type alias | [section](#type-alias-cj_solid_draft_t) |
+| `cj_status_t` | type alias | [section](#type-alias-cj_status_t) |
+| `cj_string_view_t` | type alias | [section](#type-alias-cj_string_view_t) |
+| `cj_surface_draft_t` | type alias | [section](#type-alias-cj_surface_draft_t) |
+| `cj_texture_id_t` | type alias | [section](#type-alias-cj_texture_id_t) |
+| `cj_texture_type_t` | type alias | [section](#type-alias-cj_texture_type_t) |
+| `cj_transform_t` | type alias | [section](#type-alias-cj_transform_t) |
+| `cj_uv_t` | type alias | [section](#type-alias-cj_uv_t) |
+| `cj_uvs_t` | type alias | [section](#type-alias-cj_uvs_t) |
+| `cj_value_t` | type alias | [section](#type-alias-cj_value_t) |
+| `cj_version_t` | type alias | [section](#type-alias-cj_version_t) |
+| `cj_vertex_t` | type alias | [section](#type-alias-cj_vertex_t) |
+| `cj_vertices_t` | type alias | [section](#type-alias-cj_vertices_t) |
+| `cj_wrap_mode_t` | type alias | [section](#type-alias-cj_wrap_mode_t) |
+| `_private` | constant | [section](#constant-_private) |
+| `a` | constant | [section](#constant-a) |
+| `b` | constant | [section](#constant-b) |
+| `cityobject_count` | constant | [section](#constant-cityobject_count) |
+| `cityobject_id` | constant | [section](#constant-cityobject_id) |
+| `cityobjects` | constant | [section](#constant-cityobjects) |
+| `data` | constant | [section](#constant-data) |
+| `elements` | constant | [section](#constant-elements) |
+| `extension_count` | constant | [section](#constant-extension_count) |
+| `g` | constant | [section](#constant-g) |
+| `generation` | constant | [section](#constant-generation) |
+| `geometries` | constant | [section](#constant-geometries) |
+| `geometry_count` | constant | [section](#constant-geometry_count) |
+| `geometry_index` | constant | [section](#constant-geometry_index) |
+| `geometry_template_count` | constant | [section](#constant-geometry_template_count) |
+| `geometry_type` | constant | [section](#constant-geometry_type) |
+| `has_appearance` | constant | [section](#constant-has_appearance) |
+| `has_boundaries` | constant | [section](#constant-has_boundaries) |
+| `has_metadata` | constant | [section](#constant-has_metadata) |
+| `has_templates` | constant | [section](#constant-has_templates) |
+| `has_transform` | constant | [section](#constant-has_transform) |
+| `has_version` | constant | [section](#constant-has_version) |
+| `len` | constant | [section](#constant-len) |
+| `material_count` | constant | [section](#constant-material_count) |
+| `materials` | constant | [section](#constant-materials) |
+| `max_x` | constant | [section](#constant-max_x) |
+| `max_y` | constant | [section](#constant-max_y) |
+| `max_z` | constant | [section](#constant-max_z) |
+| `min_x` | constant | [section](#constant-min_x) |
+| `min_y` | constant | [section](#constant-min_y) |
+| `min_z` | constant | [section](#constant-min_z) |
+| `model_type` | constant | [section](#constant-model_type) |
+| `pretty` | constant | [section](#constant-pretty) |
+| `r` | constant | [section](#constant-r) |
+| `reserved` | constant | [section](#constant-reserved) |
+| `ring_offsets` | constant | [section](#constant-ring_offsets) |
+| `root_kind` | constant | [section](#constant-root_kind) |
+| `scale_x` | constant | [section](#constant-scale_x) |
+| `scale_y` | constant | [section](#constant-scale_y) |
+| `scale_z` | constant | [section](#constant-scale_z) |
+| `semantic_count` | constant | [section](#constant-semantic_count) |
+| `semantics` | constant | [section](#constant-semantics) |
+| `shell_offsets` | constant | [section](#constant-shell_offsets) |
+| `slot` | constant | [section](#constant-slot) |
+| `solid_offsets` | constant | [section](#constant-solid_offsets) |
+| `surface_offsets` | constant | [section](#constant-surface_offsets) |
+| `template_geometries` | constant | [section](#constant-template_geometries) |
+| `template_vertex_count` | constant | [section](#constant-template_vertex_count) |
+| `template_vertices` | constant | [section](#constant-template_vertices) |
+| `texture_count` | constant | [section](#constant-texture_count) |
+| `textures` | constant | [section](#constant-textures) |
+| `trailing_newline` | constant | [section](#constant-trailing_newline) |
+| `translate_x` | constant | [section](#constant-translate_x) |
+| `translate_y` | constant | [section](#constant-translate_y) |
+| `translate_z` | constant | [section](#constant-translate_z) |
+| `u` | constant | [section](#constant-u) |
+| `update_metadata_geographical_extent` | constant | [section](#constant-update_metadata_geographical_extent) |
+| `uv_coordinate_count` | constant | [section](#constant-uv_coordinate_count) |
+| `uv_coordinates` | constant | [section](#constant-uv_coordinates) |
+| `v` | constant | [section](#constant-v) |
+| `validate_default_themes` | constant | [section](#constant-validate_default_themes) |
+| `version` | constant | [section](#constant-version) |
+| `vertex_count` | constant | [section](#constant-vertex_count) |
+| `vertex_indices` | constant | [section](#constant-vertex_indices) |
+| `vertices` | constant | [section](#constant-vertices) |
+| `x` | constant | [section](#constant-x) |
+| `y` | constant | [section](#constant-y) |
+| `z` | constant | [section](#constant-z) |
+| `cj_bytes_free` | function | [section](#function-cj_bytes_free) |
+| `cj_bytes_list_free` | function | [section](#function-cj_bytes_list_free) |
+| `cj_cityobject_draft_free` | function | [section](#function-cj_cityobject_draft_free) |
+| `cj_cityobject_draft_new` | function | [section](#function-cj_cityobject_draft_new) |
+| `cj_cityobject_draft_set_attribute` | function | [section](#function-cj_cityobject_draft_set_attribute) |
+| `cj_cityobject_draft_set_extra` | function | [section](#function-cj_cityobject_draft_set_extra) |
+| `cj_cityobject_draft_set_geographical_extent` | function | [section](#function-cj_cityobject_draft_set_geographical_extent) |
+| `cj_clear_error` | function | [section](#function-cj_clear_error) |
+| `cj_contact_free` | function | [section](#function-cj_contact_free) |
+| `cj_contact_new` | function | [section](#function-cj_contact_new) |
+| `cj_contact_set_address` | function | [section](#function-cj_contact_set_address) |
+| `cj_contact_set_email` | function | [section](#function-cj_contact_set_email) |
+| `cj_contact_set_name` | function | [section](#function-cj_contact_set_name) |
+| `cj_contact_set_organization` | function | [section](#function-cj_contact_set_organization) |
+| `cj_contact_set_phone` | function | [section](#function-cj_contact_set_phone) |
+| `cj_contact_set_role` | function | [section](#function-cj_contact_set_role) |
+| `cj_contact_set_type` | function | [section](#function-cj_contact_set_type) |
+| `cj_contact_set_website` | function | [section](#function-cj_contact_set_website) |
+| `cj_geometry_boundary_free` | function | [section](#function-cj_geometry_boundary_free) |
+| `cj_geometry_draft_add_linestring` | function | [section](#function-cj_geometry_draft_add_linestring) |
+| `cj_geometry_draft_add_point_vertex_index` | function | [section](#function-cj_geometry_draft_add_point_vertex_index) |
+| `cj_geometry_draft_add_solid` | function | [section](#function-cj_geometry_draft_add_solid) |
+| `cj_geometry_draft_add_surface` | function | [section](#function-cj_geometry_draft_add_surface) |
+| `cj_geometry_draft_free` | function | [section](#function-cj_geometry_draft_free) |
+| `cj_geometry_draft_new` | function | [section](#function-cj_geometry_draft_new) |
+| `cj_geometry_draft_new_instance` | function | [section](#function-cj_geometry_draft_new_instance) |
+| `cj_geometry_types_free` | function | [section](#function-cj_geometry_types_free) |
+| `cj_indices_free` | function | [section](#function-cj_indices_free) |
+| `cj_last_error_kind` | function | [section](#function-cj_last_error_kind) |
+| `cj_last_error_message_copy` | function | [section](#function-cj_last_error_message_copy) |
+| `cj_last_error_message_len` | function | [section](#function-cj_last_error_message_len) |
+| `cj_model_add_cityobject` | function | [section](#function-cj_model_add_cityobject) |
+| `cj_model_add_extension` | function | [section](#function-cj_model_add_extension) |
+| `cj_model_add_geometry` | function | [section](#function-cj_model_add_geometry) |
+| `cj_model_add_geometry_from_boundary` | function | [section](#function-cj_model_add_geometry_from_boundary) |
+| `cj_model_add_geometry_template` | function | [section](#function-cj_model_add_geometry_template) |
+| `cj_model_add_material` | function | [section](#function-cj_model_add_material) |
+| `cj_model_add_semantic` | function | [section](#function-cj_model_add_semantic) |
+| `cj_model_add_template_vertex` | function | [section](#function-cj_model_add_template_vertex) |
+| `cj_model_add_texture` | function | [section](#function-cj_model_add_texture) |
+| `cj_model_add_uv_coordinate` | function | [section](#function-cj_model_add_uv_coordinate) |
+| `cj_model_add_vertex` | function | [section](#function-cj_model_add_vertex) |
+| `cj_model_append_model` | function | [section](#function-cj_model_append_model) |
+| `cj_model_attach_geometry_to_cityobject` | function | [section](#function-cj_model_attach_geometry_to_cityobject) |
+| `cj_model_cityobject_add_geometry` | function | [section](#function-cj_model_cityobject_add_geometry) |
+| `cj_model_cityobject_add_parent` | function | [section](#function-cj_model_cityobject_add_parent) |
+| `cj_model_cleanup` | function | [section](#function-cj_model_cleanup) |
+| `cj_model_clear_cityobject_geometry` | function | [section](#function-cj_model_clear_cityobject_geometry) |
+| `cj_model_clear_transform` | function | [section](#function-cj_model_clear_transform) |
+| `cj_model_copy_cityobject_ids` | function | [section](#function-cj_model_copy_cityobject_ids) |
+| `cj_model_copy_geometry_boundary` | function | [section](#function-cj_model_copy_geometry_boundary) |
+| `cj_model_copy_geometry_boundary_coordinates` | function | [section](#function-cj_model_copy_geometry_boundary_coordinates) |
+| `cj_model_copy_geometry_types` | function | [section](#function-cj_model_copy_geometry_types) |
+| `cj_model_copy_template_vertices` | function | [section](#function-cj_model_copy_template_vertices) |
+| `cj_model_copy_uv_coordinates` | function | [section](#function-cj_model_copy_uv_coordinates) |
+| `cj_model_copy_vertices` | function | [section](#function-cj_model_copy_vertices) |
+| `cj_model_create` | function | [section](#function-cj_model_create) |
+| `cj_model_extract_selection` | function | [section](#function-cj_model_extract_selection) |
+| `cj_model_free` | function | [section](#function-cj_model_free) |
+| `cj_model_get_cityobject_id` | function | [section](#function-cj_model_get_cityobject_id) |
+| `cj_model_get_geometry_type` | function | [section](#function-cj_model_get_geometry_type) |
+| `cj_model_get_metadata_identifier` | function | [section](#function-cj_model_get_metadata_identifier) |
+| `cj_model_get_metadata_title` | function | [section](#function-cj_model_get_metadata_title) |
+| `cj_model_get_summary` | function | [section](#function-cj_model_get_summary) |
+| `cj_model_material_set_ambient_intensity` | function | [section](#function-cj_model_material_set_ambient_intensity) |
+| `cj_model_material_set_diffuse_color` | function | [section](#function-cj_model_material_set_diffuse_color) |
+| `cj_model_material_set_emissive_color` | function | [section](#function-cj_model_material_set_emissive_color) |
+| `cj_model_material_set_is_smooth` | function | [section](#function-cj_model_material_set_is_smooth) |
+| `cj_model_material_set_shininess` | function | [section](#function-cj_model_material_set_shininess) |
+| `cj_model_material_set_specular_color` | function | [section](#function-cj_model_material_set_specular_color) |
+| `cj_model_material_set_transparency` | function | [section](#function-cj_model_material_set_transparency) |
+| `cj_model_merge_models` | function | [section](#function-cj_model_merge_models) |
+| `cj_model_parse_document_bytes` | function | [section](#function-cj_model_parse_document_bytes) |
+| `cj_model_parse_feature_bytes` | function | [section](#function-cj_model_parse_feature_bytes) |
+| `cj_model_parse_feature_stream_merge_bytes` | function | [section](#function-cj_model_parse_feature_stream_merge_bytes) |
+| `cj_model_parse_feature_with_base_bytes` | function | [section](#function-cj_model_parse_feature_with_base_bytes) |
+| `cj_model_remove_cityobject` | function | [section](#function-cj_model_remove_cityobject) |
+| `cj_model_reproject` | function | [section](#function-cj_model_reproject) |
+| `cj_model_reserve_import` | function | [section](#function-cj_model_reserve_import) |
+| `cj_model_select_cityobjects_by_id` | function | [section](#function-cj_model_select_cityobjects_by_id) |
+| `cj_model_select_geometries_by_cityobject_id_and_index` | function | [section](#function-cj_model_select_geometries_by_cityobject_id_and_index) |
+| `cj_model_selection_free` | function | [section](#function-cj_model_selection_free) |
+| `cj_model_selection_include_relatives` | function | [section](#function-cj_model_selection_include_relatives) |
+| `cj_model_selection_intersection` | function | [section](#function-cj_model_selection_intersection) |
+| `cj_model_selection_is_empty` | function | [section](#function-cj_model_selection_is_empty) |
+| `cj_model_selection_union` | function | [section](#function-cj_model_selection_union) |
+| `cj_model_semantic_set_extra` | function | [section](#function-cj_model_semantic_set_extra) |
+| `cj_model_serialize_cityjsonseq_auto_transform` | function | [section](#function-cj_model_serialize_cityjsonseq_auto_transform) |
+| `cj_model_serialize_cityjsonseq_with_transform` | function | [section](#function-cj_model_serialize_cityjsonseq_with_transform) |
+| `cj_model_serialize_document` | function | [section](#function-cj_model_serialize_document) |
+| `cj_model_serialize_document_with_options` | function | [section](#function-cj_model_serialize_document_with_options) |
+| `cj_model_serialize_feature` | function | [section](#function-cj_model_serialize_feature) |
+| `cj_model_serialize_feature_stream` | function | [section](#function-cj_model_serialize_feature_stream) |
+| `cj_model_serialize_feature_with_options` | function | [section](#function-cj_model_serialize_feature_with_options) |
+| `cj_model_set_default_material_theme` | function | [section](#function-cj_model_set_default_material_theme) |
+| `cj_model_set_default_texture_theme` | function | [section](#function-cj_model_set_default_texture_theme) |
+| `cj_model_set_metadata_contact` | function | [section](#function-cj_model_set_metadata_contact) |
+| `cj_model_set_metadata_extra` | function | [section](#function-cj_model_set_metadata_extra) |
+| `cj_model_set_metadata_geographical_extent` | function | [section](#function-cj_model_set_metadata_geographical_extent) |
+| `cj_model_set_metadata_identifier` | function | [section](#function-cj_model_set_metadata_identifier) |
+| `cj_model_set_metadata_reference_date` | function | [section](#function-cj_model_set_metadata_reference_date) |
+| `cj_model_set_metadata_reference_system` | function | [section](#function-cj_model_set_metadata_reference_system) |
+| `cj_model_set_metadata_title` | function | [section](#function-cj_model_set_metadata_title) |
+| `cj_model_set_root_extra` | function | [section](#function-cj_model_set_root_extra) |
+| `cj_model_set_semantic_parent` | function | [section](#function-cj_model_set_semantic_parent) |
+| `cj_model_set_template_vertex` | function | [section](#function-cj_model_set_template_vertex) |
+| `cj_model_set_transform` | function | [section](#function-cj_model_set_transform) |
+| `cj_model_set_vertex` | function | [section](#function-cj_model_set_vertex) |
+| `cj_model_subset_cityobjects` | function | [section](#function-cj_model_subset_cityobjects) |
+| `cj_model_texture_set_border_color` | function | [section](#function-cj_model_texture_set_border_color) |
+| `cj_model_texture_set_texture_type` | function | [section](#function-cj_model_texture_set_texture_type) |
+| `cj_model_texture_set_wrap_mode` | function | [section](#function-cj_model_texture_set_wrap_mode) |
+| `cj_probe_bytes` | function | [section](#function-cj_probe_bytes) |
+| `cj_proj_transformer_create` | function | [section](#function-cj_proj_transformer_create) |
+| `cj_proj_transformer_free` | function | [section](#function-cj_proj_transformer_free) |
+| `cj_proj_transformer_transform` | function | [section](#function-cj_proj_transformer_transform) |
+| `cj_ring_draft_add_texture` | function | [section](#function-cj_ring_draft_add_texture) |
+| `cj_ring_draft_add_texture_uvs` | function | [section](#function-cj_ring_draft_add_texture_uvs) |
+| `cj_ring_draft_free` | function | [section](#function-cj_ring_draft_free) |
+| `cj_ring_draft_new` | function | [section](#function-cj_ring_draft_new) |
+| `cj_ring_draft_push_vertex` | function | [section](#function-cj_ring_draft_push_vertex) |
+| `cj_ring_draft_push_vertex_index` | function | [section](#function-cj_ring_draft_push_vertex_index) |
+| `cj_shell_draft_add_surface` | function | [section](#function-cj_shell_draft_add_surface) |
+| `cj_shell_draft_free` | function | [section](#function-cj_shell_draft_free) |
+| `cj_shell_draft_new` | function | [section](#function-cj_shell_draft_new) |
+| `cj_solid_draft_add_inner_shell` | function | [section](#function-cj_solid_draft_add_inner_shell) |
+| `cj_solid_draft_free` | function | [section](#function-cj_solid_draft_free) |
+| `cj_solid_draft_new` | function | [section](#function-cj_solid_draft_new) |
+| `cj_surface_draft_add_inner_ring` | function | [section](#function-cj_surface_draft_add_inner_ring) |
+| `cj_surface_draft_add_material` | function | [section](#function-cj_surface_draft_add_material) |
+| `cj_surface_draft_free` | function | [section](#function-cj_surface_draft_free) |
+| `cj_surface_draft_new` | function | [section](#function-cj_surface_draft_new) |
+| `cj_surface_draft_set_semantic` | function | [section](#function-cj_surface_draft_set_semantic) |
+| `cj_uvs_free` | function | [section](#function-cj_uvs_free) |
+| `cj_value_array_push` | function | [section](#function-cj_value_array_push) |
+| `cj_value_free` | function | [section](#function-cj_value_free) |
+| `cj_value_new_array` | function | [section](#function-cj_value_new_array) |
+| `cj_value_new_bool` | function | [section](#function-cj_value_new_bool) |
+| `cj_value_new_float64` | function | [section](#function-cj_value_new_float64) |
+| `cj_value_new_geometry_ref` | function | [section](#function-cj_value_new_geometry_ref) |
+| `cj_value_new_int64` | function | [section](#function-cj_value_new_int64) |
+| `cj_value_new_null` | function | [section](#function-cj_value_new_null) |
+| `cj_value_new_object` | function | [section](#function-cj_value_new_object) |
+| `cj_value_new_string` | function | [section](#function-cj_value_new_string) |
+| `cj_value_object_insert` | function | [section](#function-cj_value_object_insert) |
+| `cj_vertices_free` | function | [section](#function-cj_vertices_free) |
+
+<section id="enum-cj_contact_role_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_role_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_contact_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_type_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_error_kind_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_error_kind_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_geometry_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_type_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_image_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_image_type_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_model_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_type_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_root_kind_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_root_kind_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_status_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_status_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_texture_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_texture_type_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_version_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_version_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="enum-cj_wrap_mode_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_wrap_mode_t`
+
+Kind: enum.
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_affine_transform_4x4_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_affine_transform_4x4_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_affine_transform_4x4_t cj_affine_transform_4x4_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_bbox_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_bbox_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_bbox_t cj_bbox_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_bytes_list_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_bytes_list_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_bytes_list_t cj_bytes_list_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_bytes_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_bytes_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_bytes_t cj_bytes_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_cityjsonseq_auto_transform_options_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_cityjsonseq_auto_transform_options_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_cityjsonseq_auto_transform_options_t cj_cityjsonseq_auto_transform_options_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_cityjsonseq_write_options_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_cityjsonseq_write_options_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_cityjsonseq_write_options_t cj_cityjsonseq_write_options_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_cityobject_draft_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_cityobject_draft_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_cityobject_draft_t cj_cityobject_draft_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_cityobject_id_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_cityobject_id_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_cityobject_id_t cj_cityobject_id_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_contact_role_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_role_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_contact_role_t cj_contact_role_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_contact_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_contact_t cj_contact_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_contact_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_type_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_contact_type_t cj_contact_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_error_kind_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_error_kind_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_error_kind_t cj_error_kind_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_geometry_boundary_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_boundary_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_geometry_boundary_t cj_geometry_boundary_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_geometry_boundary_view_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_boundary_view_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_geometry_boundary_view_t cj_geometry_boundary_view_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_geometry_draft_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_draft_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_geometry_draft_t cj_geometry_draft_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_geometry_id_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_id_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_geometry_id_t cj_geometry_id_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_geometry_selection_spec_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_selection_spec_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_geometry_selection_spec_t cj_geometry_selection_spec_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_geometry_template_id_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_template_id_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_geometry_template_id_t cj_geometry_template_id_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_geometry_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_type_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_geometry_type_t cj_geometry_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_geometry_types_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_types_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_geometry_types_t cj_geometry_types_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_image_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_image_type_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_image_type_t cj_image_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_indices_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_indices_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_indices_t cj_indices_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_indices_view_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_indices_view_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_indices_view_t cj_indices_view_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_json_write_options_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_json_write_options_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_json_write_options_t cj_json_write_options_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_material_id_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_material_id_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_material_id_t cj_material_id_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_model_capacities_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_capacities_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_model_capacities_t cj_model_capacities_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_model_selection_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_selection_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_model_selection_t cj_model_selection_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_model_summary_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_summary_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_model_summary_t cj_model_summary_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_model_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_model_t cj_model_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_model_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_type_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_model_type_t cj_model_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_probe_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_probe_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_probe_t cj_probe_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_proj_transformer_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_proj_transformer_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_proj_transformer_t cj_proj_transformer_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_rgb_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_rgb_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_rgb_t cj_rgb_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_rgba_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_rgba_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_rgba_t cj_rgba_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_ring_draft_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_ring_draft_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_ring_draft_t cj_ring_draft_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_root_kind_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_root_kind_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_root_kind_t cj_root_kind_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_semantic_id_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_semantic_id_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_semantic_id_t cj_semantic_id_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_shell_draft_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_shell_draft_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_shell_draft_t cj_shell_draft_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_solid_draft_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_solid_draft_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_solid_draft_t cj_solid_draft_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_status_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_status_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_status_t cj_status_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_string_view_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_string_view_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_string_view_t cj_string_view_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_surface_draft_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_surface_draft_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_surface_draft_t cj_surface_draft_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_texture_id_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_texture_id_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_texture_id_t cj_texture_id_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_texture_type_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_texture_type_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_texture_type_t cj_texture_type_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_transform_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_transform_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_transform_t cj_transform_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_uv_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_uv_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_uv_t cj_uv_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_uvs_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_uvs_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_uvs_t cj_uvs_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_value_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_value_t cj_value_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_version_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_version_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_version_t cj_version_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_vertex_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_vertex_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_vertex_t cj_vertex_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_vertices_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_vertices_t`
+
+Kind: type alias.
+
+```c
+typedef struct cj_vertices_t cj_vertices_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="type-alias-cj_wrap_mode_t" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_wrap_mode_t`
+
+Kind: type alias.
+
+```c
+typedef enum cj_wrap_mode_t cj_wrap_mode_t;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="constant-_private" class="api-reference-symbol" data-pagefind-body>
+
+### `_private`
+
+Kind: constant.
+
+```c
+uint8_t cj_proj_transformer_t::_private[0][0];
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__proj__transformer__t.xml
+
+</section>
+
+<section id="constant-a" class="api-reference-symbol" data-pagefind-body>
+
+### `a`
+
+Kind: constant.
+
+```c
+float cj_rgba_t::a;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__rgba__t.xml
+
+</section>
+
+<section id="constant-b" class="api-reference-symbol" data-pagefind-body>
+
+### `b`
+
+Kind: constant.
+
+```c
+float cj_rgb_t::b;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__rgb__t.xml
+
+</section>
+
+<section id="constant-cityobject_count" class="api-reference-symbol" data-pagefind-body>
+
+### `cityobject_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::cityobject_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-cityobject_id" class="api-reference-symbol" data-pagefind-body>
+
+### `cityobject_id`
+
+Kind: constant.
+
+```c
+struct cj_string_view_t cj_geometry_selection_spec_t::cityobject_id;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__geometry__selection__spec__t.xml
+
+</section>
+
+<section id="constant-cityobjects" class="api-reference-symbol" data-pagefind-body>
+
+### `cityobjects`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_capacities_t::cityobjects;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__capacities__t.xml
+
+</section>
+
+<section id="constant-data" class="api-reference-symbol" data-pagefind-body>
+
+### `data`
+
+Kind: constant.
+
+```c
+struct cj_bytes_t* cj_bytes_list_t::data;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__bytes__list__t.xml
+
+</section>
+
+<section id="constant-elements" class="api-reference-symbol" data-pagefind-body>
+
+### `elements`
+
+Kind: constant.
+
+```c
+double cj_affine_transform_4x4_t::elements[16][16];
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__affine__transform__4x4__t.xml
+
+</section>
+
+<section id="constant-extension_count" class="api-reference-symbol" data-pagefind-body>
+
+### `extension_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::extension_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-g" class="api-reference-symbol" data-pagefind-body>
+
+### `g`
+
+Kind: constant.
+
+```c
+float cj_rgb_t::g;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__rgb__t.xml
+
+</section>
+
+<section id="constant-generation" class="api-reference-symbol" data-pagefind-body>
+
+### `generation`
+
+Kind: constant.
+
+```c
+uint16_t cj_material_id_t::generation;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__material__id__t.xml
+
+</section>
+
+<section id="constant-geometries" class="api-reference-symbol" data-pagefind-body>
+
+### `geometries`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_capacities_t::geometries;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__capacities__t.xml
+
+</section>
+
+<section id="constant-geometry_count" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::geometry_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-geometry_index" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_index`
+
+Kind: constant.
+
+```c
+uintptr_t cj_geometry_selection_spec_t::geometry_index;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__geometry__selection__spec__t.xml
+
+</section>
+
+<section id="constant-geometry_template_count" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_template_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::geometry_template_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-geometry_type" class="api-reference-symbol" data-pagefind-body>
+
+### `geometry_type`
+
+Kind: constant.
+
+```c
+enum cj_geometry_type_t cj_geometry_boundary_t::geometry_type;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__geometry__boundary__t.xml
+
+</section>
+
+<section id="constant-has_appearance" class="api-reference-symbol" data-pagefind-body>
+
+### `has_appearance`
+
+Kind: constant.
+
+```c
+bool cj_model_summary_t::has_appearance;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-has_boundaries" class="api-reference-symbol" data-pagefind-body>
+
+### `has_boundaries`
+
+Kind: constant.
+
+```c
+bool cj_geometry_boundary_t::has_boundaries;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__geometry__boundary__t.xml
+
+</section>
+
+<section id="constant-has_metadata" class="api-reference-symbol" data-pagefind-body>
+
+### `has_metadata`
+
+Kind: constant.
+
+```c
+bool cj_model_summary_t::has_metadata;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-has_templates" class="api-reference-symbol" data-pagefind-body>
+
+### `has_templates`
+
+Kind: constant.
+
+```c
+bool cj_model_summary_t::has_templates;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-has_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `has_transform`
+
+Kind: constant.
+
+```c
+bool cj_model_summary_t::has_transform;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-has_version" class="api-reference-symbol" data-pagefind-body>
+
+### `has_version`
+
+Kind: constant.
+
+```c
+bool cj_probe_t::has_version;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__probe__t.xml
+
+</section>
+
+<section id="constant-len" class="api-reference-symbol" data-pagefind-body>
+
+### `len`
+
+Kind: constant.
+
+```c
+uintptr_t cj_bytes_list_t::len;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__bytes__list__t.xml
+
+</section>
+
+<section id="constant-material_count" class="api-reference-symbol" data-pagefind-body>
+
+### `material_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::material_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-materials" class="api-reference-symbol" data-pagefind-body>
+
+### `materials`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_capacities_t::materials;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__capacities__t.xml
+
+</section>
+
+<section id="constant-max_x" class="api-reference-symbol" data-pagefind-body>
+
+### `max_x`
+
+Kind: constant.
+
+```c
+double cj_bbox_t::max_x;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__bbox__t.xml
+
+</section>
+
+<section id="constant-max_y" class="api-reference-symbol" data-pagefind-body>
+
+### `max_y`
+
+Kind: constant.
+
+```c
+double cj_bbox_t::max_y;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__bbox__t.xml
+
+</section>
+
+<section id="constant-max_z" class="api-reference-symbol" data-pagefind-body>
+
+### `max_z`
+
+Kind: constant.
+
+```c
+double cj_bbox_t::max_z;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__bbox__t.xml
+
+</section>
+
+<section id="constant-min_x" class="api-reference-symbol" data-pagefind-body>
+
+### `min_x`
+
+Kind: constant.
+
+```c
+double cj_bbox_t::min_x;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__bbox__t.xml
+
+</section>
+
+<section id="constant-min_y" class="api-reference-symbol" data-pagefind-body>
+
+### `min_y`
+
+Kind: constant.
+
+```c
+double cj_bbox_t::min_y;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__bbox__t.xml
+
+</section>
+
+<section id="constant-min_z" class="api-reference-symbol" data-pagefind-body>
+
+### `min_z`
+
+Kind: constant.
+
+```c
+double cj_bbox_t::min_z;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__bbox__t.xml
+
+</section>
+
+<section id="constant-model_type" class="api-reference-symbol" data-pagefind-body>
+
+### `model_type`
+
+Kind: constant.
+
+```c
+enum cj_model_type_t cj_model_summary_t::model_type;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-pretty" class="api-reference-symbol" data-pagefind-body>
+
+### `pretty`
+
+Kind: constant.
+
+```c
+bool cj_json_write_options_t::pretty;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__json__write__options__t.xml
+
+</section>
+
+<section id="constant-r" class="api-reference-symbol" data-pagefind-body>
+
+### `r`
+
+Kind: constant.
+
+```c
+float cj_rgb_t::r;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__rgb__t.xml
+
+</section>
+
+<section id="constant-reserved" class="api-reference-symbol" data-pagefind-body>
+
+### `reserved`
+
+Kind: constant.
+
+```c
+uint16_t cj_material_id_t::reserved;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__material__id__t.xml
+
+</section>
+
+<section id="constant-ring_offsets" class="api-reference-symbol" data-pagefind-body>
+
+### `ring_offsets`
+
+Kind: constant.
+
+```c
+struct cj_indices_t cj_geometry_boundary_t::ring_offsets;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__geometry__boundary__t.xml
+
+</section>
+
+<section id="constant-root_kind" class="api-reference-symbol" data-pagefind-body>
+
+### `root_kind`
+
+Kind: constant.
+
+```c
+enum cj_root_kind_t cj_probe_t::root_kind;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__probe__t.xml
+
+</section>
+
+<section id="constant-scale_x" class="api-reference-symbol" data-pagefind-body>
+
+### `scale_x`
+
+Kind: constant.
+
+```c
+double cj_transform_t::scale_x;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__transform__t.xml
+
+</section>
+
+<section id="constant-scale_y" class="api-reference-symbol" data-pagefind-body>
+
+### `scale_y`
+
+Kind: constant.
+
+```c
+double cj_transform_t::scale_y;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__transform__t.xml
+
+</section>
+
+<section id="constant-scale_z" class="api-reference-symbol" data-pagefind-body>
+
+### `scale_z`
+
+Kind: constant.
+
+```c
+double cj_transform_t::scale_z;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__transform__t.xml
+
+</section>
+
+<section id="constant-semantic_count" class="api-reference-symbol" data-pagefind-body>
+
+### `semantic_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::semantic_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-semantics" class="api-reference-symbol" data-pagefind-body>
+
+### `semantics`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_capacities_t::semantics;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__capacities__t.xml
+
+</section>
+
+<section id="constant-shell_offsets" class="api-reference-symbol" data-pagefind-body>
+
+### `shell_offsets`
+
+Kind: constant.
+
+```c
+struct cj_indices_t cj_geometry_boundary_t::shell_offsets;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__geometry__boundary__t.xml
+
+</section>
+
+<section id="constant-slot" class="api-reference-symbol" data-pagefind-body>
+
+### `slot`
+
+Kind: constant.
+
+```c
+uint32_t cj_material_id_t::slot;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__material__id__t.xml
+
+</section>
+
+<section id="constant-solid_offsets" class="api-reference-symbol" data-pagefind-body>
+
+### `solid_offsets`
+
+Kind: constant.
+
+```c
+struct cj_indices_t cj_geometry_boundary_t::solid_offsets;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__geometry__boundary__t.xml
+
+</section>
+
+<section id="constant-surface_offsets" class="api-reference-symbol" data-pagefind-body>
+
+### `surface_offsets`
+
+Kind: constant.
+
+```c
+struct cj_indices_t cj_geometry_boundary_t::surface_offsets;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__geometry__boundary__t.xml
+
+</section>
+
+<section id="constant-template_geometries" class="api-reference-symbol" data-pagefind-body>
+
+### `template_geometries`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_capacities_t::template_geometries;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__capacities__t.xml
+
+</section>
+
+<section id="constant-template_vertex_count" class="api-reference-symbol" data-pagefind-body>
+
+### `template_vertex_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::template_vertex_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-template_vertices" class="api-reference-symbol" data-pagefind-body>
+
+### `template_vertices`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_capacities_t::template_vertices;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__capacities__t.xml
+
+</section>
+
+<section id="constant-texture_count" class="api-reference-symbol" data-pagefind-body>
+
+### `texture_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::texture_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-textures" class="api-reference-symbol" data-pagefind-body>
+
+### `textures`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_capacities_t::textures;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__capacities__t.xml
+
+</section>
+
+<section id="constant-trailing_newline" class="api-reference-symbol" data-pagefind-body>
+
+### `trailing_newline`
+
+Kind: constant.
+
+```c
+bool cj_cityjsonseq_auto_transform_options_t::trailing_newline;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__cityjsonseq__auto__transform__options__t.xml
+
+</section>
+
+<section id="constant-translate_x" class="api-reference-symbol" data-pagefind-body>
+
+### `translate_x`
+
+Kind: constant.
+
+```c
+double cj_transform_t::translate_x;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__transform__t.xml
+
+</section>
+
+<section id="constant-translate_y" class="api-reference-symbol" data-pagefind-body>
+
+### `translate_y`
+
+Kind: constant.
+
+```c
+double cj_transform_t::translate_y;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__transform__t.xml
+
+</section>
+
+<section id="constant-translate_z" class="api-reference-symbol" data-pagefind-body>
+
+### `translate_z`
+
+Kind: constant.
+
+```c
+double cj_transform_t::translate_z;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__transform__t.xml
+
+</section>
+
+<section id="constant-u" class="api-reference-symbol" data-pagefind-body>
+
+### `u`
+
+Kind: constant.
+
+```c
+float cj_uv_t::u;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__uv__t.xml
+
+</section>
+
+<section id="constant-update_metadata_geographical_extent" class="api-reference-symbol" data-pagefind-body>
+
+### `update_metadata_geographical_extent`
+
+Kind: constant.
+
+```c
+bool cj_cityjsonseq_auto_transform_options_t::update_metadata_geographical_extent;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__cityjsonseq__auto__transform__options__t.xml
+
+</section>
+
+<section id="constant-uv_coordinate_count" class="api-reference-symbol" data-pagefind-body>
+
+### `uv_coordinate_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::uv_coordinate_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-uv_coordinates" class="api-reference-symbol" data-pagefind-body>
+
+### `uv_coordinates`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_capacities_t::uv_coordinates;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__capacities__t.xml
+
+</section>
+
+<section id="constant-v" class="api-reference-symbol" data-pagefind-body>
+
+### `v`
+
+Kind: constant.
+
+```c
+float cj_uv_t::v;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__uv__t.xml
+
+</section>
+
+<section id="constant-validate_default_themes" class="api-reference-symbol" data-pagefind-body>
+
+### `validate_default_themes`
+
+Kind: constant.
+
+```c
+bool cj_cityjsonseq_auto_transform_options_t::validate_default_themes;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__cityjsonseq__auto__transform__options__t.xml
+
+</section>
+
+<section id="constant-version" class="api-reference-symbol" data-pagefind-body>
+
+### `version`
+
+Kind: constant.
+
+```c
+enum cj_version_t cj_model_summary_t::version;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-vertex_count" class="api-reference-symbol" data-pagefind-body>
+
+### `vertex_count`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_summary_t::vertex_count;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__summary__t.xml
+
+</section>
+
+<section id="constant-vertex_indices" class="api-reference-symbol" data-pagefind-body>
+
+### `vertex_indices`
+
+Kind: constant.
+
+```c
+struct cj_indices_t cj_geometry_boundary_t::vertex_indices;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__geometry__boundary__t.xml
+
+</section>
+
+<section id="constant-vertices" class="api-reference-symbol" data-pagefind-body>
+
+### `vertices`
+
+Kind: constant.
+
+```c
+uintptr_t cj_model_capacities_t::vertices;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__model__capacities__t.xml
+
+</section>
+
+<section id="constant-x" class="api-reference-symbol" data-pagefind-body>
+
+### `x`
+
+Kind: constant.
+
+```c
+double cj_vertex_t::x;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__vertex__t.xml
+
+</section>
+
+<section id="constant-y" class="api-reference-symbol" data-pagefind-body>
+
+### `y`
+
+Kind: constant.
+
+```c
+double cj_vertex_t::y;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__vertex__t.xml
+
+</section>
+
+<section id="constant-z" class="api-reference-symbol" data-pagefind-body>
+
+### `z`
+
+Kind: constant.
+
+```c
+double cj_vertex_t::z;
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/structcj__vertex__t.xml
+
+</section>
+
+<section id="function-cj_bytes_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_bytes_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_bytes_free(struct cj_bytes_t bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_bytes_list_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_bytes_list_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_bytes_list_free(struct cj_bytes_list_t bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_cityobject_draft_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_cityobject_draft_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_cityobject_draft_free(struct cj_cityobject_draft_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_cityobject_draft_new" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_cityobject_draft_new`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_cityobject_draft_new(struct cj_string_view_t id, struct cj_string_view_t cityobject_type, struct cj_cityobject_draft_t **out_draft);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_cityobject_draft_set_attribute" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_cityobject_draft_set_attribute`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_cityobject_draft_set_attribute(struct cj_cityobject_draft_t *draft, struct cj_string_view_t key, struct cj_value_t *value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_cityobject_draft_set_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_cityobject_draft_set_extra`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_cityobject_draft_set_extra(struct cj_cityobject_draft_t *draft, struct cj_string_view_t key, struct cj_value_t *value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_cityobject_draft_set_geographical_extent" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_cityobject_draft_set_geographical_extent`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_cityobject_draft_set_geographical_extent(struct cj_cityobject_draft_t *draft, struct cj_bbox_t bbox);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_clear_error" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_clear_error`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_clear_error(void);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_free(struct cj_contact_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_new" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_new`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_new(struct cj_contact_t **out_contact);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_set_address" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_set_address`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_set_address(struct cj_contact_t *contact, struct cj_value_t *object_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_set_email" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_set_email`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_set_email(struct cj_contact_t *contact, struct cj_string_view_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_set_name" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_set_name`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_set_name(struct cj_contact_t *contact, struct cj_string_view_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_set_organization" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_set_organization`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_set_organization(struct cj_contact_t *contact, struct cj_string_view_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_set_phone" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_set_phone`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_set_phone(struct cj_contact_t *contact, struct cj_string_view_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_set_role" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_set_role`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_set_role(struct cj_contact_t *contact, enum cj_contact_role_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_set_type" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_set_type`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_set_type(struct cj_contact_t *contact, enum cj_contact_type_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_contact_set_website" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_contact_set_website`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_contact_set_website(struct cj_contact_t *contact, struct cj_string_view_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_geometry_boundary_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_boundary_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_geometry_boundary_free(struct cj_geometry_boundary_t boundary);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_geometry_draft_add_linestring" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_draft_add_linestring`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_geometry_draft_add_linestring(struct cj_geometry_draft_t *draft, const uint32_t *vertex_indices, uintptr_t vertex_index_count, const struct cj_semantic_id_t *semantic);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_geometry_draft_add_point_vertex_index" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_draft_add_point_vertex_index`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_geometry_draft_add_point_vertex_index(struct cj_geometry_draft_t *draft, uint32_t vertex_index, const struct cj_semantic_id_t *semantic);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_geometry_draft_add_solid" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_draft_add_solid`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_geometry_draft_add_solid(struct cj_geometry_draft_t *draft, struct cj_solid_draft_t *solid);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_geometry_draft_add_surface" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_draft_add_surface`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_geometry_draft_add_surface(struct cj_geometry_draft_t *draft, struct cj_surface_draft_t *surface);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_geometry_draft_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_draft_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_geometry_draft_free(struct cj_geometry_draft_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_geometry_draft_new" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_draft_new`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_geometry_draft_new(enum cj_geometry_type_t geometry_type, struct cj_string_view_t lod, struct cj_geometry_draft_t **out_draft);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_geometry_draft_new_instance" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_draft_new_instance`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_geometry_draft_new_instance(struct cj_geometry_template_id_t template_id, uint32_t reference_vertex_index, struct cj_affine_transform_4x4_t transform, struct cj_geometry_draft_t **out_draft);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_geometry_types_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_geometry_types_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_geometry_types_free(struct cj_geometry_types_t types);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_indices_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_indices_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_indices_free(struct cj_indices_t indices);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_last_error_kind" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_last_error_kind`
+
+Kind: function.
+
+```c
+enum cj_error_kind_t cj_last_error_kind(void);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_last_error_message_copy" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_last_error_message_copy`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_last_error_message_copy(uint8_t *buffer, uintptr_t capacity, uintptr_t *out_len);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_last_error_message_len" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_last_error_message_len`
+
+Kind: function.
+
+```c
+uintptr_t cj_last_error_message_len(void);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_cityobject" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_cityobject`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_cityobject(struct cj_model_t *model, struct cj_cityobject_draft_t *draft, struct cj_cityobject_id_t *out_id);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_extension" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_extension`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_extension(struct cj_model_t *model, struct cj_string_view_t name, struct cj_string_view_t url, struct cj_string_view_t version);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_geometry" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_geometry`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_geometry(struct cj_model_t *model, struct cj_geometry_draft_t *draft, struct cj_geometry_id_t *out_id);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_geometry_from_boundary" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_geometry_from_boundary`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_geometry_from_boundary(struct cj_model_t *model, struct cj_geometry_boundary_view_t boundary, struct cj_string_view_t lod, uintptr_t *out_index);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_geometry_template" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_geometry_template`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_geometry_template(struct cj_model_t *model, struct cj_geometry_draft_t *draft, struct cj_geometry_template_id_t *out_id);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_material" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_material`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_material(struct cj_model_t *model, struct cj_string_view_t name, struct cj_material_id_t *out_id);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_semantic" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_semantic`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_semantic(struct cj_model_t *model, struct cj_string_view_t semantic_type, struct cj_semantic_id_t *out_id);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_template_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_template_vertex`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_template_vertex(struct cj_model_t *model, struct cj_vertex_t vertex, uintptr_t *out_index);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_texture" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_texture`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_texture(struct cj_model_t *model, struct cj_string_view_t image, enum cj_image_type_t image_type, struct cj_texture_id_t *out_id);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_uv_coordinate" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_uv_coordinate`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_uv_coordinate(struct cj_model_t *model, struct cj_uv_t uv, uintptr_t *out_index);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_add_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_add_vertex`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_add_vertex(struct cj_model_t *model, struct cj_vertex_t vertex, uintptr_t *out_index);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_append_model" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_append_model`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_append_model(struct cj_model_t *target_model, const struct cj_model_t *source_model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_attach_geometry_to_cityobject" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_attach_geometry_to_cityobject`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_attach_geometry_to_cityobject(struct cj_model_t *model, struct cj_string_view_t cityobject_id, uintptr_t geometry_index);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_cityobject_add_geometry" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_cityobject_add_geometry`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_cityobject_add_geometry(struct cj_model_t *model, struct cj_cityobject_id_t cityobject, struct cj_geometry_id_t geometry);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_cityobject_add_parent" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_cityobject_add_parent`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_cityobject_add_parent(struct cj_model_t *model, struct cj_cityobject_id_t child, struct cj_cityobject_id_t parent);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_cleanup" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_cleanup`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_cleanup(struct cj_model_t *model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_clear_cityobject_geometry" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_clear_cityobject_geometry`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_clear_cityobject_geometry(struct cj_model_t *model, struct cj_string_view_t cityobject_id);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_clear_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_clear_transform`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_clear_transform(struct cj_model_t *model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_copy_cityobject_ids" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_copy_cityobject_ids`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_copy_cityobject_ids(const struct cj_model_t *model, struct cj_bytes_list_t *out_ids);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_copy_geometry_boundary" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_copy_geometry_boundary`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_copy_geometry_boundary(const struct cj_model_t *model, uintptr_t index, struct cj_geometry_boundary_t *out_boundary);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_copy_geometry_boundary_coordinates" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_copy_geometry_boundary_coordinates`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_copy_geometry_boundary_coordinates(const struct cj_model_t *model, uintptr_t index, struct cj_vertices_t *out_vertices);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_copy_geometry_types" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_copy_geometry_types`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_copy_geometry_types(const struct cj_model_t *model, struct cj_geometry_types_t *out_types);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_copy_template_vertices" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_copy_template_vertices`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_copy_template_vertices(const struct cj_model_t *model, struct cj_vertices_t *out_vertices);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_copy_uv_coordinates" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_copy_uv_coordinates`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_copy_uv_coordinates(const struct cj_model_t *model, struct cj_uvs_t *out_uvs);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_copy_vertices" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_copy_vertices`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_copy_vertices(const struct cj_model_t *model, struct cj_vertices_t *out_vertices);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_create" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_create`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_create(enum cj_model_type_t model_type, struct cj_model_t **out_model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_extract_selection" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_extract_selection`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_extract_selection(const struct cj_model_t *model, const struct cj_model_selection_t *selection, struct cj_model_t **out_model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_free(struct cj_model_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_get_cityobject_id" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_get_cityobject_id`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_get_cityobject_id(const struct cj_model_t *model, uintptr_t index, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_get_geometry_type" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_get_geometry_type`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_get_geometry_type(const struct cj_model_t *model, uintptr_t index, enum cj_geometry_type_t *out_type);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_get_metadata_identifier" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_get_metadata_identifier`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_get_metadata_identifier(const struct cj_model_t *model, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_get_metadata_title" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_get_metadata_title`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_get_metadata_title(const struct cj_model_t *model, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_get_summary" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_get_summary`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_get_summary(const struct cj_model_t *model, struct cj_model_summary_t *out_summary);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_material_set_ambient_intensity" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_material_set_ambient_intensity`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_material_set_ambient_intensity(struct cj_model_t *model, struct cj_material_id_t material, float value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_material_set_diffuse_color" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_material_set_diffuse_color`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_material_set_diffuse_color(struct cj_model_t *model, struct cj_material_id_t material, struct cj_rgb_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_material_set_emissive_color" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_material_set_emissive_color`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_material_set_emissive_color(struct cj_model_t *model, struct cj_material_id_t material, struct cj_rgb_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_material_set_is_smooth" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_material_set_is_smooth`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_material_set_is_smooth(struct cj_model_t *model, struct cj_material_id_t material, bool value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_material_set_shininess" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_material_set_shininess`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_material_set_shininess(struct cj_model_t *model, struct cj_material_id_t material, float value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_material_set_specular_color" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_material_set_specular_color`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_material_set_specular_color(struct cj_model_t *model, struct cj_material_id_t material, struct cj_rgb_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_material_set_transparency" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_material_set_transparency`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_material_set_transparency(struct cj_model_t *model, struct cj_material_id_t material, float value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_merge_models" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_merge_models`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_merge_models(const struct cj_model_t *const *models, uintptr_t model_count, struct cj_model_t **out_model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_parse_document_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_parse_document_bytes`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_parse_document_bytes(const uint8_t *data, uintptr_t len, struct cj_model_t **out_model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_parse_feature_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_parse_feature_bytes`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_parse_feature_bytes(const uint8_t *data, uintptr_t len, struct cj_model_t **out_model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_parse_feature_stream_merge_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_parse_feature_stream_merge_bytes`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_parse_feature_stream_merge_bytes(const uint8_t *data, uintptr_t len, struct cj_model_t **out_model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_parse_feature_with_base_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_parse_feature_with_base_bytes`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_parse_feature_with_base_bytes(const uint8_t *feature_data, uintptr_t feature_len, const uint8_t *base_data, uintptr_t base_len, struct cj_model_t **out_model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_remove_cityobject" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_remove_cityobject`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_remove_cityobject(struct cj_model_t *model, struct cj_string_view_t id);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_reproject" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_reproject`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_reproject(struct cj_model_t *model, struct cj_string_view_t target_crs);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_reserve_import" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_reserve_import`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_reserve_import(struct cj_model_t *model, struct cj_model_capacities_t capacities);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_select_cityobjects_by_id" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_select_cityobjects_by_id`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_select_cityobjects_by_id(const struct cj_model_t *model, const struct cj_string_view_t *cityobject_ids, uintptr_t cityobject_count, struct cj_model_selection_t **out_selection);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_select_geometries_by_cityobject_id_and_index" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_select_geometries_by_cityobject_id_and_index`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_select_geometries_by_cityobject_id_and_index(const struct cj_model_t *model, const struct cj_geometry_selection_spec_t *specs, uintptr_t spec_count, struct cj_model_selection_t **out_selection);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_selection_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_selection_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_selection_free(struct cj_model_selection_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_selection_include_relatives" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_selection_include_relatives`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_selection_include_relatives(const struct cj_model_selection_t *selection, const struct cj_model_t *model, struct cj_model_selection_t **out_selection);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_selection_intersection" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_selection_intersection`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_selection_intersection(const struct cj_model_selection_t *lhs, const struct cj_model_selection_t *rhs, struct cj_model_selection_t **out_selection);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_selection_is_empty" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_selection_is_empty`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_selection_is_empty(const struct cj_model_selection_t *selection, bool *out_bool);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_selection_union" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_selection_union`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_selection_union(const struct cj_model_selection_t *lhs, const struct cj_model_selection_t *rhs, struct cj_model_selection_t **out_selection);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_semantic_set_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_semantic_set_extra`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_semantic_set_extra(struct cj_model_t *model, struct cj_semantic_id_t semantic, struct cj_string_view_t key, struct cj_value_t *value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_serialize_cityjsonseq_auto_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_serialize_cityjsonseq_auto_transform`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_serialize_cityjsonseq_auto_transform(const struct cj_model_t *base_root, const struct cj_model_t *const *features, uintptr_t feature_count, struct cj_cityjsonseq_auto_transform_options_t options, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_serialize_cityjsonseq_with_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_serialize_cityjsonseq_with_transform`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_serialize_cityjsonseq_with_transform(const struct cj_model_t *base_root, const struct cj_model_t *const *features, uintptr_t feature_count, struct cj_transform_t transform, struct cj_cityjsonseq_write_options_t options, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_serialize_document" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_serialize_document`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_serialize_document(const struct cj_model_t *model, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_serialize_document_with_options" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_serialize_document_with_options`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_serialize_document_with_options(const struct cj_model_t *model, struct cj_json_write_options_t options, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_serialize_feature" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_serialize_feature`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_serialize_feature(const struct cj_model_t *model, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_serialize_feature_stream" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_serialize_feature_stream`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_serialize_feature_stream(const struct cj_model_t *const *models, uintptr_t model_count, struct cj_json_write_options_t options, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_serialize_feature_with_options" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_serialize_feature_with_options`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_serialize_feature_with_options(const struct cj_model_t *model, struct cj_json_write_options_t options, struct cj_bytes_t *out_bytes);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_default_material_theme" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_default_material_theme`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_default_material_theme(struct cj_model_t *model, struct cj_string_view_t theme);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_default_texture_theme" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_default_texture_theme`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_default_texture_theme(struct cj_model_t *model, struct cj_string_view_t theme);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_metadata_contact" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_metadata_contact`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_metadata_contact(struct cj_model_t *model, struct cj_contact_t *contact);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_metadata_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_metadata_extra`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_metadata_extra(struct cj_model_t *model, struct cj_string_view_t key, struct cj_value_t *value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_metadata_geographical_extent" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_metadata_geographical_extent`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_metadata_geographical_extent(struct cj_model_t *model, struct cj_bbox_t bbox);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_metadata_identifier" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_metadata_identifier`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_metadata_identifier(struct cj_model_t *model, struct cj_string_view_t identifier);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_metadata_reference_date" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_metadata_reference_date`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_metadata_reference_date(struct cj_model_t *model, struct cj_string_view_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_metadata_reference_system" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_metadata_reference_system`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_metadata_reference_system(struct cj_model_t *model, struct cj_string_view_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_metadata_title" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_metadata_title`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_metadata_title(struct cj_model_t *model, struct cj_string_view_t title);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_root_extra" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_root_extra`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_root_extra(struct cj_model_t *model, struct cj_string_view_t key, struct cj_value_t *value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_semantic_parent" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_semantic_parent`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_semantic_parent(struct cj_model_t *model, struct cj_semantic_id_t semantic, struct cj_semantic_id_t parent);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_template_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_template_vertex`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_template_vertex(struct cj_model_t *model, uintptr_t index, struct cj_vertex_t vertex);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_transform`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_transform(struct cj_model_t *model, struct cj_transform_t transform);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_set_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_set_vertex`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_set_vertex(struct cj_model_t *model, uintptr_t index, struct cj_vertex_t vertex);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_subset_cityobjects" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_subset_cityobjects`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_subset_cityobjects(const struct cj_model_t *model, const struct cj_string_view_t *cityobject_ids, uintptr_t cityobject_count, bool exclude, struct cj_model_t **out_model);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_texture_set_border_color" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_texture_set_border_color`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_texture_set_border_color(struct cj_model_t *model, struct cj_texture_id_t texture, struct cj_rgba_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_texture_set_texture_type" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_texture_set_texture_type`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_texture_set_texture_type(struct cj_model_t *model, struct cj_texture_id_t texture, enum cj_texture_type_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_model_texture_set_wrap_mode" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_model_texture_set_wrap_mode`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_model_texture_set_wrap_mode(struct cj_model_t *model, struct cj_texture_id_t texture, enum cj_wrap_mode_t value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_probe_bytes" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_probe_bytes`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_probe_bytes(const uint8_t *data, uintptr_t len, struct cj_probe_t *out_probe);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_proj_transformer_create" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_proj_transformer_create`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_proj_transformer_create(struct cj_string_view_t source_crs, struct cj_string_view_t target_crs, struct cj_proj_transformer_t **out_transformer);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_proj_transformer_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_proj_transformer_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_proj_transformer_free(struct cj_proj_transformer_t *transformer);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_proj_transformer_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_proj_transformer_transform`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_proj_transformer_transform(const struct cj_proj_transformer_t *transformer, struct cj_vertex_t point, struct cj_vertex_t *out_point);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_ring_draft_add_texture" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_ring_draft_add_texture`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_ring_draft_add_texture(struct cj_ring_draft_t *ring, struct cj_string_view_t theme, struct cj_texture_id_t texture, const uint32_t *uv_indices, uintptr_t uv_index_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_ring_draft_add_texture_uvs" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_ring_draft_add_texture_uvs`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_ring_draft_add_texture_uvs(struct cj_ring_draft_t *ring, struct cj_string_view_t theme, struct cj_texture_id_t texture, const struct cj_uv_t *uvs, uintptr_t uv_count);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_ring_draft_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_ring_draft_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_ring_draft_free(struct cj_ring_draft_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_ring_draft_new" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_ring_draft_new`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_ring_draft_new(struct cj_ring_draft_t **out_ring);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_ring_draft_push_vertex" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_ring_draft_push_vertex`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_ring_draft_push_vertex(struct cj_ring_draft_t *ring, struct cj_vertex_t vertex);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_ring_draft_push_vertex_index" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_ring_draft_push_vertex_index`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_ring_draft_push_vertex_index(struct cj_ring_draft_t *ring, uint32_t vertex_index);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_shell_draft_add_surface" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_shell_draft_add_surface`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_shell_draft_add_surface(struct cj_shell_draft_t *shell, struct cj_surface_draft_t *surface);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_shell_draft_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_shell_draft_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_shell_draft_free(struct cj_shell_draft_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_shell_draft_new" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_shell_draft_new`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_shell_draft_new(struct cj_shell_draft_t **out_shell);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_solid_draft_add_inner_shell" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_solid_draft_add_inner_shell`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_solid_draft_add_inner_shell(struct cj_solid_draft_t *solid, struct cj_shell_draft_t *inner);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_solid_draft_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_solid_draft_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_solid_draft_free(struct cj_solid_draft_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_solid_draft_new" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_solid_draft_new`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_solid_draft_new(struct cj_shell_draft_t *outer, struct cj_solid_draft_t **out_solid);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_surface_draft_add_inner_ring" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_surface_draft_add_inner_ring`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_surface_draft_add_inner_ring(struct cj_surface_draft_t *surface, struct cj_ring_draft_t *inner);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_surface_draft_add_material" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_surface_draft_add_material`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_surface_draft_add_material(struct cj_surface_draft_t *surface, struct cj_string_view_t theme, struct cj_material_id_t material);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_surface_draft_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_surface_draft_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_surface_draft_free(struct cj_surface_draft_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_surface_draft_new" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_surface_draft_new`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_surface_draft_new(struct cj_ring_draft_t *outer, struct cj_surface_draft_t **out_surface);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_surface_draft_set_semantic" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_surface_draft_set_semantic`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_surface_draft_set_semantic(struct cj_surface_draft_t *surface, struct cj_semantic_id_t semantic);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_uvs_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_uvs_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_uvs_free(struct cj_uvs_t uvs);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_array_push" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_array_push`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_array_push(struct cj_value_t *array_value, struct cj_value_t *element);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_free(struct cj_value_t *handle);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_new_array" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_new_array`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_new_array(struct cj_value_t **out_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_new_bool" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_new_bool`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_new_bool(bool value, struct cj_value_t **out_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_new_float64" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_new_float64`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_new_float64(double value, struct cj_value_t **out_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_new_geometry_ref" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_new_geometry_ref`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_new_geometry_ref(struct cj_geometry_id_t value, struct cj_value_t **out_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_new_int64" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_new_int64`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_new_int64(int64_t value, struct cj_value_t **out_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_new_null" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_new_null`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_new_null(struct cj_value_t **out_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_new_object" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_new_object`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_new_object(struct cj_value_t **out_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_new_string" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_new_string`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_new_string(struct cj_string_view_t value, struct cj_value_t **out_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_value_object_insert" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_value_object_insert`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_value_object_insert(struct cj_value_t *object_value, struct cj_string_view_t key, struct cj_value_t *member_value);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>
+
+<section id="function-cj_vertices_free" class="api-reference-symbol" data-pagefind-body>
+
+### `cj_vertices_free`
+
+Kind: function.
+
+```c
+enum cj_status_t cj_vertices_free(struct cj_vertices_t vertices);
+```
+
+Source metadata: Doxygen XML: .generated/api/doxygen/cityjson-lib-c/xml/cityjson__lib_8h.xml
+
+</section>

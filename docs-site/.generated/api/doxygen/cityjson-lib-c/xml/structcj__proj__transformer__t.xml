@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structcj__proj__transformer__t" kind="struct" language="C++" prot="public">
+    <compoundname>cj_proj_transformer_t</compoundname>
+    <includes refid="cityjson__lib_8h" local="no">cityjson_lib.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structcj__proj__transformer__t_1a4108c03efe477d57d03d13b53c56ec57" prot="public" static="no" mutable="no">
+        <type>uint8_t</type>
+        <definition>uint8_t cj_proj_transformer_t::_private[0]</definition>
+        <argsstring>[0]</argsstring>
+        <name>_private</name>
+        <qualifiedname>cj_proj_transformer_t::_private</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="513" column="11" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="513" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Opaque handle for a cached PROJ coordinate transformer. </para>
+    </detaileddescription>
+    <location file="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" line="512" column="1" bodyfile="/home/balazs/Development/cityjson-rs/crates/cityjson-lib/ffi/core/include/cityjson_lib/cityjson_lib.h" bodystart="512" bodyend="514"/>
+    <listofallmembers>
+      <member refid="structcj__proj__transformer__t_1a4108c03efe477d57d03d13b53c56ec57" prot="public" virt="non-virtual"><scope>cj_proj_transformer_t</scope><name>_private</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

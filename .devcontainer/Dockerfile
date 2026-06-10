@@ -9,7 +9,9 @@ RUN apt-get update \
         clang \
         cmake \
         curl \
+        doxygen \
         g++ \
+        graphviz \
         jq \
         just \
         libproj-dev \
@@ -31,7 +33,8 @@ RUN rustup toolchain install stable \
     && rustup toolchain install nightly \
         --component rustfmt \
         --component clippy \
-        --component miri
+        --component miri \
+    && rustup target add --toolchain nightly wasm32-unknown-unknown
 
 RUN UV_INSTALL_DIR=/usr/local/bin sh -c "$(curl -LsSf https://astral.sh/uv/install.sh)"
 

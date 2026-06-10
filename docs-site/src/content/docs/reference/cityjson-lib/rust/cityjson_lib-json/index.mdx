@@ -1,0 +1,480 @@
+---
+title: cityjson_lib::json
+description: Generated Rust owner reference for cityjson-lib.
+languages: ["rust"]
+generated: true
+---
+
+Source: `crates/cityjson-lib/src/lib.rs`
+
+## Contents
+
+- [Probe](#struct-probe)
+- [WriteOptions](#struct-writeoptions)
+- [from_feature_file](#function-from_feature_file)
+- [from_feature_slice](#function-from_feature_slice)
+- [from_feature_slice_assume_cityjson_feature_v2_0](#function-from_feature_slice_assume_cityjson_feature_v2_0)
+- [from_file](#function-from_file)
+- [from_slice](#function-from_slice)
+- [from_slice_assume_cityjson_v2_0](#function-from_slice_assume_cityjson_v2_0)
+- [merge_cityjsonseq_slice](#function-merge_cityjsonseq_slice)
+- [merge_feature_stream_slice](#function-merge_feature_stream_slice)
+- [probe](#function-probe)
+- [read_cityjsonseq](#function-read_cityjsonseq)
+- [read_feature_stream](#function-read_feature_stream)
+- [to_feature_string](#function-to_feature_string)
+- [to_feature_string_with_options](#function-to_feature_string_with_options)
+- [to_feature_vec_with_options](#function-to_feature_vec_with_options)
+- [to_feature_writer](#function-to_feature_writer)
+- [to_string](#function-to_string)
+- [to_string_with_options](#function-to_string_with_options)
+- [to_vec](#function-to_vec)
+- [to_vec_with_options](#function-to_vec_with_options)
+- [to_writer](#function-to_writer)
+- [to_writer_with_options](#function-to_writer_with_options)
+- [write_cityjsonseq](#function-write_cityjsonseq)
+- [write_cityjsonseq_auto_transform](#function-write_cityjsonseq_auto_transform)
+- [write_cityjsonseq_auto_transform_refs](#function-write_cityjsonseq_auto_transform_refs)
+- [write_cityjsonseq_refs](#function-write_cityjsonseq_refs)
+- [write_feature_stream](#function-write_feature_stream)
+- [write_feature_stream_refs](#function-write_feature_stream_refs)
+
+## Members
+
+| Symbol | Kind | Reference |
+| --- | --- | --- |
+| `Probe` | struct | [section](#struct-probe) |
+| `WriteOptions` | struct | [section](#struct-writeoptions) |
+| `from_feature_file` | function | [section](#function-from_feature_file) |
+| `from_feature_slice` | function | [section](#function-from_feature_slice) |
+| `from_feature_slice_assume_cityjson_feature_v2_0` | function | [section](#function-from_feature_slice_assume_cityjson_feature_v2_0) |
+| `from_file` | function | [section](#function-from_file) |
+| `from_slice` | function | [section](#function-from_slice) |
+| `from_slice_assume_cityjson_v2_0` | function | [section](#function-from_slice_assume_cityjson_v2_0) |
+| `merge_cityjsonseq_slice` | function | [section](#function-merge_cityjsonseq_slice) |
+| `merge_feature_stream_slice` | function | [section](#function-merge_feature_stream_slice) |
+| `probe` | function | [section](#function-probe) |
+| `read_cityjsonseq` | function | [section](#function-read_cityjsonseq) |
+| `read_feature_stream` | function | [section](#function-read_feature_stream) |
+| `to_feature_string` | function | [section](#function-to_feature_string) |
+| `to_feature_string_with_options` | function | [section](#function-to_feature_string_with_options) |
+| `to_feature_vec_with_options` | function | [section](#function-to_feature_vec_with_options) |
+| `to_feature_writer` | function | [section](#function-to_feature_writer) |
+| `to_string` | function | [section](#function-to_string) |
+| `to_string_with_options` | function | [section](#function-to_string_with_options) |
+| `to_vec` | function | [section](#function-to_vec) |
+| `to_vec_with_options` | function | [section](#function-to_vec_with_options) |
+| `to_writer` | function | [section](#function-to_writer) |
+| `to_writer_with_options` | function | [section](#function-to_writer_with_options) |
+| `write_cityjsonseq` | function | [section](#function-write_cityjsonseq) |
+| `write_cityjsonseq_auto_transform` | function | [section](#function-write_cityjsonseq_auto_transform) |
+| `write_cityjsonseq_auto_transform_refs` | function | [section](#function-write_cityjsonseq_auto_transform_refs) |
+| `write_cityjsonseq_refs` | function | [section](#function-write_cityjsonseq_refs) |
+| `write_feature_stream` | function | [section](#function-write_feature_stream) |
+| `write_feature_stream_refs` | function | [section](#function-write_feature_stream_refs) |
+
+<section id="struct-probe" class="api-reference-symbol" data-pagefind-body>
+
+### `Probe`
+
+Kind: struct.
+
+```rust
+pub struct Probe
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/struct.Probe.html)
+
+</section>
+
+<section id="struct-writeoptions" class="api-reference-symbol" data-pagefind-body>
+
+### `WriteOptions`
+
+Kind: struct.
+
+```rust
+pub struct WriteOptions
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/struct.WriteOptions.html)
+
+</section>
+
+<section id="function-from_feature_file" class="api-reference-symbol" data-pagefind-body>
+
+### `from_feature_file`
+
+Kind: function.
+
+```rust
+pub fn from_feature_file<P: AsRef<Path>>(path: P) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_feature_file.html)
+
+</section>
+
+<section id="function-from_feature_slice" class="api-reference-symbol" data-pagefind-body>
+
+### `from_feature_slice`
+
+Kind: function.
+
+```rust
+pub fn from_feature_slice(bytes: &[u8]) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_feature_slice.html)
+
+</section>
+
+<section id="function-from_feature_slice_assume_cityjson_feature_v2_0" class="api-reference-symbol" data-pagefind-body>
+
+### `from_feature_slice_assume_cityjson_feature_v2_0`
+
+Kind: function.
+
+```rust
+pub fn from_feature_slice_assume_cityjson_feature_v2_0(bytes: &[u8]) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_feature_slice_assume_cityjson_feature_v2_0.html)
+
+</section>
+
+<section id="function-from_file" class="api-reference-symbol" data-pagefind-body>
+
+### `from_file`
+
+Kind: function.
+
+```rust
+pub fn from_file<P: AsRef<Path>>(path: P) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_file.html)
+
+</section>
+
+<section id="function-from_slice" class="api-reference-symbol" data-pagefind-body>
+
+### `from_slice`
+
+Kind: function.
+
+```rust
+pub fn from_slice(bytes: &[u8]) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_slice.html)
+
+</section>
+
+<section id="function-from_slice_assume_cityjson_v2_0" class="api-reference-symbol" data-pagefind-body>
+
+### `from_slice_assume_cityjson_v2_0`
+
+Kind: function.
+
+```rust
+pub fn from_slice_assume_cityjson_v2_0(bytes: &[u8]) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.from_slice_assume_cityjson_v2_0.html)
+
+</section>
+
+<section id="function-merge_cityjsonseq_slice" class="api-reference-symbol" data-pagefind-body>
+
+### `merge_cityjsonseq_slice`
+
+Kind: function.
+
+```rust
+pub fn merge_cityjsonseq_slice(bytes: &[u8]) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.merge_cityjsonseq_slice.html)
+
+</section>
+
+<section id="function-merge_feature_stream_slice" class="api-reference-symbol" data-pagefind-body>
+
+### `merge_feature_stream_slice`
+
+Kind: function.
+
+```rust
+pub fn merge_feature_stream_slice(bytes: &[u8]) -> Result<CityModel>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.merge_feature_stream_slice.html)
+
+</section>
+
+<section id="function-probe" class="api-reference-symbol" data-pagefind-body>
+
+### `probe`
+
+Kind: function.
+
+```rust
+pub fn probe(bytes: &[u8]) -> Result<Probe>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.probe.html)
+
+</section>
+
+<section id="function-read_cityjsonseq" class="api-reference-symbol" data-pagefind-body>
+
+### `read_cityjsonseq`
+
+Kind: function.
+
+```rust
+pub fn read_cityjsonseq<R>(reader: R) -> Result<impl Iterator<Item = Result<CityModel>>>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.read_cityjsonseq.html)
+
+</section>
+
+<section id="function-read_feature_stream" class="api-reference-symbol" data-pagefind-body>
+
+### `read_feature_stream`
+
+Kind: function.
+
+```rust
+pub fn read_feature_stream<R>(reader: R) -> Result<impl Iterator<Item = Result<CityModel>>>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.read_feature_stream.html)
+
+</section>
+
+<section id="function-to_feature_string" class="api-reference-symbol" data-pagefind-body>
+
+### `to_feature_string`
+
+Kind: function.
+
+```rust
+pub fn to_feature_string(model: &CityModel) -> Result<String>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_feature_string.html)
+
+</section>
+
+<section id="function-to_feature_string_with_options" class="api-reference-symbol" data-pagefind-body>
+
+### `to_feature_string_with_options`
+
+Kind: function.
+
+```rust
+pub fn to_feature_string_with_options(model: &CityModel, options: WriteOptions) -> Result<String>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_feature_string_with_options.html)
+
+</section>
+
+<section id="function-to_feature_vec_with_options" class="api-reference-symbol" data-pagefind-body>
+
+### `to_feature_vec_with_options`
+
+Kind: function.
+
+```rust
+pub fn to_feature_vec_with_options(model: &CityModel, options: WriteOptions) -> Result<Vec<u8>>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_feature_vec_with_options.html)
+
+</section>
+
+<section id="function-to_feature_writer" class="api-reference-symbol" data-pagefind-body>
+
+### `to_feature_writer`
+
+Kind: function.
+
+```rust
+pub fn to_feature_writer(writer: &mut impl Write, model: &CityModel) -> Result<()>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_feature_writer.html)
+
+</section>
+
+<section id="function-to_string" class="api-reference-symbol" data-pagefind-body>
+
+### `to_string`
+
+Kind: function.
+
+```rust
+pub fn to_string(model: &CityModel) -> Result<String>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_string.html)
+
+</section>
+
+<section id="function-to_string_with_options" class="api-reference-symbol" data-pagefind-body>
+
+### `to_string_with_options`
+
+Kind: function.
+
+```rust
+pub fn to_string_with_options(model: &CityModel, options: WriteOptions) -> Result<String>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_string_with_options.html)
+
+</section>
+
+<section id="function-to_vec" class="api-reference-symbol" data-pagefind-body>
+
+### `to_vec`
+
+Kind: function.
+
+```rust
+pub fn to_vec(model: &CityModel) -> Result<Vec<u8>>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_vec.html)
+
+</section>
+
+<section id="function-to_vec_with_options" class="api-reference-symbol" data-pagefind-body>
+
+### `to_vec_with_options`
+
+Kind: function.
+
+```rust
+pub fn to_vec_with_options(model: &CityModel, options: WriteOptions) -> Result<Vec<u8>>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_vec_with_options.html)
+
+</section>
+
+<section id="function-to_writer" class="api-reference-symbol" data-pagefind-body>
+
+### `to_writer`
+
+Kind: function.
+
+```rust
+pub fn to_writer(writer: &mut impl Write, model: &CityModel) -> Result<()>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_writer.html)
+
+</section>
+
+<section id="function-to_writer_with_options" class="api-reference-symbol" data-pagefind-body>
+
+### `to_writer_with_options`
+
+Kind: function.
+
+```rust
+pub fn to_writer_with_options( writer: &mut impl Write, model: &CityModel, options: WriteOptions, ) -> Result<()>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.to_writer_with_options.html)
+
+</section>
+
+<section id="function-write_cityjsonseq" class="api-reference-symbol" data-pagefind-body>
+
+### `write_cityjsonseq`
+
+Kind: function.
+
+```rust
+pub fn write_cityjsonseq<I, W>( writer: W, base_root: &CityModel, features: I, transform: &cityjson_types::v2_0::Transform, ) -> Result<CityJsonSeqWriteReport>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.write_cityjsonseq.html)
+
+</section>
+
+<section id="function-write_cityjsonseq_auto_transform" class="api-reference-symbol" data-pagefind-body>
+
+### `write_cityjsonseq_auto_transform`
+
+Kind: function.
+
+```rust
+pub fn write_cityjsonseq_auto_transform<I, W>( writer: W, base_root: &CityModel, features: I, scale: [f64; 3], ) -> Result<CityJsonSeqWriteReport>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.write_cityjsonseq_auto_transform.html)
+
+</section>
+
+<section id="function-write_cityjsonseq_auto_transform_refs" class="api-reference-symbol" data-pagefind-body>
+
+### `write_cityjsonseq_auto_transform_refs`
+
+Kind: function.
+
+```rust
+pub fn write_cityjsonseq_auto_transform_refs<'a, I, W>( writer: W, base_root: &CityModel, features: I, scale: [f64; 3], ) -> Result<CityJsonSeqWriteReport>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.write_cityjsonseq_auto_transform_refs.html)
+
+</section>
+
+<section id="function-write_cityjsonseq_refs" class="api-reference-symbol" data-pagefind-body>
+
+### `write_cityjsonseq_refs`
+
+Kind: function.
+
+```rust
+pub fn write_cityjsonseq_refs<'a, I, W>( writer: W, base_root: &CityModel, features: I, transform: &cityjson_types::v2_0::Transform, ) -> Result<CityJsonSeqWriteReport>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.write_cityjsonseq_refs.html)
+
+</section>
+
+<section id="function-write_feature_stream" class="api-reference-symbol" data-pagefind-body>
+
+### `write_feature_stream`
+
+Kind: function.
+
+```rust
+pub fn write_feature_stream<I, W>(mut writer: W, models: I) -> Result<()>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.write_feature_stream.html)
+
+</section>
+
+<section id="function-write_feature_stream_refs" class="api-reference-symbol" data-pagefind-body>
+
+### `write_feature_stream_refs`
+
+Kind: function.
+
+```rust
+pub fn write_feature_stream_refs<'a, I, W>(mut writer: W, models: I) -> Result<()>
+```
+
+[docs.rs mirror](https://docs.rs/cityjson-lib/latest/cityjson_lib/fn.write_feature_stream_refs.html)
+
+</section>

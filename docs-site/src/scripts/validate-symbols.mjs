@@ -4,13 +4,27 @@ import process from 'node:process';
 
 const root = process.cwd();
 const manifestPath = path.join(root, 'src/data/api-symbols.json');
+const referencePath = path.join(root, 'src/data/api-reference.json');
 const contentDir = path.join(root, 'src/content/docs');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+const reference = JSON.parse(fs.readFileSync(referencePath, 'utf8'));
 const failures = [];
 
 const entries = manifest.entries ?? [];
+const referenceEntries = reference.entries ?? [];
 const symbolsByPackage = manifest.symbolsByPackage ?? {};
 const urls = new Map();
+
+for (const entry of referenceEntries) {
+  if (!entry.name?.trim()) failures.push('API reference contains an empty symbol name');
+  if (!entry.owner?.label || !entry.owner?.slug) failures.push(`${entry.package}/${entry.language}/${entry.name} is missing owner metadata`);
+  if (entry.language === 'cpp' && entry.name.includes('detail')) {
+    failures.push(`C++ detail symbol leaked into public docs: ${entry.name}`);
+  }
+  if (entry.signature && !balancedSignature(entry.signature)) {
+    failures.push(`${entry.package}/${entry.language}/${entry.name} has a broken or unterminated signature: ${entry.signature}`);
+  }
+}
 
 for (const entry of entries) {
   if (!entry.name?.trim()) {
@@ -26,17 +40,19 @@ for (const entry of entries) {
   if (entry.language === 'rust' && !entry.docsRsUrl?.startsWith('https://docs.rs/')) {
     failures.push(`${entry.package}/rust/${entry.name} is missing a docs.rs mirror URL`);
   }
+  if (entry.kind === 'method' && !entry.owner) {
+    failures.push(`${entry.package}/${entry.language}/${entry.name} method is missing an owner`);
+  }
+  if (entry.kind === 'method' && /\/method-[^/]+\//.test(entry.url)) {
+    failures.push(`${entry.package}/${entry.language}/${entry.name} method is emitted as a method page instead of an owner page`);
+  }
 }
 
 for (const [crate, languages] of Object.entries(symbolsByPackage)) {
   for (const [language, symbols] of Object.entries(languages)) {
     for (const [symbol, href] of Object.entries(symbols)) {
-      if (!symbol.trim()) {
-        failures.push(`${crate}/${language} contains an empty symbol`);
-      }
-      if (!href.startsWith('/reference/')) {
-        failures.push(`${crate}/${language}/${symbol} has unsupported href ${href}`);
-      }
+      if (!symbol.trim()) failures.push(`${crate}/${language} contains an empty symbol`);
+      if (!href.startsWith('/reference/')) failures.push(`${crate}/${language}/${symbol} has unsupported href ${href}`);
     }
   }
 }
@@ -44,16 +60,7 @@ for (const [crate, languages] of Object.entries(symbolsByPackage)) {
 for (const languages of Object.values(symbolsByPackage)) {
   for (const symbols of Object.values(languages)) {
     for (const href of Object.values(symbols)) {
-      const [pagePath, id] = href.replace(/^\//, '').split('#');
-      const sourcePath = path.join(contentDir, `${pagePath.replace(/\/$/, '')}.mdx`);
-      if (!fs.existsSync(sourcePath)) {
-        failures.push(`Missing local reference page ${href}`);
-        continue;
-      }
-      const reference = fs.readFileSync(sourcePath, 'utf8');
-      if (!reference.includes(`id="${id}"`)) {
-        failures.push(`Missing local reference anchor ${href}`);
-      }
+      validateHref(href, 'symbol manifest');
     }
   }
 }
@@ -71,23 +78,39 @@ for (const file of walk(contentDir)) {
   }
 
   for (const href of text.matchAll(/href="(\/reference\/[^"]+)"/g)) {
-    const [pagePath, id] = href[1].replace(/^\//, '').split('#');
-    const sourcePath = path.join(contentDir, `${pagePath.replace(/\/$/, '')}.mdx`);
-    if (!fs.existsSync(sourcePath)) {
-      failures.push(`${file} links to missing page ${href[1]}`);
-      continue;
-    }
-    if (id && !fs.readFileSync(sourcePath, 'utf8').includes(`id="${id}"`)) {
-      failures.push(`${file} links to missing anchor ${href[1]}`);
-    }
+    validateHref(href[1], file);
   }
 }
 
 if (failures.length > 0) {
-  for (const failure of failures) {
-    console.error(failure);
-  }
+  for (const failure of failures) console.error(failure);
   process.exit(1);
+}
+
+function validateHref(href, source) {
+  const [pagePath, id] = href.replace(/^\//, '').split('#');
+  const normalized = pagePath.replace(/\/$/, '');
+  const sourcePath = path.join(contentDir, `${normalized}.mdx`);
+  const indexPath = path.join(contentDir, normalized, 'index.mdx');
+  const resolvedPath = fs.existsSync(sourcePath) ? sourcePath : indexPath;
+  if (!fs.existsSync(resolvedPath)) {
+    failures.push(`${source} links to missing page ${href}`);
+    return;
+  }
+  if (id && !fs.readFileSync(resolvedPath, 'utf8').includes(`id="${id}"`)) {
+    failures.push(`${source} links to missing anchor ${href}`);
+  }
+}
+
+function balancedSignature(signature) {
+  const pairs = { '(': ')', '[': ']', '{': '}' };
+  const closing = new Set(Object.values(pairs));
+  const stack = [];
+  for (const char of signature) {
+    if (pairs[char]) stack.push(pairs[char]);
+    if (closing.has(char) && stack.pop() !== char) return false;
+  }
+  return stack.length === 0;
 }
 
 function* walk(dir) {

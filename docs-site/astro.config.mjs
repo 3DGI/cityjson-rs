@@ -50,6 +50,7 @@ export default defineConfig({
                 { label: 'Python', slug: 'reference/cityjson-lib/python' },
                 { label: 'C++', slug: 'reference/cityjson-lib/cpp' },
                 { label: 'WASM', slug: 'reference/cityjson-lib/wasm' },
+                { label: 'C FFI', slug: 'reference/cityjson-lib/c' },
               ],
             },
             {
@@ -57,6 +58,7 @@ export default defineConfig({
               items: [
                 { label: 'Rust', slug: 'reference/cityjson-index/rust' },
                 { label: 'Python', slug: 'reference/cityjson-index/python' },
+                { label: 'C FFI', slug: 'reference/cityjson-index/c' },
               ],
             },
           ],
