@@ -891,6 +891,55 @@ class GeometryDraft final {
 
 class ModelSelection;
 
+class ProjTransformer final {
+ public:
+  ProjTransformer() = default;
+
+  ProjTransformer(const ProjTransformer&) = delete;
+  ProjTransformer& operator=(const ProjTransformer&) = delete;
+
+  ProjTransformer(ProjTransformer&& other) noexcept
+      : handle_(std::exchange(other.handle_, nullptr)) {}
+
+  ProjTransformer& operator=(ProjTransformer&& other) noexcept {
+    if (this != &other) {
+      reset();
+      handle_ = std::exchange(other.handle_, nullptr);
+    }
+    return *this;
+  }
+
+  ~ProjTransformer() { reset(); }
+
+  [[nodiscard]] static ProjTransformer create(
+      std::string_view source_crs,
+      std::string_view target_crs) {
+    cj_proj_transformer_t* handle = nullptr;
+    check_status(cj_proj_transformer_create(to_view(source_crs), to_view(target_crs), &handle));
+    return ProjTransformer(handle);
+  }
+
+  void reset() noexcept {
+    if (handle_ != nullptr) {
+      static_cast<void>(cj_proj_transformer_free(handle_));
+      handle_ = nullptr;
+    }
+  }
+
+  [[nodiscard]] bool valid() const noexcept { return handle_ != nullptr; }
+
+  [[nodiscard]] Vertex transform(const Vertex& point) const {
+    Vertex transformed{};
+    check_status(cj_proj_transformer_transform(handle_, point, &transformed));
+    return transformed;
+  }
+
+ private:
+  explicit ProjTransformer(cj_proj_transformer_t* handle) : handle_(handle) {}
+
+  cj_proj_transformer_t* handle_ = nullptr;
+};
+
 class Model final {
  public:
   Model() = default;
@@ -1033,6 +1082,10 @@ class Model final {
 
   void clear_transform() {
     check_status(cj_model_clear_transform(handle_));
+  }
+
+  void reproject(std::string_view target_crs) {
+    check_status(cj_model_reproject(handle_, to_view(target_crs)));
   }
 
   [[nodiscard]] std::vector<std::string> cityobject_ids() const {
@@ -1181,6 +1234,14 @@ class Model final {
     std::size_t index = 0U;
     check_status(cj_model_add_template_vertex(handle_, vertex, &index));
     return detail::narrow_index(index);
+  }
+
+  void set_vertex(std::size_t index, const Vertex& vertex) {
+    check_status(cj_model_set_vertex(handle_, index, vertex));
+  }
+
+  void set_template_vertex(std::size_t index, const Vertex& vertex) {
+    check_status(cj_model_set_template_vertex(handle_, index, vertex));
   }
 
   [[nodiscard]] std::uint32_t add_uv_coordinate(const UV& uv) {

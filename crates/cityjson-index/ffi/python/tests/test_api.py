@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from cityjson_index import LodSelection, OpenedIndex, PackageFilter, PackageFilterSummary
+from cityjson_index import Bounds2D, LodSelection, OpenedIndex, PackageFilter, PackageFilterSummary
 from cityjson_lib import ModelType
 
 
@@ -38,6 +38,44 @@ class OpenedIndexApiTests(unittest.TestCase):
                 self.assertFalse(hasattr(index, "get"))
                 self.assertFalse(hasattr(index, "get_json"))
                 self.assertFalse(hasattr(index, "feature_ref_page"))
+
+    def test_summary_record_id_pagination_bbox_pages_and_batch_reads(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            index_path = Path(tmpdir) / ".cityjson_index.sqlite"
+            with OpenedIndex.open(CITYJSON_DATASET, index_path) as index:
+                index.reindex()
+
+                summary = index.feature_bounds_summary()
+                self.assertGreater(summary.package_count, 0)
+                self.assertGreater(summary.cityobject_count, 0)
+                self.assertIsNotNone(summary.bounds)
+
+                package_page = index.package_ref_page_after_record_id(None, 1)
+                self.assertEqual(len(package_page), 1)
+                first_package = package_page[0]
+                self.assertEqual(
+                    index.package_ref_page_after_record_id(first_package.record_id, 1)[0].record_id,
+                    first_package.record_id + 1,
+                )
+                self.assertEqual(
+                    index.lookup_package_ref_by_record_id(first_package.record_id),
+                    first_package,
+                )
+                self.assertIsNotNone(index.read_package_by_record_id(first_package.record_id))
+
+                packages = index.read_packages([first_package, first_package])
+                self.assertEqual([item.reference for item in packages], [first_package, first_package])
+                self.assertTrue(all(item.model.summary().model_type is ModelType.CITY_JSON_FEATURE for item in packages))
+
+                cityobject_page = index.cityobject_ref_page_after_record_id(None, 1)
+                self.assertEqual(len(cityobject_page), 1)
+                self.assertIsNotNone(cityobject_page[0].bounds)
+
+                bounds = first_package.bounds or summary.bounds
+                self.assertIsNotNone(bounds)
+                bbox = Bounds2D(bounds.min_x, bounds.max_x, bounds.min_y, bounds.max_y)
+                self.assertTrue(index.package_ref_bbox_page(bbox, None, 10))
+                self.assertTrue(index.cityobject_ref_bbox_page(bbox, None, 10))
 
     def test_read_filtered_packages_reports_package_reports(self) -> None:
         """Input: two package refs filtered for Building geometry at the highest LoD.

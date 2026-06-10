@@ -193,10 +193,55 @@ def _format_available_lods(lods: frozenset[str]) -> str:
 
 
 @dataclass(frozen=True, slots=True)
+class Bounds2D:
+    min_x: float
+    max_x: float
+    min_y: float
+    max_y: float
+
+
+@dataclass(frozen=True, slots=True)
+class Bounds3D:
+    min_x: float
+    max_x: float
+    min_y: float
+    max_y: float
+    min_z: float
+    max_z: float
+
+    @classmethod
+    def from_native(cls, native: _native._Bounds3D) -> Self:
+        return cls(
+            min_x=float(native.min_x),
+            max_x=float(native.max_x),
+            min_y=float(native.min_y),
+            max_y=float(native.max_y),
+            min_z=float(native.min_z),
+            max_z=float(native.max_z),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class FeatureBoundsSummary:
+    package_count: int
+    cityobject_count: int
+    bounds: Bounds3D | None = None
+
+    @classmethod
+    def from_native(cls, native: _native._FeatureBoundsSummary) -> Self:
+        return cls(
+            package_count=int(native.package_count),
+            cityobject_count=int(native.cityobject_count),
+            bounds=Bounds3D.from_native(native.bounds) if native.has_bounds else None,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class CityObjectRef:
     record_id: int
     external_id: str
     cityobject_type: str
+    bounds: Bounds3D | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -204,6 +249,7 @@ class PackageRef:
     record_id: int
     model_id: str
     package_type: int = 0
+    bounds: Bounds3D | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -334,6 +380,48 @@ class OpenedIndex:
     def reindex(self) -> None:
         _native.reindex(self._require_handle())
 
+    def feature_bounds_summary(self) -> FeatureBoundsSummary:
+        return FeatureBoundsSummary.from_native(
+            _native.feature_bounds_summary(self._require_handle())
+        )
+
+    def package_ref_page_after_record_id(
+        self, after_record_id: int | None = None, limit: int = 512
+    ) -> list[PackageRef]:
+        return _native.package_ref_page_after_record_id(
+            self._require_handle(), after_record_id, limit
+        )
+
+    def cityobject_ref_page_after_record_id(
+        self, after_record_id: int | None = None, limit: int = 512
+    ) -> list[CityObjectRef]:
+        return _native.cityobject_ref_page_after_record_id(
+            self._require_handle(), after_record_id, limit
+        )
+
+    def package_ref_bbox_page(
+        self,
+        bbox: Bounds2D,
+        after_record_id: int | None = None,
+        limit: int = 512,
+    ) -> list[PackageRef]:
+        return _native.query_package_refs_page(
+            self._require_handle(), bbox, after_record_id, limit
+        )
+
+    def cityobject_ref_bbox_page(
+        self,
+        bbox: Bounds2D,
+        after_record_id: int | None = None,
+        limit: int = 512,
+    ) -> list[CityObjectRef]:
+        return _native.query_cityobject_refs_page(
+            self._require_handle(), bbox, after_record_id, limit
+        )
+
+    def lookup_package_ref_by_record_id(self, record_id: int) -> PackageRef | None:
+        return _native.lookup_package_ref_by_record_id(self._require_handle(), record_id)
+
     def lookup_cityobject_refs(self, external_id: str) -> list[CityObjectRef]:
         return _native.lookup_cityobject_refs(self._require_handle(), external_id)
 
@@ -342,6 +430,24 @@ class OpenedIndex:
 
     def read_package(self, ref: PackageRef) -> "CityModel":
         return _parse_citymodel_bytes(_native.read_package_model_bytes(self._require_handle(), ref))
+
+    def read_package_by_record_id(self, record_id: int) -> IndexedPackage | None:
+        ref = self.lookup_package_ref_by_record_id(record_id)
+        if ref is None:
+            return None
+        payload = _native.read_package_by_record_id_model_bytes(
+            self._require_handle(), record_id
+        )
+        if payload is None:
+            return None
+        return IndexedPackage(reference=ref, model=_parse_citymodel_bytes(payload))
+
+    def read_packages(self, refs: list[PackageRef]) -> list[IndexedPackage]:
+        payloads = _native.read_packages_model_bytes(self._require_handle(), refs)
+        return [
+            IndexedPackage(reference=ref, model=_parse_citymodel_bytes(payload))
+            for ref, payload in zip(refs, payloads, strict=True)
+        ]
 
     def read_cityobject_packages(self, ref: CityObjectRef) -> list[IndexedPackage]:
         return [
@@ -359,7 +465,7 @@ class OpenedIndex:
                 seen.add(package.record_id)
                 refs.append(package)
         refs.sort(key=lambda ref: ref.record_id)
-        return [self.read_package(ref) for ref in refs]
+        return [package.model for package in self.read_packages(refs)]
 
     def read_filtered_packages(
         self,
@@ -372,6 +478,9 @@ class OpenedIndex:
 
 __all__ = [
     "CityObjectRef",
+    "FeatureBoundsSummary",
+    "Bounds3D",
+    "Bounds2D",
     "FilteredPackageOutcome",
     "IndexStatus",
     "IndexedPackage",

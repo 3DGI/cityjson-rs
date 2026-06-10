@@ -6,6 +6,7 @@ import tempfile
 import unittest
 
 from cityjson_lib import (
+    __version__,
     AffineTransform4x4,
     AutoTransformOptions,
     BBox,
@@ -66,6 +67,11 @@ MERGE_LEFT_FIXTURE_PATH = OPS_FIXTURE_DIR / "merge_left.city.json"
 MERGE_RIGHT_FIXTURE_PATH = OPS_FIXTURE_DIR / "merge_right.city.json"
 
 
+class PythonBindingMetadataTest(unittest.TestCase):
+    def test_runtime_version_comes_from_package_metadata_or_release_fallback(self) -> None:
+        self.assertRegex(__version__, r"^0\.9\.0$")
+
+
 class PythonBindingSmokeTest(unittest.TestCase):
     def geometry_count(self, model: CityModel, cityobject_id: str) -> int:
         document = json.loads(model.serialize_document())
@@ -88,6 +94,25 @@ class PythonBindingSmokeTest(unittest.TestCase):
         self.assertEqual(actual.has_metadata, expected.has_metadata)
         self.assertEqual(actual.has_templates, expected.has_templates)
         self.assertEqual(actual.has_appearance, expected.has_appearance)
+
+    def test_vertex_setters_mutate_existing_slots_and_validate_bounds(self) -> None:
+        model = CityModel.create(model_type=ModelType.CITY_JSON)
+        self.addCleanup(model.close)
+
+        vertex_index = model.add_vertex(Vertex(1.0, 2.0, 3.0))
+        template_vertex_index = model.add_template_vertex(Vertex(4.0, 5.0, 6.0))
+        model.set_vertex(vertex_index, Vertex(7.0, 8.0, 9.0))
+        model.set_template_vertex(template_vertex_index, Vertex(10.0, 11.0, 12.0))
+
+        summary = model.summary()
+        self.assertEqual(summary.vertex_count, 1)
+        self.assertEqual(summary.template_vertex_count, 1)
+
+        with self.assertRaisesRegex(CjlibError, "vertex index 99 is out of range"):
+            model.set_vertex(99, Vertex(0.0, 0.0, 0.0))
+
+        with self.assertRaisesRegex(CjlibError, "template vertex index 99 is out of range"):
+            model.set_template_vertex(99, Vertex(0.0, 0.0, 0.0))
 
     def test_parse_edit_subset_and_serialize_document(self) -> None:
         payload = FIXTURE_PATH.read_bytes()

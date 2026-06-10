@@ -506,6 +506,13 @@ typedef struct cj_affine_transform_4x4_t {
   double elements[16];
 } cj_affine_transform_4x4_t;
 
+/**
+ * Opaque handle for a cached PROJ coordinate transformer.
+ */
+typedef struct cj_proj_transformer_t {
+  uint8_t _private[0];
+} cj_proj_transformer_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -660,6 +667,14 @@ enum cj_status_t cj_model_add_template_vertex(struct cj_model_t *model,
                                               struct cj_vertex_t vertex,
                                               uintptr_t *out_index);
 
+enum cj_status_t cj_model_set_vertex(struct cj_model_t *model,
+                                     uintptr_t index,
+                                     struct cj_vertex_t vertex);
+
+enum cj_status_t cj_model_set_template_vertex(struct cj_model_t *model,
+                                              uintptr_t index,
+                                              struct cj_vertex_t vertex);
+
 enum cj_status_t cj_model_add_uv_coordinate(struct cj_model_t *model,
                                             struct cj_uv_t uv,
                                             uintptr_t *out_index);
@@ -673,6 +688,8 @@ enum cj_status_t cj_model_set_metadata_identifier(struct cj_model_t *model,
 enum cj_status_t cj_model_set_transform(struct cj_model_t *model, struct cj_transform_t transform);
 
 enum cj_status_t cj_model_clear_transform(struct cj_model_t *model);
+
+enum cj_status_t cj_model_reproject(struct cj_model_t *model, struct cj_string_view_t target_crs);
 
 enum cj_status_t cj_model_remove_cityobject(struct cj_model_t *model, struct cj_string_view_t id);
 
@@ -1000,6 +1017,16 @@ enum cj_status_t cj_model_add_geometry(struct cj_model_t *model,
 enum cj_status_t cj_model_add_geometry_template(struct cj_model_t *model,
                                                 struct cj_geometry_draft_t *draft,
                                                 struct cj_geometry_template_id_t *out_id);
+
+enum cj_status_t cj_proj_transformer_create(struct cj_string_view_t source_crs,
+                                            struct cj_string_view_t target_crs,
+                                            struct cj_proj_transformer_t **out_transformer);
+
+enum cj_status_t cj_proj_transformer_free(struct cj_proj_transformer_t *transformer);
+
+enum cj_status_t cj_proj_transformer_transform(const struct cj_proj_transformer_t *transformer,
+                                               struct cj_vertex_t point,
+                                               struct cj_vertex_t *out_point);
 
 #ifdef __cplusplus
 }  // extern "C"

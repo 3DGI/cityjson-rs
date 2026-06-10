@@ -520,6 +520,10 @@ class FfiLibrary:
         self._lib.cj_model_add_vertex.restype = c_int
         self._lib.cj_model_add_template_vertex.argtypes = [c_void_p, VertexStruct, POINTER(c_size_t)]
         self._lib.cj_model_add_template_vertex.restype = c_int
+        self._lib.cj_model_set_vertex.argtypes = [c_void_p, c_size_t, VertexStruct]
+        self._lib.cj_model_set_vertex.restype = c_int
+        self._lib.cj_model_set_template_vertex.argtypes = [c_void_p, c_size_t, VertexStruct]
+        self._lib.cj_model_set_template_vertex.restype = c_int
         self._lib.cj_model_add_uv_coordinate.argtypes = [c_void_p, UVStruct, POINTER(c_size_t)]
         self._lib.cj_model_add_uv_coordinate.restype = c_int
 
@@ -531,6 +535,8 @@ class FfiLibrary:
         self._lib.cj_model_set_transform.restype = c_int
         self._lib.cj_model_clear_transform.argtypes = [c_void_p]
         self._lib.cj_model_clear_transform.restype = c_int
+        self._lib.cj_model_reproject.argtypes = [c_void_p, StringViewStruct]
+        self._lib.cj_model_reproject.restype = c_int
         self._lib.cj_model_remove_cityobject.argtypes = [c_void_p, StringViewStruct]
         self._lib.cj_model_remove_cityobject.restype = c_int
         self._lib.cj_model_clear_cityobject_geometry.argtypes = [c_void_p, StringViewStruct]
@@ -804,6 +810,21 @@ class FfiLibrary:
             POINTER(GeometryTemplateIdStruct),
         ]
         self._lib.cj_model_add_geometry_template.restype = c_int
+
+        self._lib.cj_proj_transformer_create.argtypes = [
+            StringViewStruct,
+            StringViewStruct,
+            POINTER(c_void_p),
+        ]
+        self._lib.cj_proj_transformer_create.restype = c_int
+        self._lib.cj_proj_transformer_free.argtypes = [c_void_p]
+        self._lib.cj_proj_transformer_free.restype = c_int
+        self._lib.cj_proj_transformer_transform.argtypes = [
+            c_void_p,
+            VertexStruct,
+            POINTER(VertexStruct),
+        ]
+        self._lib.cj_proj_transformer_transform.restype = c_int
 
     def _raise_if_error(self, raw_status: int) -> None:
         status = Status(raw_status)
@@ -1249,6 +1270,20 @@ class FfiLibrary:
         )
         return int(index.value)
 
+    def set_vertex(self, handle: int, index: int, x: float, y: float, z: float) -> None:
+        self._raise_if_error(
+            self._lib.cj_model_set_vertex(
+                c_void_p(handle), index, VertexStruct(x=x, y=y, z=z)
+            )
+        )
+
+    def set_template_vertex(self, handle: int, index: int, x: float, y: float, z: float) -> None:
+        self._raise_if_error(
+            self._lib.cj_model_set_template_vertex(
+                c_void_p(handle), index, VertexStruct(x=x, y=y, z=z)
+            )
+        )
+
     def add_uv_coordinate(self, handle: int, u: float, v: float) -> int:
         index = c_size_t(0)
         self._raise_if_error(
@@ -1302,6 +1337,10 @@ class FfiLibrary:
 
     def clear_transform(self, handle: int) -> None:
         self._raise_if_error(self._lib.cj_model_clear_transform(c_void_p(handle)))
+
+    def reproject(self, handle: int, target_crs: str) -> None:
+        view, _buffer = self._string_view(target_crs)
+        self._raise_if_error(self._lib.cj_model_reproject(c_void_p(handle), view))
 
     def remove_cityobject(self, handle: int, cityobject_id: str) -> None:
         view, _buffer = self._string_view(cityobject_id)
@@ -1924,3 +1963,25 @@ class FfiLibrary:
             )
         )
         return geometry
+
+    def proj_transformer_create(self, source_crs: str, target_crs: str) -> int:
+        source_view, _source_buffer = self._string_view(source_crs)
+        target_view, _target_buffer = self._string_view(target_crs)
+        handle = c_void_p()
+        self._raise_if_error(
+            self._lib.cj_proj_transformer_create(source_view, target_view, pointer(handle))
+        )
+        return int(handle.value)
+
+    def proj_transformer_free(self, handle: int) -> None:
+        if handle:
+            self._raise_if_error(self._lib.cj_proj_transformer_free(c_void_p(handle)))
+
+    def proj_transformer_transform(self, handle: int, x: float, y: float, z: float) -> VertexStruct:
+        out = VertexStruct()
+        self._raise_if_error(
+            self._lib.cj_proj_transformer_transform(
+                c_void_p(handle), VertexStruct(x=x, y=y, z=z), pointer(out)
+            )
+        )
+        return out
