@@ -3,3 +3,5 @@ dist/
 .astro/
 test-results/
 playwright-report/
+.generated/
+tools/__pycache__/
