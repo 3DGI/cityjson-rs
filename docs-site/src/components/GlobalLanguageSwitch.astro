@@ -1,0 +1,69 @@
+---
+const languages = [
+  { id: 'rust', label: 'Rust' },
+  { id: 'python', label: 'Python' },
+  { id: 'cpp', label: 'C++' },
+  { id: 'wasm', label: 'WASM' },
+];
+const supported = Astro.locals.starlightRoute.entry.data.languages ?? [];
+---
+
+<div class="language-switcher global-language-switch" role="group" aria-label="Preferred programming language" data-supported-languages={supported.join(',')}>
+  {languages.map((language) => (
+    <button type="button" data-language-choice={language.id} aria-label={`${language.label} examples`}>
+      {language.label}
+    </button>
+  ))}
+</div>
+
+<script>
+  const key = 'cityjson-docs-language';
+  const choices = ['rust', 'python', 'cpp', 'wasm'];
+
+  const supportedLanguages = () => {
+    const raw = (document.querySelector('[data-supported-languages]') as HTMLElement | null)?.dataset.supportedLanguages || '';
+    return raw.split(',').map((value) => value.trim()).filter(Boolean);
+  };
+
+  const apply = (language: string, persist = true) => {
+    if (!choices.includes(language)) {
+      language = 'rust';
+    }
+    if (persist) {
+      localStorage.setItem(key, language);
+    }
+    document.documentElement.dataset.language = language;
+    const supported = supportedLanguages();
+
+    for (const button of document.querySelectorAll('[data-language-choice]')) {
+      const element = button as HTMLButtonElement;
+      const choice = element.dataset.languageChoice || '';
+      const available = supported.length === 0 || supported.includes(choice);
+      element.disabled = !available;
+      element.title = available ? '' : 'This page does not expose this language';
+      element.setAttribute('aria-disabled', available ? 'false' : 'true');
+      element.setAttribute('aria-pressed', choice === language ? 'true' : 'false');
+    }
+
+    for (const panel of document.querySelectorAll('[data-language-panel]')) {
+      const element = panel as HTMLElement;
+      const panelLanguage = element.dataset.languagePanel || '';
+      const shouldShow = supported.includes(language)
+        ? panelLanguage === language
+        : supported.includes(panelLanguage);
+      element.hidden = !shouldShow;
+    }
+  };
+
+  apply(localStorage.getItem(key) || 'rust', false);
+
+  for (const button of document.querySelectorAll('[data-language-choice]')) {
+    const element = button as HTMLButtonElement;
+    element.addEventListener('click', () => {
+      if (element.disabled) return;
+      apply(element.dataset.languageChoice || 'rust');
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => apply(localStorage.getItem(key) || 'rust', false));
+</script>

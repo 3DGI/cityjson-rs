@@ -1,0 +1,54 @@
+---
+import symbols from '../data/api-symbols.json';
+
+interface Props {
+  crate: string;
+  language: string;
+  code: string;
+}
+
+const props = Astro.props;
+const manifest = symbols as {
+  symbolsByPackage: Record<string, Record<string, Record<string, string>>>;
+};
+const byLanguage = manifest.symbolsByPackage[String(props.crate)]?.[props.language] ?? {};
+const linked = linkSymbols(props.code, byLanguage);
+
+function linkSymbols(code: string, links: Record<string, string>) {
+  let escaped = escapeHtml(code);
+  const placeholders = new Map<string, string>();
+  const ordered = Object.keys(links).sort((a, b) => b.length - a.length);
+  for (const symbol of ordered) {
+    const href = links[symbol];
+    const escapedSymbol = escapeHtml(symbol);
+    const pattern = new RegExp(`(?<![\\w:.$])${escapeRegExp(escapedSymbol)}(?![\\w:.$])`, 'g');
+    escaped = escaped.replace(pattern, () => {
+      const placeholder = `@@CITYJSON_API_LINK_${placeholders.size}@@`;
+      placeholders.set(
+        placeholder,
+        `<a class="api-symbol" href="${href}" title="Open API reference for ${escapedSymbol}">${escapedSymbol}</a>`,
+      );
+      return placeholder;
+    });
+  }
+  for (const [placeholder, html] of placeholders) {
+    escaped = escaped.replaceAll(placeholder, html);
+  }
+  return escaped;
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+---
+
+<pre class={`api-code language-${props.language}`}><code set:html={linked} /></pre>

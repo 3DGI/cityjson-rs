@@ -1,0 +1,87 @@
+---
+title: cityjson-lib
+description: Cross-language examples for the cityjson-lib facade.
+languages: ["rust", "python", "cpp", "wasm"]
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ApiCodeBlock from '../../../components/ApiCodeBlock.astro';
+import LanguagePanel from '../../../components/LanguagePanel.astro';
+
+
+`cityjson-lib` is the high-level facade for reading, writing, transforming, and
+summarizing CityJSON models. This page exercises the POC's global language
+switcher, local language tabs, and cityjson-rs-only API symbol links.
+
+
+## Global language panels
+
+<LanguagePanel language="rust">
+<ApiCodeBlock crate="cityjson-lib" language="rust" code={`use cityjson_lib::{json, ops, query, CityModel};
+
+let model: CityModel = json::from_slice(bytes)?;
+let summary = query::summary(&model);
+let subset = ops::subset(&model, ["building-1"], false)?;
+let merged = ops::merge([model, subset])?;`} />
+</LanguagePanel>
+
+<LanguagePanel language="python">
+<ApiCodeBlock crate="cityjson-lib" language="python" code={`from cityjson_lib import CityModel, ModelSelection, merge_models, probe_bytes
+
+probe = probe_bytes(payload)
+model = CityModel.parse_document_bytes(payload)
+summary = CityModel.summary(model)
+selection = ModelSelection.select_cityobjects_by_id(model, ["building-1"])
+extracted = model.extract_selection(selection)
+merged = merge_models([model, extracted])`} />
+</LanguagePanel>
+
+<LanguagePanel language="cpp">
+<ApiCodeBlock crate="cityjson-lib" language="cpp" code={`#include <cityjson_lib/cityjson_lib.hpp>
+
+auto model = cityjson_lib::Model::parse_document(bytes);
+const auto summary = model.summary();
+const auto selection = cityjson_lib::ModelSelection::select_geometries_by_cityobject_id_and_index(
+    model,
+    std::array{cityjson_lib::GeometrySelectionSpec{"building-1", 0U}});
+const auto extracted = model.extract_selection(selection);`} />
+</LanguagePanel>
+
+<LanguagePanel language="wasm">
+<ApiCodeBlock crate="cityjson-lib" language="wasm" code={`use cityjson_lib_wasm::{
+    extract_coordinate_buffers, parse_document_summary, probe_bytes,
+    serialize_document_with_options, WriteOptions,
+};
+
+let probe = probe_bytes(bytes)?;
+let summary = parse_document_summary(bytes)?;
+let buffers = extract_coordinate_buffers(bytes)?;
+let pretty = serialize_document_with_options(bytes, WriteOptions { pretty: true, validate_default_themes: true })?;`} />
+</LanguagePanel>
+
+## Local language tabs
+
+These tabs remain available even when the global preference is set.
+
+<Tabs syncKey="cityjson-language">
+  <TabItem label="Rust">
+    <ApiCodeBlock crate="cityjson-lib" language="rust" code={`use cityjson_lib::{arrow, parquet, CityModel};
+
+let arrow_bytes = arrow::to_vec(&model)?;
+let manifest = parquet::to_file("model.cityjson-parquet", &model)?;`} />
+  </TabItem>
+  <TabItem label="Python">
+    <ApiCodeBlock crate="cityjson-lib" language="python" code={`from cityjson_lib import CityModel
+
+model = CityModel.parse_document_bytes(open("model.city.json", "rb").read())
+print(model.summary().cityobject_count)`} />
+  </TabItem>
+  <TabItem label="C++">
+    <ApiCodeBlock crate="cityjson-lib" language="cpp" code={`auto model = cityjson_lib::Model::parse_document(bytes);
+const auto summary = model.summary();`} />
+  </TabItem>
+  <TabItem label="WASM">
+    <ApiCodeBlock crate="cityjson-lib" language="wasm" code={`let summary = parse_document_summary(bytes)?;
+let coordinates = extract_coordinate_buffers(bytes)?;`} />
+  </TabItem>
+</Tabs>

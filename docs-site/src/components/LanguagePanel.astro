@@ -1,0 +1,11 @@
+---
+interface Props {
+  language: string;
+}
+
+const { language } = Astro.props;
+---
+
+<section data-language-panel={language} aria-live="polite">
+  <slot />
+</section>

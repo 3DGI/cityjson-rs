@@ -91,5 +91,22 @@ ffi *args:
         ;;
     esac
 
+# Install the Starlight documentation POC dependencies.
+docs-poc-install:
+    cd docs-site && npm install
+
+# Build the Starlight documentation POC and Pagefind index.
+docs-poc-build:
+    cd docs-site && npm run build
+
+# Serve the built Starlight documentation POC locally.
+docs-poc-serve *args:
+    cd docs-site && npm run preview -- {{args}}
+
+# Validate, build, and smoke-test the Starlight documentation POC.
+docs-poc-check:
+    cd docs-site && npm run check
+    cd docs-site && npm run test
+
 # Full local CI (fmt + lint + check + test + doc)
 ci: fmt-check lint check test doc

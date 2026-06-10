@@ -1,0 +1,205 @@
+:root {
+  --sl-content-width: 58rem;
+  --sl-text-5xl: 3.1rem;
+  --sl-color-accent-low: #dcecef;
+  --sl-color-accent: #347887;
+  --sl-color-accent-high: #163f48;
+  --brand-pink: #f2ddde;
+  --brand-teal: #5296a5;
+  --brand-terracotta: #c76327;
+  --brand-orange: #ea8d23;
+  --brand-yellow: #fdc409;
+  --brand-ink: #202427;
+  --brand-panel: #fff8f7;
+  --brand-panel-strong: #fbedef;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #15333a;
+  --sl-color-accent: #77bdcb;
+  --sl-color-accent-high: #e5f6f8;
+  --brand-pink: #f2ddde;
+  --brand-teal: #77bdcb;
+  --brand-terracotta: #e28a52;
+  --brand-orange: #f3ad54;
+  --brand-yellow: #ffd957;
+  --brand-ink: #f8f4f4;
+  --brand-panel: #241d21;
+  --brand-panel-strong: #33262b;
+}
+
+.site-title img {
+  max-height: 2rem;
+  width: auto;
+  object-fit: contain;
+}
+
+.hero {
+  display: grid;
+  gap: 1.25rem;
+  padding-block: 1.5rem 0.75rem;
+}
+
+.hero p:first-child {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  max-width: 48rem;
+}
+
+.hero-actions,
+.doc-cards {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+
+.hero-action,
+.doc-card {
+  border: 1px solid color-mix(in srgb, var(--brand-teal) 38%, transparent);
+  border-radius: 8px;
+  padding: 1rem;
+  text-decoration: none;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brand-pink) 34%, transparent), transparent 72%),
+    var(--brand-panel);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--brand-teal) 12%, transparent);
+}
+
+.hero-action:hover,
+.doc-card:hover {
+  border-color: var(--brand-teal);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brand-pink) 52%, transparent), transparent 76%),
+    var(--brand-panel-strong);
+}
+
+.hero-action strong,
+.doc-card strong {
+  display: block;
+  color: var(--sl-color-accent-high);
+  margin-bottom: 0.25rem;
+}
+
+.language-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-block: 1rem;
+}
+
+.language-switcher button {
+  border: 1px solid color-mix(in srgb, var(--brand-teal) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand-pink) 42%, transparent);
+  color: var(--sl-color-gray-1);
+  cursor: pointer;
+  font: inherit;
+  padding: 0.35rem 0.7rem;
+}
+
+.language-switcher button:hover {
+  border-color: var(--brand-teal);
+}
+
+.language-switcher button[aria-pressed='true'] {
+  background: var(--brand-teal);
+  color: white;
+  border-color: var(--brand-teal);
+}
+
+.api-code {
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--brand-teal) 34%, var(--sl-color-gray-5));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--brand-pink) 15%, transparent), transparent 36%),
+    var(--sl-color-gray-6);
+  line-height: 1.55;
+}
+
+:root[data-theme='dark'] .api-code {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--brand-teal) 10%, transparent), transparent 36%),
+    var(--sl-color-gray-6);
+}
+
+.api-code code {
+  font-size: 0.9rem;
+}
+
+.api-symbol {
+  color: var(--sl-color-accent-high);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+:root[data-theme='dark'] .api-symbol {
+  color: var(--sl-color-accent);
+}
+
+.palette-strip {
+  display: block;
+  max-width: min(100%, 36rem);
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--brand-teal) 42%, transparent);
+}
+
+
+.global-language-switch {
+  gap: 0;
+  margin-block: 0;
+}
+
+.global-language-switch button {
+  width: 4.7rem;
+  min-height: 2rem;
+  border-radius: 0;
+}
+
+.global-language-switch button:first-child {
+  border-start-start-radius: 8px;
+  border-end-start-radius: 8px;
+}
+
+.global-language-switch button:last-child {
+  border-start-end-radius: 8px;
+  border-end-end-radius: 8px;
+}
+
+.global-language-switch button + button {
+  margin-inline-start: -1px;
+}
+
+.global-language-switch button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.reference-filter-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.reference-filter-list a {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.7fr) minmax(12rem, 1.6fr) minmax(4rem, 0.3fr);
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--brand-teal) 32%, transparent);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  text-decoration: none;
+}
+
+.reference-filter-list strong,
+.reference-filter-list em,
+.reference-filter-list span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.api-reference-symbol {
+  padding-block: 0.2rem 0.6rem;
+}
