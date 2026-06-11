@@ -173,12 +173,13 @@ function renderOwnerPage(ownerEntries) {
   fs.mkdirSync(packageDir, { recursive: true });
 
   const groups = groupedEntries(ownerEntries);
-  const contents = groups.map((entries) => renderGroupNav(entries)).join('\n\n');
+  const sourceDetail = first.source.detail ? `\nSource metadata: ${escapeMdxText(first.source.detail)}\n` : '';
+  const summaries = groups.map((entries) => renderSummaryTable(entries)).join('\n\n');
   const sections = groups.map((entries) => renderGroupSection(entries)).join('\n\n');
 
   fs.writeFileSync(
     path.join(packageDir, 'index.mdx'),
-    `---\ntitle: ${owner.label}\ndescription: Generated ${languageLabels[first.language]} owner reference for ${first.package}.\nlanguages: ["${first.language}"]\ngenerated: true\n---\n\nSource: \`${escapeMd(first.source.path)}\`\n\n## Contents\n\n<div class="api-group-nav">\n\n${contents}\n\n</div>\n\n${sections}\n`,
+    `---\ntitle: ${owner.label}\ndescription: Generated ${languageLabels[first.language]} owner reference for ${first.package}.\nlanguages: ["${first.language}"]\ngenerated: true\n---\n\n<div class="api-owner-source">\nSource: <code>${escapeMdxText(first.source.path)}</code>${sourceDetail}\n</div>\n\n## Summary\n\n${summaries}\n\n${sections}\n`,
     'utf8',
   );
 }
@@ -202,32 +203,127 @@ function groupSort(a, b) {
   return String(a.group.label).localeCompare(String(b.group.label));
 }
 
-function renderGroupNav(entries) {
+function renderSummaryTable(entries) {
   const group = entries[0].group;
-  const items = entries
-    .map((entry) => `- [${escapeMd(entry.memberName)}](#${entry.anchor})`)
+  const showClassification = shouldShowClassification(entries);
+  const headers = showClassification
+    ? '<th>Name</th><th>Classification</th><th>Signature</th><th>Summary</th>'
+    : '<th>Name</th><th>Signature</th><th>Summary</th>';
+  const rows = entries
+    .map((entry) => {
+      const summary = entry.summary || firstSentence(entry.docs) || '';
+      const classification = showClassification
+        ? `
+<td><span class="api-kind-label">${escapeMdxText(entry.displayKind)}</span></td>`
+        : '';
+      return `<tr>
+<td><a href="#${entry.anchor}"><code>${escapeMdxText(entry.memberName)}</code></a></td>${classification}
+<td><code>${escapeMdxText(compactSignature(entry.signature))}</code></td>
+<td>${renderInlineMarkdown(summary)}</td>
+</tr>`;
+    })
     .join('\n');
-  return `<section class="api-group-nav-section">\n\n### ${escapeMdxText(group.label)}\n\n${items}\n\n</section>`;
+  return `<section class="api-summary-section">
+
+<div class="api-summary-group-label">${escapeMdxText(group.label)}</div>
+
+<table class="api-summary-table">
+<thead><tr>${headers}</tr></thead>
+<tbody>
+${rows}
+</tbody>
+</table>
+
+</section>`;
+}
+
+function shouldShowClassification(entries) {
+  const group = entries[0].group;
+  if (group.key === 'types' || group.key === 'symbols') return true;
+  const firstKind = entries[0].displayKind;
+  return entries.some((entry) => entry.displayKind !== firstKind);
 }
 
 function renderGroupSection(entries) {
   const group = entries[0].group;
   const symbols = entries.map((entry) => renderSymbolSection(entry)).join('\n\n');
-  return `## ${escapeMdxText(group.label)}\n\n<div class="api-reference-group">\n\n${symbols}\n\n</div>`;
+  return `## ${escapeMdxText(group.label)}
+
+<div class="api-reference-group">
+
+${symbols}
+
+</div>`;
 }
 
 function renderSymbolSection(entry) {
-  const meta = `<div class="api-reference-meta"><span class="api-kind-badge">${escapeMdxText(entry.displayKind)}</span></div>`;
   const signature = entry.signature
-    ? `\n\n\`\`\`${fenceLanguage(entry.language)}\n${entry.signature}\n\`\`\``
+    ? `
+
+<div class="api-signature">
+
+\`\`\`${fenceLanguage(entry.language)}
+${entry.signature}
+\`\`\`
+
+</div>`
     : '';
-  const docs = entry.docs ? `\n\n${entry.docs}` : '';
-  const source = entry.source.detail ? `\n\nSource metadata: ${escapeMdxText(entry.source.detail)}` : '';
-  const mirror = entry.docsRsUrl ? `\n\n[docs.rs mirror](${entry.docsRsUrl})` : '';
-  return `<section id="${entry.anchor}" class="api-reference-symbol" data-pagefind-body>\n\n### \`${escapeMd(entry.memberName)}\`\n\n${meta}${signature}${docs}${source}${mirror}\n\n</section>`;
+  const summary = entry.summary ? `
+
+${entry.summary}` : '';
+  const structured = renderStructuredSections(entry);
+  const fallbackDocs = !entry.summary && !structured && entry.docs ? `
+
+${entry.docs}` : '';
+  const mirror = entry.docsRsUrl ? `
+
+[docs.rs mirror](${entry.docsRsUrl})` : '';
+  return `<section class="api-reference-symbol" data-pagefind-body aria-labelledby="${entry.anchor}">
+
+### <span data-api-anchor="${entry.anchor}"></span>\`${escapeMd(entry.memberName)}\`
+
+${signature}${summary}${structured}${fallbackDocs}${mirror}
+
+</section>`;
+}
+
+function renderStructuredSections(entry) {
+  const sections = [];
+  if (entry.parameters?.length) sections.push(renderDefinitionSection('Parameters', entry.parameters, 'name'));
+  if (entry.returns?.length) sections.push(renderDefinitionSection('Returns', entry.returns, 'type'));
+  if (entry.raises?.length) sections.push(renderDefinitionSection('Raises', entry.raises, 'type'));
+  if (entry.notes?.length) sections.push(renderTextListSection('Notes', entry.notes));
+  if (entry.seeAlso?.length) sections.push(renderTextListSection('See Also', entry.seeAlso));
+  if (entry.examples?.length) sections.push(renderTextListSection('Examples', entry.examples));
+  return sections.length ? `
+
+${sections.join('\n\n')}` : '';
+}
+
+function renderDefinitionSection(title, items, termKey) {
+  const terms = items
+    .map((item) => {
+      const term = plainDefinitionTerm(item[termKey] || item.name || item.type || 'value');
+      const type = termKey === 'name' && item.type ? ` <span class="api-param-type">${renderInlineMarkdown(item.type)}</span>` : '';
+      const description = item.description ? renderInlineMarkdown(item.description) : '';
+      return `<dt><code>${escapeMdxText(term)}</code>${type}</dt><dd>${description}</dd>`;
+    })
+    .join('\n');
+  return `#### ${title}
+
+<dl class="api-definition-list">
+${terms}
+</dl>`;
+}
+
+function renderTextListSection(title, values) {
+  return `#### ${title}
+
+${values.join('\n\n')}`;
 }
 
 function symbolManifestEntry(entry) {
+
   return {
     name: entry.name,
     memberName: entry.memberName,
@@ -242,6 +338,13 @@ function symbolManifestEntry(entry) {
     docsRsUrl: entry.docsRsUrl,
     url: entry.url,
     aliases: entry.aliases,
+    summary: entry.summary,
+    parameters: entry.parameters,
+    returns: entry.returns,
+    raises: entry.raises,
+    examples: entry.examples,
+    notes: entry.notes,
+    seeAlso: entry.seeAlso,
   };
 }
 
@@ -320,6 +423,29 @@ function fenceLanguage(language) {
   if (language === 'c') return 'c';
   if (language === 'wasm') return 'rust';
   return language;
+}
+
+
+function plainDefinitionTerm(value) {
+  return String(value ?? '').replace(/^`|`$/g, '').trim();
+}
+
+function firstSentence(value) {
+  const text = String(value ?? '').replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  const match = text.match(/^(.+?[.!?])\s/);
+  return match ? match[1] : text;
+}
+
+function compactSignature(value) {
+  const signature = String(value ?? '').replace(/\s+/g, ' ').trim();
+  return signature.length > 96 ? `${signature.slice(0, 93)}...` : signature;
+}
+
+function renderInlineMarkdown(value) {
+  return escapeMdxText(String(value ?? ''))
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
 function escapeMd(value) {

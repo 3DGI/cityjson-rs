@@ -1,9 +1,16 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import starlight from '@astrojs/starlight';
+import { unified } from '@astrojs/markdown-remark';
+import apiHeadingIds from './src/scripts/api-heading-ids.mjs';
 
 export default defineConfig({
   site: 'https://cityjson.3dgi.nl',
+  markdown: {
+    processor: unified({
+      rehypePlugins: [apiHeadingIds],
+    }),
+  },
   integrations: [
     starlight({
       title: 'cityjson-rs',

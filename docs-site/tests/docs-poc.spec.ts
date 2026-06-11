@@ -67,63 +67,76 @@ test('API symbol links point to local generated Starlight reference pages', asyn
 test('owner-level reference pages group methods under their owner', async ({ page }) => {
   await page.goto('/reference/cityjson-index/rust/cityindex/');
   await expect(page.getByRole('heading', { name: 'CityIndex', level: 1 })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'reindex' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Instance methods', level: 2 })).toBeVisible();
-  await expect(page.getByRole('main').getByRole('link', { name: 'reindex', exact: true })).toHaveAttribute(
+  await expect(page.getByRole('heading', { name: 'Summary', level: 2 })).toBeVisible();
+  await expect(page.locator('.api-summary-table').first()).toBeVisible();
+  const toc = page.locator('nav[aria-labelledby="starlight__on-this-page"]');
+  await expect(toc.getByRole('link', { name: 'Instance methods', exact: true })).toHaveAttribute(
+    'href',
+    '#instance-methods',
+  );
+  await expect(toc.getByRole('link', { name: 'reindex', exact: true })).toHaveAttribute(
+    'href',
+    '#method-reindex',
+  );
+  await expect(page.getByRole('heading', { name: 'Instance methods', level: 2 }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'reindex', level: 3 })).toBeVisible();
+  await expect(page.locator('.api-summary-table').getByRole('link', { name: 'reindex', exact: true })).toHaveAttribute(
     'href',
     '#method-reindex',
   );
 
   await page.goto('/reference/cityjson-lib/c/c-ffi/');
   await expect(page.getByRole('heading', { name: 'C FFI' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Standalone functions', level: 2 })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'cj_model_parse_document_bytes' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Standalone functions', level: 2 }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'cj_model_parse_document_bytes', level: 3 })).toBeVisible();
 });
 
 test('generated API hierarchy distinguishes types and method kinds', async ({ page }) => {
   await page.goto('/reference/cityjson-lib/python/module-functions/');
-  const pythonModuleContents = page.locator('.api-group-nav');
-  await expect(pythonModuleContents.getByRole('heading', { name: 'Types', level: 3 })).toBeVisible();
+  const pythonModuleContents = page.locator('.api-summary-section').first();
+  await expect(pythonModuleContents.locator('.api-summary-group-label').first()).toHaveText('Types');
+  await expect(pythonModuleContents.getByRole('columnheader', { name: 'Classification' })).toBeVisible();
   await expect(
-    pythonModuleContents.getByRole('heading', { name: 'Standalone functions', level: 3 }),
-  ).toBeVisible();
-  await expect(page.locator('section#class-citymodel .api-kind-badge')).toHaveText('Class');
+    page.locator('nav[aria-labelledby="starlight__on-this-page"]').getByRole('link', { name: 'reindex', exact: true }),
+  ).toHaveCount(0);
 
   await page.goto('/reference/cityjson-lib/python/citymodel/');
-  await expect(page.getByRole('heading', { name: 'Class methods', level: 2 })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Instance methods', level: 2 })).toBeVisible();
-  await expect(page.locator('section#method-create .api-kind-badge')).toHaveText('Class method');
-  await expect(page.locator('section#method-summary .api-kind-badge')).toHaveText('Instance method');
-  await expect(page.getByRole('main')).not.toContainText('Kind: method');
+  await expect(page.getByRole('heading', { name: 'Class methods', level: 2 }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Instance methods', level: 2 }).first()).toBeVisible();
+  await expect(page.locator('.api-summary-section').getByRole('columnheader', { name: 'Classification' })).toHaveCount(0);
+  await expect(page.locator('section[aria-labelledby="method-create"] .api-kind-label')).toHaveCount(0);
+  await expect(page.locator('section[aria-labelledby="method-summary"] .api-kind-label')).toHaveCount(0);
 
   await page.goto('/reference/cityjson-index/rust/cityindex/');
-  await expect(page.getByRole('heading', { name: 'Associated functions', level: 2 })).toBeVisible();
-  await expect(page.locator('section#method-open .api-kind-badge')).toHaveText('Associated function');
+  await expect(page.getByRole('heading', { name: 'Associated functions', level: 2 }).first()).toBeVisible();
+  await expect(page.locator('section[aria-labelledby="method-open"] .api-kind-label')).toHaveCount(0);
 
   await page.goto('/reference/cityjson-lib/rust/transformer/#method-transform');
-  await expect(page.locator('section#method-transform .api-kind-badge')).toHaveText('Instance method');
+  await expect(page.locator('section[aria-labelledby="method-transform"] .api-kind-label')).toHaveCount(0);
   await expect(page.getByRole('main')).not.toContainText('Kind: method');
 
   await page.goto('/reference/cityjson-lib/cpp/model/#method-create');
-  await expect(page.getByRole('heading', { name: 'Static methods', level: 2 })).toBeVisible();
-  await expect(page.locator('section#method-create .api-kind-badge')).toHaveText('Static method');
+  await expect(page.getByRole('heading', { name: 'Static methods', level: 2 }).first()).toBeVisible();
+  await expect(page.locator('section[aria-labelledby="method-create"] .api-kind-label')).toHaveCount(0);
 });
 
 test('generated API docstrings preserve python and rust formatting', async ({ page }) => {
   await page.goto('/reference/cityjson-lib/python/module-functions/#class-citymodel');
-  const cityModelSection = page.locator('section#class-citymodel');
+  const cityModelSection = page.locator('section[aria-labelledby="class-citymodel"]');
   await expect(cityModelSection).toContainText('class CityModel(handle)');
   await expect(cityModelSection).not.toContainText('CityModelhandle');
 
   await page.goto('/reference/cityjson-lib/python/citymodel/#method-parse_document_bytes');
-  const parseDocumentSection = page.locator('section#method-parse_document_bytes');
-  await expect(parseDocumentSection).toContainText('Return type: Self');
-  await expect(parseDocumentSection.locator('ul > li > code')).toHaveText('Self');
+  const parseDocumentSection = page.locator('section[aria-labelledby="method-parse_document_bytes"]');
+  await expect(parseDocumentSection.getByRole('heading', { name: 'Parameters', level: 4 })).toBeVisible();
+  await expect(parseDocumentSection.locator('.api-definition-list dt code').first()).toHaveText('data');
+  await expect(parseDocumentSection.getByRole('heading', { name: 'Returns', level: 4 })).toBeVisible();
+  await expect(parseDocumentSection.locator('.api-definition-list').nth(1).locator('dt > code')).toHaveText('Self');
 
   await page.goto('/reference/cityjson-lib/rust/transformer/#method-transform');
-  await expect(page.getByRole('heading', { name: 'Errors', level: 4 })).toBeVisible();
-  await expect(page.locator('section#method-transform')).toContainText('Transform one [x, y, z] point.');
-  await expect(page.locator('section#method-transform')).toContainText(
+  await expect(page.getByRole('heading', { name: 'Raises', level: 4 })).toBeVisible();
+  await expect(page.locator('section[aria-labelledby="method-transform"]')).toContainText('Transform one [x, y, z] point.');
+  await expect(page.locator('section[aria-labelledby="method-transform"]')).toContainText(
     'Returns an error when PROJ rejects the point or the cached transformer lock is poisoned.',
   );
 });

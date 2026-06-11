@@ -199,6 +199,7 @@ def extract_rustdoc(target: RustdocTarget) -> list[dict[str, object]]:
         name = "::".join(path)
         owner_label = rust_owner_label(path, kind)
         signature = rust_source_signature(item) or rust_signature(member_name, kind, inner)
+        docs = rust_docs_markdown(str(item.get("docs") or ""))
         entries.append(
             entry(
                 package=target.package,
@@ -207,7 +208,8 @@ def extract_rustdoc(target: RustdocTarget) -> list[dict[str, object]]:
                 member_name=member_name,
                 kind=kind,
                 signature=signature,
-                docs=rust_docs_markdown(str(item.get("docs") or "")),
+                docs=docs,
+                sections=markdown_sections(docs),
                 source_path=target.source_path,
                 owner_label=owner_label,
                 docs_rs_url=rust_docs_url(target, path, kind),
@@ -228,6 +230,7 @@ def cityjson_lib_facade_entries(target: RustdocTarget) -> list[dict[str, object]
             kind="type alias",
             signature="pub use cityjson_types::v2_0::OwnedCityModel as Model",
             docs="High-level CityJSON model facade re-exported by cityjson-lib.",
+            sections=markdown_sections("High-level CityJSON model facade re-exported by cityjson-lib."),
             source_path=target.source_path,
             owner_label="Model",
             docs_rs_url=f"{target.docs_rs_base}type.Model.html" if target.docs_rs_base else None,
@@ -240,6 +243,7 @@ def cityjson_lib_facade_entries(target: RustdocTarget) -> list[dict[str, object]
             kind="method",
             signature="pub fn parse_document(data: &[u8]) -> Result<Model>",
             docs="Parses a CityJSON document into a model.",
+            sections=markdown_sections("Parses a CityJSON document into a model."),
             source_path=target.source_path,
             owner_label="Model",
             docs_rs_url=target.docs_rs_base,
@@ -252,6 +256,7 @@ def cityjson_lib_facade_entries(target: RustdocTarget) -> list[dict[str, object]
             kind="function",
             signature="pub fn summary(model: &Model) -> ModelSummary",
             docs="Returns a summary of model contents.",
+            sections=markdown_sections("Returns a summary of model contents."),
             source_path=target.source_path,
             owner_label="cityjson_lib::query",
             docs_rs_url=f"{target.docs_rs_base}query/fn.summary.html" if target.docs_rs_base else None,
@@ -448,6 +453,7 @@ def parse_sphinx_xml(target: PythonTarget, xml_dir: Path) -> list[dict[str, obje
             continue
         kind = "class" if objtype == "class" else "method" if objtype == "method" else "function"
         docs = python_desc_content_markdown(desc)
+        sections = python_desc_sections(desc, signature_node)
         owner_label = name.rsplit(".", 1)[0] if kind == "method" and "." in name else "Module functions"
         member_name = name.rsplit(".", 1)[-1] if kind == "method" else name
         entries.append(
@@ -459,6 +465,7 @@ def parse_sphinx_xml(target: PythonTarget, xml_dir: Path) -> list[dict[str, obje
                 kind=kind,
                 signature=python_signature(signature_node),
                 docs=docs,
+                sections=sections,
                 source_path=target.source_path,
                 owner_label=owner_label,
                 source_detail=f"Sphinx XML: {xml_path.relative_to(DOCS_ROOT)}",
@@ -555,6 +562,7 @@ def parse_doxygen_xml(target: DoxygenTarget, xml_dir: Path) -> list[dict[str, ob
             compound_kind = compound.attrib.get("kind")
             if target.language == "cpp" and compound_kind in {"class", "struct"} and compound_name:
                 short = compound_name.split("::")[-1]
+                docs = clean_docs(text_of(compound, "briefdescription"))
                 entries.append(
                     entry(
                         package=target.package,
@@ -563,7 +571,8 @@ def parse_doxygen_xml(target: DoxygenTarget, xml_dir: Path) -> list[dict[str, ob
                         member_name=short,
                         kind="class" if compound_kind == "class" else "struct",
                         signature=f"{compound_kind} {compound_name}",
-                        docs=clean_docs(text_of(compound, "briefdescription")),
+                        docs=docs,
+                        sections=markdown_sections(docs),
                         source_path=target.source_path,
                         owner_label=short,
                         source_detail=f"Doxygen XML: {xml_path.relative_to(DOCS_ROOT)}",
@@ -578,6 +587,7 @@ def parse_doxygen_xml(target: DoxygenTarget, xml_dir: Path) -> list[dict[str, ob
                     continue
                 full_name = doxygen_full_name(target.language, compound_name, raw_name, kind)
                 owner_label = doxygen_owner_label(target.language, compound_name, kind)
+                docs = clean_docs(text_of(member, "briefdescription"))
                 entries.append(
                     entry(
                         package=target.package,
@@ -586,7 +596,8 @@ def parse_doxygen_xml(target: DoxygenTarget, xml_dir: Path) -> list[dict[str, ob
                         member_name=raw_name,
                         kind=kind,
                         signature=doxygen_signature(member),
-                        docs=clean_docs(text_of(member, "briefdescription")),
+                        docs=docs,
+                        sections=markdown_sections(docs),
                         source_path=target.source_path,
                         owner_label=owner_label,
                         source_detail=f"Doxygen XML: {xml_path.relative_to(DOCS_ROOT)}",
@@ -637,6 +648,7 @@ def entry(
     kind: str,
     signature: str,
     docs: str,
+    sections: dict[str, object] | None = None,
     source_path: str,
     owner_label: str,
     source_detail: str = "",
@@ -661,6 +673,7 @@ def entry(
         "group": group,
         "signature": normalized_signature,
         "docs": docs,
+        **normalized_sections(sections, docs),
         "source": {"path": source_path, "detail": source_detail},
         "owner": {"key": f"{language}:{owner_label}", "label": owner_label, "slug": owner_slug},
         "aliases": aliases,
@@ -668,6 +681,164 @@ def entry(
     if docs_rs_url is not None:
         payload["docsRsUrl"] = docs_rs_url
     return payload
+
+
+def normalized_sections(sections: dict[str, object] | None, docs: str) -> dict[str, object]:
+    base = sections or markdown_sections(docs)
+    return {
+        "summary": str(base.get("summary") or ""),
+        "parameters": list(base.get("parameters") or []),
+        "returns": list(base.get("returns") or []),
+        "raises": list(base.get("raises") or []),
+        "examples": list(base.get("examples") or []),
+        "notes": list(base.get("notes") or []),
+        "seeAlso": list(base.get("seeAlso") or []),
+    }
+
+
+def empty_sections() -> dict[str, object]:
+    return {
+        "summary": "",
+        "parameters": [],
+        "returns": [],
+        "raises": [],
+        "examples": [],
+        "notes": [],
+        "seeAlso": [],
+    }
+
+
+def markdown_sections(docs: str) -> dict[str, object]:
+    sections = empty_sections()
+    if not docs.strip():
+        return sections
+
+    blocks = re.split(r"\n\s*\n", docs.strip())
+    summary_blocks: list[str] = []
+    extras: dict[str, list[str]] = {"examples": [], "notes": [], "seeAlso": [], "raises": []}
+    current_key = "summary"
+    current: list[str] = []
+
+    def flush() -> None:
+        nonlocal current
+        body = "\n\n".join(part for part in current if part).strip()
+        if not body:
+            current = []
+            return
+        if current_key == "summary":
+            summary_blocks.extend(part.strip() for part in current if part.strip())
+        elif current_key in extras:
+            extras[current_key].append(body)
+        current = []
+
+    for block in blocks:
+        heading = re.match(r"^#{2,6}\s+(.+)$", block.strip())
+        if heading:
+            flush()
+            title = heading.group(1).strip().lower()
+            if title in {"errors", "raises", "panics"}:
+                current_key = "raises"
+            elif title in {"examples", "example"}:
+                current_key = "examples"
+            elif title in {"notes", "note"}:
+                current_key = "notes"
+            elif title in {"see also", "seealso"}:
+                current_key = "seeAlso"
+            else:
+                current_key = "summary"
+            continue
+        current.append(block.strip())
+    flush()
+
+    sections["summary"] = summary_blocks[0] if summary_blocks else ""
+    if len(summary_blocks) > 1:
+        extras["notes"].extend(summary_blocks[1:])
+    sections["examples"] = extras["examples"]
+    sections["notes"] = extras["notes"]
+    sections["seeAlso"] = extras["seeAlso"]
+    sections["raises"] = [{"type": "Error", "description": item} for item in extras["raises"]]
+    return sections
+
+
+def python_desc_sections(desc: ElementTree.Element, signature_node: ElementTree.Element) -> dict[str, object]:
+    sections = empty_sections()
+    sections["parameters"] = python_signature_parameters(signature_node)
+    body_blocks: list[str] = []
+
+    content = first_child(desc, "desc_content")
+    if content is None:
+        return sections
+
+    for child in content:
+        tag = local_name(child.tag)
+        if tag in {"desc", "index"}:
+            continue
+        if tag == "field_list":
+            python_apply_field_list(child, sections)
+            continue
+        rendered = render_block(child)
+        if rendered:
+            body_blocks.append(rendered)
+
+    if body_blocks:
+        sections["summary"] = body_blocks[0]
+        if len(body_blocks) > 1:
+            sections["notes"] = body_blocks[1:]
+    return sections
+
+
+def python_signature_parameters(signature_node: ElementTree.Element) -> list[dict[str, str]]:
+    parameters: list[dict[str, str]] = []
+    parameter_list = first_child(signature_node, "desc_parameterlist")
+    if parameter_list is None:
+        return parameters
+    for parameter in parameter_list:
+        if local_name(parameter.tag) != "desc_parameter":
+            continue
+        text = compact_text("".join(parameter.itertext()))
+        if not text:
+            continue
+        name = text.split(":", 1)[0].split("=", 1)[0].strip().lstrip("*")
+        if name in {"self", "cls"}:
+            continue
+        type_name = ""
+        if ":" in text:
+            type_name = text.split(":", 1)[1].split("=", 1)[0].strip()
+        parameters.append({"name": name or text, "type": type_name, "description": ""})
+    return parameters
+
+
+def python_apply_field_list(node: ElementTree.Element, sections: dict[str, object]) -> None:
+    for child in node:
+        if local_name(child.tag) != "field":
+            continue
+        name_node = first_child(child, "field_name")
+        body_node = first_child(child, "field_body")
+        if name_node is None or body_node is None:
+            continue
+        name = compact_text("".join(name_node.itertext())).lower()
+        body = render_block_children(body_node)
+        if not body:
+            continue
+        if name in {"return", "returns", "return type"}:
+            sections["returns"] = [{"type": body, "description": ""}]
+        elif name in {"raises", "raise"}:
+            sections["raises"] = [{"type": "Exception", "description": body}]
+        elif name.startswith("param ") or name.startswith("parameter "):
+            parameter_name = name.split(None, 1)[1]
+            list(sections["parameters"]).append({"name": parameter_name, "type": "", "description": body})
+        elif name.startswith("type "):
+            parameter_name = name.split(None, 1)[1]
+            for parameter in list(sections["parameters"]):
+                if parameter.get("name") == parameter_name:
+                    parameter["type"] = body
+                    break
+        elif name in {"note", "notes"}:
+            list(sections["notes"]).append(body)
+        elif name in {"example", "examples"}:
+            list(sections["examples"]).append(body)
+        elif name in {"see also", "seealso"}:
+            list(sections["seeAlso"]).append(body)
 
 
 def classify_entry(*, language: str, kind: str, signature: str, owner_label: str) -> tuple[str, dict[str, object]]:

@@ -35,6 +35,14 @@ for (const entry of referenceEntries) {
   if (!entry.displayKind?.trim()) {
     failures.push(`${entry.package}/${entry.language}/${entry.name} is missing displayKind metadata`);
   }
+  for (const field of ['parameters', 'returns', 'raises', 'examples', 'notes', 'seeAlso']) {
+    if (!Array.isArray(entry[field])) {
+      failures.push(`${entry.package}/${entry.language}/${entry.name} is missing structured ${field} metadata`);
+    }
+  }
+  if (typeof entry.summary !== 'string') {
+    failures.push(`${entry.package}/${entry.language}/${entry.name} is missing summary metadata`);
+  }
   if (!entry.group?.key || !entry.group?.label || typeof entry.group.order !== 'number') {
     failures.push(`${entry.package}/${entry.language}/${entry.name} is missing group metadata`);
   } else if (!expectedGroups.has(entry.group.key)) {
@@ -126,8 +134,11 @@ function validateHref(href, source) {
     failures.push(`${source} links to missing page ${href}`);
     return;
   }
-  if (id && !fs.readFileSync(resolvedPath, 'utf8').includes(`id="${id}"`)) {
-    failures.push(`${source} links to missing anchor ${href}`);
+  if (id) {
+    const resolvedText = fs.readFileSync(resolvedPath, 'utf8');
+    if (!resolvedText.includes(`id="${id}"`) && !resolvedText.includes(`data-api-anchor="${id}"`)) {
+      failures.push(`${source} links to missing anchor ${href}`);
+    }
   }
 }
 
