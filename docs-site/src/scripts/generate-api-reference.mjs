@@ -17,13 +17,24 @@ const languageLabels = {
 };
 
 const kindOrder = ['class', 'struct', 'enum', 'type alias', 'constant', 'function', 'method'];
+const groupOrder = [
+  'types',
+  'standalone-functions',
+  'associated-functions',
+  'class-methods',
+  'static-methods',
+  'instance-methods',
+  'constants',
+  'fields',
+  'symbols',
+];
 
 if (!fs.existsSync(referenceDataPath)) {
   throw new Error(`Missing ${referenceDataPath}; run npm run extract:api first`);
 }
 
 const reference = JSON.parse(fs.readFileSync(referenceDataPath, 'utf8'));
-const entries = assignUrls(reference.entries ?? []);
+const entries = assignUrls((reference.entries ?? []).map(normalizeEntry));
 
 removeGeneratedPages(referenceDir);
 
@@ -54,6 +65,44 @@ fs.writeFileSync(
   `${JSON.stringify({ entries: allSymbols, symbolsByPackage }, null, 2)}\n`,
   'utf8',
 );
+
+function normalizeEntry(entry) {
+  const normalized = { ...entry };
+  normalized.group = normalizeGroup(entry.group, entry.kind);
+  normalized.displayKind = entry.displayKind ?? fallbackDisplayKind(entry.kind);
+  return normalized;
+}
+
+function normalizeGroup(group, kind) {
+  if (group?.key && group?.label && typeof group.order === 'number') {
+    return group;
+  }
+
+  const fallbackGroups = {
+    class: { key: 'types', label: 'Types', order: 10 },
+    struct: { key: 'types', label: 'Types', order: 10 },
+    enum: { key: 'types', label: 'Types', order: 10 },
+    'type alias': { key: 'types', label: 'Types', order: 10 },
+    function: { key: 'standalone-functions', label: 'Standalone functions', order: 20 },
+    method: { key: 'instance-methods', label: 'Instance methods', order: 60 },
+    constant: { key: 'constants', label: 'Constants', order: 70 },
+  };
+
+  return fallbackGroups[kind] ?? { key: 'symbols', label: 'Symbols', order: 90 };
+}
+
+function fallbackDisplayKind(kind) {
+  const labels = {
+    class: 'Class',
+    struct: 'Struct',
+    enum: 'Enum',
+    'type alias': 'Type alias',
+    function: 'Standalone function',
+    method: 'Method',
+    constant: 'Constant',
+  };
+  return labels[kind] ?? kind;
+}
 
 function assignUrls(values) {
   const ownerSlugs = new Map();
@@ -96,9 +145,7 @@ function renderLanguageIndex(group) {
   const owners = [...groupBy(group, (entry) => entry.owner.key).values()]
     .map((ownerEntries) => {
       const owner = ownerEntries[0].owner;
-      const memberCount = ownerEntries.length;
-      const noun = memberCount === 1 ? 'symbol' : 'symbols';
-      return `- [${escapeMd(owner.label)}](./${owner.slug}/) - ${memberCount} ${noun}`;
+      return `- [${escapeMd(owner.label)}](./${owner.slug}/) - ${summarizeOwner(ownerEntries)}`;
     })
     .join('\n');
 
@@ -109,36 +156,75 @@ function renderLanguageIndex(group) {
   );
 }
 
+function summarizeOwner(ownerEntries) {
+  const parts = groupedEntries(ownerEntries).map((entries) => {
+    const count = entries.length;
+    const label = entries[0].group.label.toLowerCase();
+    const noun = count === 1 ? label.slice(0, -1) : label;
+    return `${count} ${noun}`;
+  });
+  return parts.join(', ');
+}
+
 function renderOwnerPage(ownerEntries) {
   const first = ownerEntries[0];
   const owner = first.owner;
   const packageDir = path.join(referenceDir, first.package, first.language, owner.slug);
   fs.mkdirSync(packageDir, { recursive: true });
 
-  const ownedEntries = ownerEntries.toSorted((a, b) => kindSort(a, b) || a.memberName.localeCompare(b.memberName));
-  const toc = ownedEntries
-    .map((entry) => `- [${escapeMd(entry.memberName)}](#${entry.anchor})`)
-    .join('\n');
-  const memberTable = ownedEntries
-    .map((entry) => `| \`${escapeMd(entry.memberName)}\` | ${entry.kind} | [section](#${entry.anchor}) |`)
-    .join('\n');
-  const sections = ownedEntries.map((entry) => renderSymbolSection(entry)).join('\n\n');
+  const groups = groupedEntries(ownerEntries);
+  const contents = groups.map((entries) => renderGroupNav(entries)).join('\n\n');
+  const sections = groups.map((entries) => renderGroupSection(entries)).join('\n\n');
 
   fs.writeFileSync(
     path.join(packageDir, 'index.mdx'),
-    `---\ntitle: ${owner.label}\ndescription: Generated ${languageLabels[first.language]} owner reference for ${first.package}.\nlanguages: ["${first.language}"]\ngenerated: true\n---\n\nSource: \`${escapeMd(first.source.path)}\`\n\n## Contents\n\n${toc}\n\n## Members\n\n| Symbol | Kind | Reference |\n| --- | --- | --- |\n${memberTable}\n\n${sections}\n`,
+    `---\ntitle: ${owner.label}\ndescription: Generated ${languageLabels[first.language]} owner reference for ${first.package}.\nlanguages: ["${first.language}"]\ngenerated: true\n---\n\nSource: \`${escapeMd(first.source.path)}\`\n\n## Contents\n\n<div class="api-group-nav">\n\n${contents}\n\n</div>\n\n${sections}\n`,
     'utf8',
   );
 }
 
+function groupedEntries(entries) {
+  return [...groupBy([...entries].sort(ownerEntrySort), (entry) => entry.group.key).values()].sort((a, b) =>
+    groupSort(a[0], b[0]),
+  );
+}
+
+function ownerEntrySort(a, b) {
+  return groupSort(a, b) || kindSort(a, b) || a.memberName.localeCompare(b.memberName);
+}
+
+function groupSort(a, b) {
+  const aIndex = groupOrder.indexOf(a.group.key);
+  const bIndex = groupOrder.indexOf(b.group.key);
+  const normalizedA = aIndex === -1 ? Number(a.group.order ?? 999) : aIndex;
+  const normalizedB = bIndex === -1 ? Number(b.group.order ?? 999) : bIndex;
+  if (normalizedA !== normalizedB) return normalizedA - normalizedB;
+  return String(a.group.label).localeCompare(String(b.group.label));
+}
+
+function renderGroupNav(entries) {
+  const group = entries[0].group;
+  const items = entries
+    .map((entry) => `- [${escapeMd(entry.memberName)}](#${entry.anchor})`)
+    .join('\n');
+  return `<section class="api-group-nav-section">\n\n### ${escapeMdxText(group.label)}\n\n${items}\n\n</section>`;
+}
+
+function renderGroupSection(entries) {
+  const group = entries[0].group;
+  const symbols = entries.map((entry) => renderSymbolSection(entry)).join('\n\n');
+  return `## ${escapeMdxText(group.label)}\n\n<div class="api-reference-group">\n\n${symbols}\n\n</div>`;
+}
+
 function renderSymbolSection(entry) {
+  const meta = `<div class="api-reference-meta"><span class="api-kind-badge">${escapeMdxText(entry.displayKind)}</span></div>`;
   const signature = entry.signature
     ? `\n\n\`\`\`${fenceLanguage(entry.language)}\n${entry.signature}\n\`\`\``
     : '';
   const docs = entry.docs ? `\n\n${entry.docs}` : '';
   const source = entry.source.detail ? `\n\nSource metadata: ${escapeMdxText(entry.source.detail)}` : '';
   const mirror = entry.docsRsUrl ? `\n\n[docs.rs mirror](${entry.docsRsUrl})` : '';
-  return `<section id="${entry.anchor}" class="api-reference-symbol" data-pagefind-body>\n\n### \`${escapeMd(entry.memberName)}\`\n\nKind: ${entry.kind}.${signature}${docs}${source}${mirror}\n\n</section>`;
+  return `<section id="${entry.anchor}" class="api-reference-symbol" data-pagefind-body>\n\n### \`${escapeMd(entry.memberName)}\`\n\n${meta}${signature}${docs}${source}${mirror}\n\n</section>`;
 }
 
 function symbolManifestEntry(entry) {
@@ -149,6 +235,8 @@ function symbolManifestEntry(entry) {
     package: entry.package,
     language: entry.language,
     kind: entry.kind,
+    displayKind: entry.displayKind,
+    group: entry.group,
     signature: entry.signature,
     source: entry.source.path,
     docsRsUrl: entry.docsRsUrl,

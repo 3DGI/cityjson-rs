@@ -608,13 +608,13 @@ def doxygen_kind(member_kind: str, compound_kind: str | None, language: str) -> 
 
 
 def doxygen_full_name(language: str, compound_name: str, raw_name: str, kind: str) -> str:
-    if language == "cpp" and kind == "method" and compound_name:
+    if language == "cpp" and kind in {"method", "constant"} and compound_name:
         return f"{compound_name}::{raw_name}"
     return raw_name
 
 
 def doxygen_owner_label(language: str, compound_name: str, kind: str) -> str:
-    if language == "cpp" and kind == "method" and compound_name:
+    if language == "cpp" and kind in {"method", "constant"} and compound_name:
         return compound_name.split("::")[-1]
     if language == "c":
         return "C FFI"
@@ -644,13 +644,22 @@ def entry(
 ) -> dict[str, object]:
     owner_slug = slugify(owner_label)
     aliases = aliases_for(name, member_name, owner_label)
+    normalized_signature = compact_text(signature)
+    display_kind, group = classify_entry(
+        language=language,
+        kind=kind,
+        signature=normalized_signature,
+        owner_label=owner_label,
+    )
     payload: dict[str, object] = {
         "package": package,
         "language": language,
         "name": name,
         "memberName": member_name,
         "kind": kind,
-        "signature": compact_text(signature),
+        "displayKind": display_kind,
+        "group": group,
+        "signature": normalized_signature,
         "docs": docs,
         "source": {"path": source_path, "detail": source_detail},
         "owner": {"key": f"{language}:{owner_label}", "label": owner_label, "slug": owner_slug},
@@ -659,6 +668,91 @@ def entry(
     if docs_rs_url is not None:
         payload["docsRsUrl"] = docs_rs_url
     return payload
+
+
+def classify_entry(*, language: str, kind: str, signature: str, owner_label: str) -> tuple[str, dict[str, object]]:
+    if kind in {"class", "struct", "enum", "type alias"}:
+        return title_case_kind(kind), group_meta("types")
+    if kind == "constant":
+        if is_field(language, signature):
+            return "Field", group_meta("fields")
+        return "Constant", group_meta("constants")
+    if kind == "function":
+        return "Standalone function", group_meta("standalone-functions")
+    if kind != "method":
+        return title_case_kind(kind), group_meta("symbols")
+
+    if language == "python":
+        if signature.startswith("classmethod "):
+            return "Class method", group_meta("class-methods")
+        if signature.startswith("staticmethod "):
+            return "Static method", group_meta("static-methods")
+        return "Instance method", group_meta("instance-methods")
+
+    if language in {"rust", "wasm"}:
+        if rust_method_has_receiver(signature):
+            return "Instance method", group_meta("instance-methods")
+        return "Associated function", group_meta("associated-functions")
+
+    if language == "cpp":
+        if signature.startswith("static "):
+            return "Static method", group_meta("static-methods")
+        return "Instance method", group_meta("instance-methods")
+
+    if language == "c" or owner_label == "C FFI":
+        return "Standalone function", group_meta("standalone-functions")
+
+    return "Method", group_meta("instance-methods")
+
+
+def title_case_kind(kind: str) -> str:
+    return " ".join(part.capitalize() for part in kind.split())
+
+
+def group_meta(key: str) -> dict[str, object]:
+    labels = {
+        "types": "Types",
+        "standalone-functions": "Standalone functions",
+        "associated-functions": "Associated functions",
+        "class-methods": "Class methods",
+        "static-methods": "Static methods",
+        "instance-methods": "Instance methods",
+        "constants": "Constants",
+        "fields": "Fields",
+        "symbols": "Symbols",
+    }
+    order = {
+        "types": 10,
+        "standalone-functions": 20,
+        "associated-functions": 30,
+        "class-methods": 40,
+        "static-methods": 50,
+        "instance-methods": 60,
+        "constants": 70,
+        "fields": 80,
+        "symbols": 90,
+    }
+    return {"key": key, "label": labels[key], "order": order[key]}
+
+
+def is_field(language: str, signature: str) -> bool:
+    if language not in {"c", "cpp"}:
+        return False
+    return "::" in signature and "(" not in signature
+
+
+def rust_method_has_receiver(signature: str) -> bool:
+    match = re.search(r"fn\s+[^\(]+\(([^)]*)\)", signature)
+    if match is None:
+        return False
+    params = compact_text(match.group(1))
+    if not params:
+        return False
+    first_param = params.split(",", 1)[0].strip()
+    receiver_prefixes = ("self", "&self", "&mut self", "mut self")
+    if first_param.startswith(receiver_prefixes):
+        return True
+    return first_param.startswith("self:")
 
 
 def aliases_for(name: str, member_name: str, owner_label: str) -> list[str]:
@@ -910,9 +1004,6 @@ def rust_docs_markdown(value: str) -> str:
     return "\n".join(lines).strip()
 
 
-def slugify(value: str) -> str:
-    slug = re.sub(r"[^A-Za-z0-9_-]+", "-", value.replace("::", "-").replace(".", "-")).strip("-").lower()
-    return slug or "symbols"
 def slugify(value: str) -> str:
     slug = re.sub(r"[^A-Za-z0-9_-]+", "-", value.replace("::", "-").replace(".", "-")).strip("-").lower()
     return slug or "symbols"

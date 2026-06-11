@@ -68,13 +68,46 @@ test('owner-level reference pages group methods under their owner', async ({ pag
   await page.goto('/reference/cityjson-index/rust/cityindex/');
   await expect(page.getByRole('heading', { name: 'CityIndex', level: 1 })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'reindex' })).toBeVisible();
-  await expect(page.getByRole('main').getByRole('link', { name: 'reindex', exact: true })).toHaveAttribute('href', '#method-reindex');
+  await expect(page.getByRole('heading', { name: 'Instance methods', level: 2 })).toBeVisible();
+  await expect(page.getByRole('main').getByRole('link', { name: 'reindex', exact: true })).toHaveAttribute(
+    'href',
+    '#method-reindex',
+  );
 
   await page.goto('/reference/cityjson-lib/c/c-ffi/');
   await expect(page.getByRole('heading', { name: 'C FFI' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Standalone functions', level: 2 })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'cj_model_parse_document_bytes' })).toBeVisible();
 });
 
+test('generated API hierarchy distinguishes types and method kinds', async ({ page }) => {
+  await page.goto('/reference/cityjson-lib/python/module-functions/');
+  const pythonModuleContents = page.locator('.api-group-nav');
+  await expect(pythonModuleContents.getByRole('heading', { name: 'Types', level: 3 })).toBeVisible();
+  await expect(
+    pythonModuleContents.getByRole('heading', { name: 'Standalone functions', level: 3 }),
+  ).toBeVisible();
+  await expect(page.locator('section#class-citymodel .api-kind-badge')).toHaveText('Class');
+
+  await page.goto('/reference/cityjson-lib/python/citymodel/');
+  await expect(page.getByRole('heading', { name: 'Class methods', level: 2 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Instance methods', level: 2 })).toBeVisible();
+  await expect(page.locator('section#method-create .api-kind-badge')).toHaveText('Class method');
+  await expect(page.locator('section#method-summary .api-kind-badge')).toHaveText('Instance method');
+  await expect(page.getByRole('main')).not.toContainText('Kind: method');
+
+  await page.goto('/reference/cityjson-index/rust/cityindex/');
+  await expect(page.getByRole('heading', { name: 'Associated functions', level: 2 })).toBeVisible();
+  await expect(page.locator('section#method-open .api-kind-badge')).toHaveText('Associated function');
+
+  await page.goto('/reference/cityjson-lib/rust/transformer/#method-transform');
+  await expect(page.locator('section#method-transform .api-kind-badge')).toHaveText('Instance method');
+  await expect(page.getByRole('main')).not.toContainText('Kind: method');
+
+  await page.goto('/reference/cityjson-lib/cpp/model/#method-create');
+  await expect(page.getByRole('heading', { name: 'Static methods', level: 2 })).toBeVisible();
+  await expect(page.locator('section#method-create .api-kind-badge')).toHaveText('Static method');
+});
 
 test('generated API docstrings preserve python and rust formatting', async ({ page }) => {
   await page.goto('/reference/cityjson-lib/python/module-functions/#class-citymodel');
@@ -90,7 +123,9 @@ test('generated API docstrings preserve python and rust formatting', async ({ pa
   await page.goto('/reference/cityjson-lib/rust/transformer/#method-transform');
   await expect(page.getByRole('heading', { name: 'Errors', level: 4 })).toBeVisible();
   await expect(page.locator('section#method-transform')).toContainText('Transform one [x, y, z] point.');
-  await expect(page.locator('section#method-transform')).toContainText('Returns an error when PROJ rejects the point or the cached transformer lock is poisoned.');
+  await expect(page.locator('section#method-transform')).toContainText(
+    'Returns an error when PROJ rejects the point or the cached transformer lock is poisoned.',
+  );
 });
 
 test('search finds generated API symbols and guide/spec content', async ({ page }) => {

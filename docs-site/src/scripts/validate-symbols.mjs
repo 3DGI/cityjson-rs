@@ -10,6 +10,18 @@ const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const reference = JSON.parse(fs.readFileSync(referencePath, 'utf8'));
 const failures = [];
 
+const expectedGroups = new Set([
+  'types',
+  'standalone-functions',
+  'associated-functions',
+  'class-methods',
+  'static-methods',
+  'instance-methods',
+  'constants',
+  'fields',
+  'symbols',
+]);
+
 const entries = manifest.entries ?? [];
 const referenceEntries = reference.entries ?? [];
 const symbolsByPackage = manifest.symbolsByPackage ?? {};
@@ -17,12 +29,28 @@ const urls = new Map();
 
 for (const entry of referenceEntries) {
   if (!entry.name?.trim()) failures.push('API reference contains an empty symbol name');
-  if (!entry.owner?.label || !entry.owner?.slug) failures.push(`${entry.package}/${entry.language}/${entry.name} is missing owner metadata`);
+  if (!entry.owner?.label || !entry.owner?.slug) {
+    failures.push(`${entry.package}/${entry.language}/${entry.name} is missing owner metadata`);
+  }
+  if (!entry.displayKind?.trim()) {
+    failures.push(`${entry.package}/${entry.language}/${entry.name} is missing displayKind metadata`);
+  }
+  if (!entry.group?.key || !entry.group?.label || typeof entry.group.order !== 'number') {
+    failures.push(`${entry.package}/${entry.language}/${entry.name} is missing group metadata`);
+  } else if (!expectedGroups.has(entry.group.key)) {
+    failures.push(`${entry.package}/${entry.language}/${entry.name} has unknown group ${entry.group.key}`);
+  }
   if (entry.language === 'cpp' && entry.name.includes('detail')) {
     failures.push(`C++ detail symbol leaked into public docs: ${entry.name}`);
   }
   if (entry.signature && !balancedSignature(entry.signature)) {
     failures.push(`${entry.package}/${entry.language}/${entry.name} has a broken or unterminated signature: ${entry.signature}`);
+  }
+  if (entry.kind === 'method' && !entry.owner) {
+    failures.push(`${entry.package}/${entry.language}/${entry.name} method is missing an owner`);
+  }
+  if (entry.displayKind === 'Field' && entry.language === 'cpp' && entry.owner?.label === 'Functions') {
+    failures.push(`${entry.package}/cpp/${entry.name} field is not nested under its owner page`);
   }
 }
 
@@ -39,9 +67,6 @@ for (const entry of entries) {
   urls.set(entry.url, entry);
   if (entry.language === 'rust' && !entry.docsRsUrl?.startsWith('https://docs.rs/')) {
     failures.push(`${entry.package}/rust/${entry.name} is missing a docs.rs mirror URL`);
-  }
-  if (entry.kind === 'method' && !entry.owner) {
-    failures.push(`${entry.package}/${entry.language}/${entry.name} method is missing an owner`);
   }
   if (entry.kind === 'method' && /\/method-[^/]+\//.test(entry.url)) {
     failures.push(`${entry.package}/${entry.language}/${entry.name} method is emitted as a method page instead of an owner page`);
@@ -79,6 +104,10 @@ for (const file of walk(contentDir)) {
 
   for (const href of text.matchAll(/href="(\/reference\/[^"]+)"/g)) {
     validateHref(href[1], file);
+  }
+
+  if (text.includes('\ngenerated: true\n') && text.includes('Kind: ')) {
+    failures.push(`${file} still contains legacy Kind prose`);
   }
 }
 
