@@ -40,7 +40,7 @@ from cityjson_lib._ffi import (
 try:
     __version__ = _package_version("cityjson-lib")
 except PackageNotFoundError:
-    __version__ = "0.9.0"
+    __version__ = "0.10.0"
 
 _ffi = FfiLibrary.load()
 

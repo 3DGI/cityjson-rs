@@ -13,7 +13,7 @@ wheels = [
 
 [[package]]
 name = "cityjson-index"
-version = "0.9.0"
+version = "0.10.0"
 source = { editable = "." }
 dependencies = [
     { name = "cityjson-lib" },
@@ -36,7 +36,7 @@ dev = [
 
 [[package]]
 name = "cityjson-lib"
-version = "0.9.0"
+version = "0.10.0"
 source = { editable = "../../../cityjson-lib/ffi/python" }
 
 [package.metadata]

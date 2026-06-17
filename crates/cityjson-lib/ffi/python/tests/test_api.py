@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from importlib.metadata import version as package_version
 from pathlib import Path
 import tempfile
 import unittest
@@ -69,7 +70,7 @@ MERGE_RIGHT_FIXTURE_PATH = OPS_FIXTURE_DIR / "merge_right.city.json"
 
 class PythonBindingMetadataTest(unittest.TestCase):
     def test_runtime_version_comes_from_package_metadata_or_release_fallback(self) -> None:
-        self.assertRegex(__version__, r"^0\.9\.0$")
+        self.assertEqual(__version__, package_version("cityjson-lib"))
 
 
 class PythonBindingSmokeTest(unittest.TestCase):

@@ -48,7 +48,7 @@ miri:
     MIRIFLAGS="-Zmiri-strict-provenance" cargo +nightly miri test -p cityjson-types geometry
 
 # Run the Python binding test suites (tox smoke) for both crates
-test-python:
+test-python: build-python
     cd crates/cityjson-lib/ffi/python && uv run tox run
     cd crates/cityjson-index/ffi/python && uv run tox run
 
