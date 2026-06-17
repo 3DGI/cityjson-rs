@@ -83,6 +83,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.93.0
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: wheels-lib-*
+          path: dist-lib
+          merge-multiple: true
       - uses: pypa/cibuildwheel@v3.4.1
         with:
           package-dir: crates/cityjson-index/ffi/python
@@ -94,6 +99,7 @@ jobs:
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_BEFORE_ALL_LINUX: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y -t stable && . $HOME/.cargo/env"
           CIBW_ENVIRONMENT_LINUX: 'PATH="$HOME/.cargo/bin:$PATH"'
+          PIP_FIND_LINKS: ${{ github.workspace }}/dist-lib
           CIBW_TEST_COMMAND: 'python -c "import cityjson_index"'
       - uses: actions/upload-artifact@v4
         with:
