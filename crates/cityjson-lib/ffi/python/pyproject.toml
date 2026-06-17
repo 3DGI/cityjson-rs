@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cityjson-lib"
-version = "0.9.0"
+version = "0.10.0"
 description = "Python bindings for cityjson-lib"
 requires-python = ">=3.11"
 readme = "README.md"

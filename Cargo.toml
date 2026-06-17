@@ -14,7 +14,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.9.0"
+version = "0.10.0"
 edition = "2024"
 rust-version = "1.93"
 license = "MIT OR Apache-2.0"
@@ -22,14 +22,14 @@ repository = "https://github.com/3DGI/cityjson"
 authors = ["Balázs Dukai <balazs.dukai@3dgi.nl>"]
 
 [workspace.dependencies]
-cityjson-types          = { version = "0.9.0", path = "crates/cityjson-types" }
-cityjson-json           = { version = "0.9.0", path = "crates/cityjson-json" }
-cityjson-arrow          = { version = "0.9.0", path = "crates/cityjson-arrow" }
-cityjson-parquet        = { version = "0.9.0", path = "crates/cityjson-parquet" }
-cityjson-lib            = { version = "0.9.0", path = "crates/cityjson-lib", default-features = false }
-cityjson-lib-ffi-core   = { version = "0.9.0", path = "crates/cityjson-lib/ffi/core", default-features = false }
-cityjson-index          = { version = "0.9.0", path = "crates/cityjson-index" }
-cityjson-index-ffi-core = { version = "0.9.0", path = "crates/cityjson-index/ffi/core" }
+cityjson-types          = { version = "0.10.0", path = "crates/cityjson-types" }
+cityjson-json           = { version = "0.10.0", path = "crates/cityjson-json" }
+cityjson-arrow          = { version = "0.10.0", path = "crates/cityjson-arrow" }
+cityjson-parquet        = { version = "0.10.0", path = "crates/cityjson-parquet" }
+cityjson-lib            = { version = "0.10.0", path = "crates/cityjson-lib", default-features = false }
+cityjson-lib-ffi-core   = { version = "0.10.0", path = "crates/cityjson-lib/ffi/core", default-features = false }
+cityjson-index          = { version = "0.10.0", path = "crates/cityjson-index" }
+cityjson-index-ffi-core = { version = "0.10.0", path = "crates/cityjson-index/ffi/core" }
 
 [workspace.lints.clippy]
 all = { level = "deny", priority = -1 }

@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cityjson-index"
-version = "0.9.0"
+version = "0.10.0"
 description = "Python bindings for cityjson-index"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT OR Apache-2.0"
 license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
 authors = [{ name = "Balázs Dukai", email = "balazs.dukai@3dgi.nl" }]
-dependencies = ["cityjson-lib==0.9.0"]
+dependencies = ["cityjson-lib==0.10.0"]
 keywords = ["cityjson", "3d", "gis", "geospatial", "sqlite", "index"]
 classifiers = [
     "Development Status :: 4 - Beta",
