@@ -8,6 +8,8 @@ crate in the workspace to the same version.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-06-17
+
 ### Added
 - Added v0.10 binding parity coverage: `cityjson-lib` Python/C++ now expose
   PROJ transformer/reprojection workflows and vertex/template-vertex mutation,
