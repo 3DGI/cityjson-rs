@@ -55,6 +55,7 @@
 //! ```
 
 pub mod nested;
+mod wkb;
 
 use super::vertices::Vertices;
 use crate::cityjson::core::boundary::nested::{
