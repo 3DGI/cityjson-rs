@@ -161,9 +161,9 @@ impl<'a, VR: VertexRef> WkbWriter<'a, VR> {
         self.write_header(MULTI_POINT_Z);
         self.write_count(self.boundary.vertices.len())?;
 
-        for &vertex_index in &self.boundary.vertices {
+        for vertex_index in &self.boundary.vertices {
             self.write_header(POINT_Z);
-            self.write_coordinate(vertex_index)?;
+            self.write_coordinate(*vertex_index)?;
         }
 
         Ok(())
@@ -182,8 +182,8 @@ impl<'a, VR: VertexRef> WkbWriter<'a, VR> {
 
             self.write_header(LINE_STRING_Z);
             self.write_count(vertex_range.len())?;
-            for &vertex_index in &self.boundary.vertices[vertex_range] {
-                self.write_coordinate(vertex_index)?;
+            for vertex_index in &self.boundary.vertices[vertex_range] {
+                self.write_coordinate(*vertex_index)?;
             }
         }
 
@@ -260,14 +260,12 @@ impl<'a, VR: VertexRef> WkbWriter<'a, VR> {
     }
 
     fn write_coordinate(&mut self, vertex_index: VertexIndex<VR>) -> error::Result<()> {
-        let index = vertex_index.try_to_usize()?;
         let coordinate =
             self.vertices
-                .as_slice()
-                .get(index)
+                .get(vertex_index)
                 .ok_or_else(|| error::Error::InvalidReference {
                     element_type: "vertex".to_owned(),
-                    index,
+                    index: vertex_index.to_usize(),
                     max_index: self.vertices.len().saturating_sub(1),
                 })?;
 
