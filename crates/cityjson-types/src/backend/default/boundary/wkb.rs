@@ -53,9 +53,11 @@
 //! - `MultiSurface` and `CompositeSurface`: `surfaces.len()` becomes the `MultiPolygonZ` count; each
 //!   surface offset range becomes one `PolygonZ`, and the number of rings in that range becomes the
 //!   polygon ring count.
-//! - `Solid`, `MultiSolid`, and `CompositeSolid`: standard WKB has no solid geometry type, so shells
-//!   and solids are not encoded as containers. All surfaces are flattened and emitted as one
-//!   `MultiPolygonZ`; the polygon count is still `surfaces.len()`.
+//! - `Solid`: standard WKB has no solid geometry type, so shells are expanded through
+//!   `shells -> surfaces` and the reached surfaces are emitted as one `MultiPolygonZ`.
+//! - `MultiSolid` and `CompositeSolid`: solids and shells are expanded through
+//!   `solids -> shells -> surfaces`, and the reached surfaces are emitted as one
+//!   `MultiPolygonZ`.
 //!
 //! Coordinates are resolved lazily from the caller-provided vertex pool, so repeated vertex
 //! references remain repeated in the WKB output. Ring order, shell order, and surface order are
@@ -174,15 +176,18 @@ impl<'a, VR: VertexRef> WkbWriter<'a, VR> {
         self.write_count(self.boundary.rings.len())?;
 
         for ring_index in 0..self.boundary.rings.len() {
-            let vertex_range = child_range(
-                &self.boundary.rings,
-                self.boundary.vertices.len(),
-                ring_index,
-            )?;
+            let vertex_start = self.boundary.rings[ring_index].try_to_usize()?;
+            let vertex_end = self
+                .boundary
+                .rings
+                .get(ring_index + 1)
+                .map(VertexIndex::try_to_usize)
+                .transpose()?
+                .unwrap_or(self.boundary.vertices.len());
 
             self.write_header(LINE_STRING_Z);
-            self.write_count(vertex_range.len())?;
-            for vertex_index in &self.boundary.vertices[vertex_range] {
+            self.write_count(vertex_end - vertex_start)?;
+            for vertex_index in &self.boundary.vertices[vertex_start..vertex_end] {
                 self.write_coordinate(*vertex_index)?;
             }
         }
@@ -191,10 +196,66 @@ impl<'a, VR: VertexRef> WkbWriter<'a, VR> {
     }
 
     fn write_multi_polygon(&mut self) -> error::Result<()> {
-        self.write_header(MULTI_POLYGON_Z);
-        self.write_count(self.boundary.surfaces.len())?;
+        let mut surface_indices = Vec::with_capacity(self.boundary.surfaces.len());
 
-        for surface_index in 0..self.boundary.surfaces.len() {
+        match self.boundary.check_type() {
+            BoundaryType::MultiOrCompositeSurface => {
+                surface_indices.extend(0..self.boundary.surfaces.len());
+            }
+            BoundaryType::Solid => {
+                for shell_index in 0..self.boundary.shells.len() {
+                    let surface_start = self.boundary.shells[shell_index].try_to_usize()?;
+                    let surface_end = self
+                        .boundary
+                        .shells
+                        .get(shell_index + 1)
+                        .map(VertexIndex::try_to_usize)
+                        .transpose()?
+                        .unwrap_or(self.boundary.surfaces.len());
+                    surface_indices.extend(surface_start..surface_end);
+                }
+            }
+            BoundaryType::MultiOrCompositeSolid => {
+                for solid_index in 0..self.boundary.solids.len() {
+                    let shell_start = self.boundary.solids[solid_index].try_to_usize()?;
+                    let shell_end = self
+                        .boundary
+                        .solids
+                        .get(solid_index + 1)
+                        .map(VertexIndex::try_to_usize)
+                        .transpose()?
+                        .unwrap_or(self.boundary.shells.len());
+
+                    for shell_index in shell_start..shell_end {
+                        let surface_start = self.boundary.shells[shell_index].try_to_usize()?;
+                        let surface_end = self
+                            .boundary
+                            .shells
+                            .get(shell_index + 1)
+                            .map(VertexIndex::try_to_usize)
+                            .transpose()?
+                            .unwrap_or(self.boundary.surfaces.len());
+                        surface_indices.extend(surface_start..surface_end);
+                    }
+                }
+            }
+            BoundaryType::MultiPoint | BoundaryType::MultiLineString | BoundaryType::None => {
+                return Err(error::Error::InvalidGeometry(
+                    "cannot write non-surface boundary as MultiPolygonZ".to_owned(),
+                ));
+            }
+        }
+
+        if surface_indices.is_empty() {
+            return Err(error::Error::InvalidGeometry(
+                "cannot write a surface-backed boundary with no polygons as WKB".to_owned(),
+            ));
+        }
+
+        self.write_header(MULTI_POLYGON_Z);
+        self.write_count(surface_indices.len())?;
+
+        for surface_index in surface_indices {
             self.write_polygon(surface_index)?;
         }
 
@@ -202,21 +263,33 @@ impl<'a, VR: VertexRef> WkbWriter<'a, VR> {
     }
 
     fn write_polygon(&mut self, surface_index: usize) -> error::Result<()> {
-        let ring_range = child_range(
-            &self.boundary.surfaces,
-            self.boundary.rings.len(),
-            surface_index,
-        )?;
+        let ring_start = self.boundary.surfaces[surface_index].try_to_usize()?;
+        let ring_end = self
+            .boundary
+            .surfaces
+            .get(surface_index + 1)
+            .map(VertexIndex::try_to_usize)
+            .transpose()?
+            .unwrap_or(self.boundary.rings.len());
+        if ring_start == ring_end {
+            return Err(error::Error::InvalidGeometry(
+                "cannot write a WKB polygon with no rings".to_owned(),
+            ));
+        }
 
         self.write_header(POLYGON_Z);
-        self.write_count(ring_range.len())?;
+        self.write_count(ring_end - ring_start)?;
 
-        for ring_index in ring_range {
-            let vertex_range = child_range(
-                &self.boundary.rings,
-                self.boundary.vertices.len(),
-                ring_index,
-            )?;
+        for ring_index in ring_start..ring_end {
+            let vertex_start = self.boundary.rings[ring_index].try_to_usize()?;
+            let vertex_end = self
+                .boundary
+                .rings
+                .get(ring_index + 1)
+                .map(VertexIndex::try_to_usize)
+                .transpose()?
+                .unwrap_or(self.boundary.vertices.len());
+            let vertex_range = vertex_start..vertex_end;
             let coordinate_count = self.closed_ring_coordinate_count(vertex_range.clone())?;
             self.write_count(coordinate_count)?;
             for &vertex_index in &self.boundary.vertices[vertex_range.clone()] {
@@ -509,20 +582,6 @@ impl<'a> WkbReader<'a> {
     }
 }
 
-fn child_range<VR: VertexRef>(
-    offsets: &[VertexIndex<VR>],
-    child_len: usize,
-    index: usize,
-) -> error::Result<Range<usize>> {
-    let start = offsets[index].try_to_usize()?;
-    let end = offsets
-        .get(index + 1)
-        .map(VertexIndex::try_to_usize)
-        .transpose()?
-        .unwrap_or(child_len);
-    Ok(start..end)
-}
-
 fn count_to_u32(count: usize) -> error::Result<u32> {
     u32::try_from(count).map_err(|_| error::Error::IndexConversion {
         source_type: "usize".to_owned(),
@@ -787,6 +846,92 @@ mod tests {
 
         assert_header(&wkb, &mut offset, MULTI_POLYGON_Z);
         assert_eq!(read_u32(&wkb, &mut offset), 2);
+    }
+
+    #[test]
+    fn flattens_solid_shells_in_shell_surface_order() {
+        let solid: BoundaryNestedSolid32 =
+            vec![vec![vec![vec![4, 5, 6, 7]]], vec![vec![vec![0, 1, 2, 3]]]];
+        let boundary: Boundary<u32> = solid.try_into().unwrap();
+        let wkb = boundary.to_wkb(&vertices()).unwrap();
+        let mut offset = 0;
+
+        assert_header(&wkb, &mut offset, MULTI_POLYGON_Z);
+        assert_eq!(read_u32(&wkb, &mut offset), 2);
+        assert_header(&wkb, &mut offset, POLYGON_Z);
+        assert_eq!(read_u32(&wkb, &mut offset), 1);
+        assert_eq!(read_u32(&wkb, &mut offset), 5);
+        assert_coordinate(&wkb, &mut offset, [0.25, 0.25, 1.0]);
+        offset += 4 * COORDINATE_Z_BYTES;
+        assert_header(&wkb, &mut offset, POLYGON_Z);
+        assert_eq!(read_u32(&wkb, &mut offset), 1);
+        assert_eq!(read_u32(&wkb, &mut offset), 5);
+        assert_coordinate(&wkb, &mut offset, [0.0, 0.0, 0.0]);
+    }
+
+    #[test]
+    fn flattens_multi_solids_in_solid_shell_surface_order() {
+        let multi_solid: BoundaryNestedMultiOrCompositeSolid32 = vec![
+            vec![vec![vec![vec![4, 5, 6, 7]]]],
+            vec![vec![vec![vec![0, 1, 2, 3]]], vec![vec![vec![4, 5, 6, 7]]]],
+        ];
+        let boundary: Boundary<u32> = multi_solid.try_into().unwrap();
+        let wkb = boundary.to_wkb(&vertices()).unwrap();
+        let mut offset = 0;
+
+        assert_header(&wkb, &mut offset, MULTI_POLYGON_Z);
+        assert_eq!(read_u32(&wkb, &mut offset), 3);
+
+        assert_header(&wkb, &mut offset, POLYGON_Z);
+        assert_eq!(read_u32(&wkb, &mut offset), 1);
+        assert_eq!(read_u32(&wkb, &mut offset), 5);
+        assert_coordinate(&wkb, &mut offset, [0.25, 0.25, 1.0]);
+        offset += 4 * COORDINATE_Z_BYTES;
+
+        assert_header(&wkb, &mut offset, POLYGON_Z);
+        assert_eq!(read_u32(&wkb, &mut offset), 1);
+        assert_eq!(read_u32(&wkb, &mut offset), 5);
+        assert_coordinate(&wkb, &mut offset, [0.0, 0.0, 0.0]);
+        offset += 4 * COORDINATE_Z_BYTES;
+
+        assert_header(&wkb, &mut offset, POLYGON_Z);
+        assert_eq!(read_u32(&wkb, &mut offset), 1);
+        assert_eq!(read_u32(&wkb, &mut offset), 5);
+        assert_coordinate(&wkb, &mut offset, [0.25, 0.25, 1.0]);
+    }
+
+    #[test]
+    fn rejects_solid_with_no_reachable_surfaces() {
+        let boundary = Boundary::from_parts(
+            vec![
+                VertexIndex::new(0),
+                VertexIndex::new(1),
+                VertexIndex::new(2),
+            ],
+            vec![VertexIndex::new(0)],
+            vec![VertexIndex::new(0)],
+            Vec::new(),
+            vec![VertexIndex::new(0)],
+        )
+        .unwrap();
+        let error = boundary.to_wkb(&vertices()).unwrap_err();
+
+        assert!(matches!(error, error::Error::InvalidGeometry(_)));
+    }
+
+    #[test]
+    fn rejects_polygon_with_no_rings() {
+        let boundary = Boundary::from_parts(
+            Vec::new(),
+            Vec::new(),
+            vec![VertexIndex::new(0)],
+            Vec::new(),
+            Vec::new(),
+        )
+        .unwrap();
+        let error = boundary.to_wkb(&vertices()).unwrap_err();
+
+        assert!(matches!(error, error::Error::InvalidGeometry(_)));
     }
 
     #[test]
