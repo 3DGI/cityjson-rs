@@ -444,9 +444,12 @@ impl<'a> WkbReader<'a> {
 
         for _ in 0..polygon_count {
             self.expect_header(POLYGON_Z, "MultiPolygonZ child")?;
-            push_offset(&mut boundary.surfaces, boundary.rings.len())?;
-
             let ring_count = self.read_count()?;
+            if ring_count == 0 {
+                return Err(invalid_wkb("PolygonZ must contain at least one ring"));
+            }
+
+            push_offset(&mut boundary.surfaces, boundary.rings.len())?;
             for _ in 0..ring_count {
                 push_offset(&mut boundary.rings, boundary.vertices.len())?;
                 self.read_polygon_ring(&mut boundary, &mut vertices)?;
@@ -703,6 +706,10 @@ mod tests {
         }
     }
 
+    fn raw_values(indices: &[VertexIndex<u32>]) -> Vec<u32> {
+        indices.iter().map(VertexIndex::value).collect()
+    }
+
     fn top_level_geometry_type(boundary: &Boundary<u32>) -> u32 {
         let bytes = boundary.to_wkb(&test_cases::vertices()).unwrap();
         let mut offset = 0;
@@ -797,6 +804,15 @@ mod tests {
         ]]])
     }
 
+    fn polygon_with_zero_rings_wkb() -> Vec<u8> {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_POLYGON_Z);
+        push_count(&mut wkb, 1);
+        push_header(&mut wkb, POLYGON_Z);
+        push_count(&mut wkb, 0);
+        wkb
+    }
+
     fn assert_invalid_geometry(bytes: &[u8]) {
         let error = Boundary::<u32>::from_wkb(bytes).unwrap_err();
         assert!(matches!(error, error::Error::InvalidGeometry(_)));
@@ -812,7 +828,7 @@ mod tests {
         let cases = [
             (test_cases::multipoint_repeated_refs(), MULTI_POINT_Z),
             (
-                test_cases::multilinestring_variable_segments(),
+                test_cases::multilinestring_two_segments(),
                 MULTI_LINE_STRING_Z,
             ),
             (test_cases::surface_with_hole(), MULTI_POLYGON_Z),
@@ -829,7 +845,7 @@ mod tests {
     fn boundary_to_wkb_to_wkb_is_byte_stable_for_preservable_shapes() {
         for boundary in [
             test_cases::multipoint_repeated_refs(),
-            test_cases::multilinestring_variable_segments(),
+            test_cases::multilinestring_two_segments(),
             test_cases::surface_open_triangle(),
             test_cases::surface_with_hole(),
             test_cases::multi_surface_two_polygons(),
@@ -850,6 +866,78 @@ mod tests {
             let (boundary, vertices) = Boundary::<u32>::from_wkb(&wkb).unwrap();
             assert_eq!(boundary.to_wkb(&vertices).unwrap(), wkb);
         }
+    }
+
+    #[test]
+    fn parses_multi_point_z_into_boundary_and_vertices() {
+        let wkb = multi_point_wkb(&[[0.0, 1.0, -2.0], [3.5, 4.0, 5.25]]);
+        let (boundary, parsed_vertices) = Boundary::<u32>::from_wkb(&wkb).unwrap();
+
+        assert_eq!(boundary.check_type(), BoundaryType::MultiPoint);
+        assert_eq!(raw_values(&boundary.vertices), vec![0, 1]);
+        assert_eq!(parsed_vertices.len(), 2);
+        assert_eq!(
+            parsed_vertices.as_slice()[0],
+            RealWorldCoordinate::new(0.0, 1.0, -2.0)
+        );
+        assert_eq!(
+            parsed_vertices.as_slice()[1],
+            RealWorldCoordinate::new(3.5, 4.0, 5.25)
+        );
+    }
+
+    #[test]
+    fn parses_multi_line_string_z_into_boundary_and_vertices() {
+        let line0 = [[0.0, 0.0, 0.0], [1.0, 0.0, 2.0]];
+        let line1 = [[1.0, 1.0, 0.0], [0.0, 1.0, -1.0], [0.0, 0.0, 0.0]];
+        let wkb = multi_line_string_wkb(&[&line0, &line1]);
+        let (boundary, parsed_vertices) = Boundary::<u32>::from_wkb(&wkb).unwrap();
+
+        assert_eq!(boundary.check_type(), BoundaryType::MultiLineString);
+        assert_eq!(raw_values(&boundary.rings), vec![0, 2]);
+        assert_eq!(raw_values(&boundary.vertices), vec![0, 1, 2, 3, 4]);
+        assert_eq!(parsed_vertices.len(), 5);
+        assert_eq!(
+            parsed_vertices.as_slice()[2],
+            RealWorldCoordinate::new(1.0, 1.0, 0.0)
+        );
+        assert_eq!(
+            parsed_vertices.as_slice()[4],
+            RealWorldCoordinate::new(0.0, 0.0, 0.0)
+        );
+    }
+
+    #[test]
+    fn parses_multi_polygon_z_into_open_boundary_rings_and_vertices() {
+        let outer = &[
+            [0.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],
+            [2.0, 2.0, 0.0],
+            [0.0, 2.0, 0.0],
+            [0.0, 0.0, 0.0],
+        ];
+        let inner = &[
+            [0.5, 0.5, 1.0],
+            [1.5, 0.5, 1.0],
+            [1.5, 1.5, 1.0],
+            [0.5, 0.5, 1.0],
+        ];
+        let wkb = multi_polygon_wkb(&[&[outer, inner]]);
+        let (boundary, parsed_vertices) = Boundary::<u32>::from_wkb(&wkb).unwrap();
+
+        assert_eq!(boundary.check_type(), BoundaryType::MultiOrCompositeSurface);
+        assert_eq!(raw_values(&boundary.surfaces), vec![0]);
+        assert_eq!(raw_values(&boundary.rings), vec![0, 4]);
+        assert_eq!(raw_values(&boundary.vertices), vec![0, 1, 2, 3, 4, 5, 6]);
+        assert_eq!(parsed_vertices.len(), 7);
+        assert_eq!(
+            parsed_vertices.as_slice()[0],
+            RealWorldCoordinate::new(0.0, 0.0, 0.0)
+        );
+        assert_eq!(
+            parsed_vertices.as_slice()[6],
+            RealWorldCoordinate::new(1.5, 1.5, 1.0)
+        );
     }
 
     #[test]
@@ -1084,6 +1172,11 @@ mod tests {
         push_count(&mut wkb, 0);
 
         assert_invalid_geometry(&wkb);
+    }
+
+    #[test]
+    fn rejects_polygon_with_zero_rings() {
+        assert_invalid_geometry(&polygon_with_zero_rings_wkb());
     }
 
     #[test]

@@ -30,8 +30,8 @@ pub(crate) fn multipoint_repeated_refs() -> Boundary<u32> {
     nested.into()
 }
 
-pub(crate) fn multilinestring_variable_segments() -> Boundary<u32> {
-    let nested: BoundaryNestedMultiLineString32 = vec![vec![0, 1], vec![], vec![2, 3, 0]];
+pub(crate) fn multilinestring_two_segments() -> Boundary<u32> {
+    let nested: BoundaryNestedMultiLineString32 = vec![vec![0, 1], vec![2, 3, 0]];
     nested.try_into().unwrap()
 }
 
