@@ -58,10 +58,10 @@
 //!   `MultiPolygonZ`; the polygon count is still `surfaces.len()`.
 //!
 //! Coordinates are resolved lazily from the caller-provided vertex pool, so repeated vertex
-//! references remain repeated in the WKB output. Ring closure, ring order, shell order, and surface
-//! order are preserved exactly; the writer does not repair, close, orient, or deduplicate geometry.
-//! Output is little-endian ISO SQL/MM WKB using the 3D type codes (`PointZ = 1001` through
-//! `MultiPolygonZ = 1006`).
+//! references remain repeated in the WKB output. Ring order, shell order, and surface order are
+//! preserved exactly. Polygon rings are written closed, as required by WKB, by repeating the first
+//! coordinate at the end when the internal `CityJSON` ring is open. Output is little-endian ISO
+//! SQL/MM WKB using the 3D type codes (`PointZ = 1001` through `MultiPolygonZ = 1006`).
 
 use super::{Boundary, BoundaryType};
 use crate::cityjson::core::coordinate::RealWorldCoordinate;
@@ -92,10 +92,28 @@ impl<VR: VertexRef> Boundary<VR> {
     ///
     /// Returns [`error::Error::InvalidGeometry`] when the boundary is empty or its offset buffers
     /// are inconsistent. Returns [`error::Error::InvalidReference`] when a boundary vertex index is
-    /// not present in `vertices`. Returns [`error::Error::IndexConversion`] when a WKB count cannot
-    /// fit in `u32`.
+    /// not present in `vertices`. Returns [`error::Error::InvalidRing`] when a polygon ring has too
+    /// few coordinates for WKB. Returns [`error::Error::IndexConversion`] when a WKB count cannot fit
+    /// in `u32`.
     pub fn to_wkb(&self, vertices: &Vertices<VR, RealWorldCoordinate>) -> error::Result<Vec<u8>> {
         WkbWriter::new(self, vertices).write()
+    }
+
+    /// Parses a little-endian ISO WKB multi-geometry into a boundary and vertex pool.
+    ///
+    /// Only `MultiPointZ`, `MultiLineStringZ`, and `MultiPolygonZ` are accepted. Polygon rings are
+    /// required to be closed in WKB and are stored open in the returned `CityJSON` boundary by
+    /// dropping the duplicated closing coordinate.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`error::Error::InvalidGeometry`] for unsupported WKB variants, big-endian input,
+    /// EWKB flags, malformed or truncated input, wrong child geometry types, trailing bytes, and
+    /// empty top-level multi-geometries. Returns [`error::Error::InvalidRing`] for unclosed or
+    /// too-short polygon rings. Returns index/container errors when the parsed coordinate count
+    /// cannot be represented by `VR`.
+    pub fn from_wkb(bytes: &[u8]) -> error::Result<(Self, Vertices<VR, RealWorldCoordinate>)> {
+        WkbReader::new(bytes).read()
     }
 }
 
@@ -199,13 +217,46 @@ impl<'a, VR: VertexRef> WkbWriter<'a, VR> {
                 self.boundary.vertices.len(),
                 ring_index,
             )?;
-            self.write_count(vertex_range.len())?;
-            for &vertex_index in &self.boundary.vertices[vertex_range] {
+            let coordinate_count = self.closed_ring_coordinate_count(vertex_range.clone())?;
+            self.write_count(coordinate_count)?;
+            for &vertex_index in &self.boundary.vertices[vertex_range.clone()] {
                 self.write_coordinate(vertex_index)?;
+            }
+            if !self.ring_is_already_closed(vertex_range.clone()) {
+                let first_vertex_index = self.boundary.vertices[vertex_range.start];
+                self.write_coordinate(first_vertex_index)?;
             }
         }
 
         Ok(())
+    }
+
+    fn closed_ring_coordinate_count(&self, vertex_range: Range<usize>) -> error::Result<usize> {
+        if vertex_range.len() < 3 {
+            return Err(error::Error::InvalidRing {
+                reason: "polygon ring must contain at least three vertices".to_owned(),
+                vertex_count: vertex_range.len(),
+            });
+        }
+
+        let coordinate_count = if self.ring_is_already_closed(vertex_range.clone()) {
+            vertex_range.len()
+        } else {
+            vertex_range.len() + 1
+        };
+
+        if coordinate_count < 4 {
+            return Err(error::Error::InvalidRing {
+                reason: "closed WKB polygon ring must contain at least four coordinates".to_owned(),
+                vertex_count: coordinate_count,
+            });
+        }
+
+        Ok(coordinate_count)
+    }
+
+    fn ring_is_already_closed(&self, vertex_range: Range<usize>) -> bool {
+        self.boundary.vertices[vertex_range.start] == self.boundary.vertices[vertex_range.end - 1]
     }
 
     fn write_coordinate(&mut self, vertex_index: VertexIndex<VR>) -> error::Result<()> {
@@ -242,6 +293,224 @@ impl<'a, VR: VertexRef> WkbWriter<'a, VR> {
     }
 }
 
+struct WkbReader<'a> {
+    bytes: &'a [u8],
+    offset: usize,
+}
+
+impl<'a> WkbReader<'a> {
+    fn new(bytes: &'a [u8]) -> Self {
+        Self { bytes, offset: 0 }
+    }
+
+    fn read<VR: VertexRef>(
+        mut self,
+    ) -> error::Result<(Boundary<VR>, Vertices<VR, RealWorldCoordinate>)> {
+        let geometry_type = self.read_header()?;
+        let result = match geometry_type {
+            MULTI_POINT_Z => self.read_multi_point(),
+            MULTI_LINE_STRING_Z => self.read_multi_line_string(),
+            MULTI_POLYGON_Z => self.read_multi_polygon(),
+            POINT_Z | LINE_STRING_Z | POLYGON_Z => Err(invalid_wkb(
+                "top-level singular geometries are not supported",
+            )),
+            _ => Err(unsupported_wkb_type(geometry_type)),
+        }?;
+
+        if self.offset != self.bytes.len() {
+            return Err(invalid_wkb("trailing bytes after geometry"));
+        }
+
+        Ok(result)
+    }
+
+    fn read_multi_point<VR: VertexRef>(
+        &mut self,
+    ) -> error::Result<(Boundary<VR>, Vertices<VR, RealWorldCoordinate>)> {
+        let point_count = self.read_non_empty_count("MultiPointZ")?;
+        let mut boundary = Boundary::new();
+        let mut vertices = Vertices::new();
+
+        for _ in 0..point_count {
+            self.expect_header(POINT_Z, "MultiPointZ child")?;
+            let coordinate = self.read_coordinate()?;
+            let vertex_index = vertices.push(coordinate)?;
+            boundary.vertices.push(vertex_index);
+        }
+
+        Ok((boundary, vertices))
+    }
+
+    fn read_multi_line_string<VR: VertexRef>(
+        &mut self,
+    ) -> error::Result<(Boundary<VR>, Vertices<VR, RealWorldCoordinate>)> {
+        let line_string_count = self.read_non_empty_count("MultiLineStringZ")?;
+        let mut boundary = Boundary::new();
+        let mut vertices = Vertices::new();
+
+        for _ in 0..line_string_count {
+            self.expect_header(LINE_STRING_Z, "MultiLineStringZ child")?;
+            push_offset(&mut boundary.rings, boundary.vertices.len())?;
+
+            let coordinate_count = self.read_count()?;
+            self.ensure_remaining_coordinates(coordinate_count)?;
+            for _ in 0..coordinate_count {
+                let coordinate = self.read_coordinate()?;
+                let vertex_index = vertices.push(coordinate)?;
+                boundary.vertices.push(vertex_index);
+            }
+        }
+
+        Ok((boundary, vertices))
+    }
+
+    fn read_multi_polygon<VR: VertexRef>(
+        &mut self,
+    ) -> error::Result<(Boundary<VR>, Vertices<VR, RealWorldCoordinate>)> {
+        let polygon_count = self.read_non_empty_count("MultiPolygonZ")?;
+        let mut boundary = Boundary::new();
+        let mut vertices = Vertices::new();
+
+        for _ in 0..polygon_count {
+            self.expect_header(POLYGON_Z, "MultiPolygonZ child")?;
+            push_offset(&mut boundary.surfaces, boundary.rings.len())?;
+
+            let ring_count = self.read_count()?;
+            for _ in 0..ring_count {
+                push_offset(&mut boundary.rings, boundary.vertices.len())?;
+                self.read_polygon_ring(&mut boundary, &mut vertices)?;
+            }
+        }
+
+        Ok((boundary, vertices))
+    }
+
+    fn read_polygon_ring<VR: VertexRef>(
+        &mut self,
+        boundary: &mut Boundary<VR>,
+        vertices: &mut Vertices<VR, RealWorldCoordinate>,
+    ) -> error::Result<()> {
+        let coordinate_count = self.read_count()?;
+        if coordinate_count < 4 {
+            return Err(error::Error::InvalidRing {
+                reason: "WKB polygon ring must contain at least four coordinates".to_owned(),
+                vertex_count: coordinate_count,
+            });
+        }
+
+        self.ensure_remaining_coordinates(coordinate_count)?;
+        let first_coordinate = self.read_coordinate()?;
+        let first_vertex_index = vertices.push(first_coordinate)?;
+        boundary.vertices.push(first_vertex_index);
+
+        for _ in 1..coordinate_count - 1 {
+            let coordinate = self.read_coordinate()?;
+            let vertex_index = vertices.push(coordinate)?;
+            boundary.vertices.push(vertex_index);
+        }
+
+        let closing_coordinate = self.read_coordinate()?;
+        if closing_coordinate != first_coordinate {
+            return Err(error::Error::InvalidRing {
+                reason: "WKB polygon ring is not closed".to_owned(),
+                vertex_count: coordinate_count,
+            });
+        }
+
+        Ok(())
+    }
+
+    fn read_header(&mut self) -> error::Result<u32> {
+        let byte_order = self.read_u8()?;
+        if byte_order != LITTLE_ENDIAN {
+            return Err(invalid_wkb("only little-endian byte order is supported"));
+        }
+
+        let geometry_type = self.read_u32()?;
+        if has_ewkb_flags(geometry_type) {
+            return Err(invalid_wkb("EWKB type flags are not supported by ISO WKB"));
+        }
+
+        Ok(geometry_type)
+    }
+
+    fn expect_header(&mut self, expected: u32, context: &str) -> error::Result<()> {
+        let found = self.read_header()?;
+        if found != expected {
+            return Err(invalid_wkb(format!(
+                "{context} has type {found}, expected {expected}"
+            )));
+        }
+        Ok(())
+    }
+
+    fn read_non_empty_count(&mut self, geometry_name: &str) -> error::Result<usize> {
+        let count = self.read_count()?;
+        if count == 0 {
+            return Err(invalid_wkb(format!(
+                "{geometry_name} must contain at least one child geometry"
+            )));
+        }
+        Ok(count)
+    }
+
+    fn read_count(&mut self) -> error::Result<usize> {
+        u32_to_usize(self.read_u32()?)
+    }
+
+    fn read_coordinate(&mut self) -> error::Result<RealWorldCoordinate> {
+        let x = self.read_f64()?;
+        let y = self.read_f64()?;
+        let z = self.read_f64()?;
+        Ok(RealWorldCoordinate::new(x, y, z))
+    }
+
+    fn ensure_remaining_coordinates(&self, coordinate_count: usize) -> error::Result<()> {
+        let Some(byte_count) = coordinate_count.checked_mul(COORDINATE_Z_BYTES) else {
+            return Err(invalid_wkb("coordinate byte count overflows usize"));
+        };
+
+        if self.bytes.len().saturating_sub(self.offset) < byte_count {
+            return Err(invalid_wkb("truncated coordinate sequence"));
+        }
+
+        Ok(())
+    }
+
+    fn read_u8(&mut self) -> error::Result<u8> {
+        let byte = *self
+            .bytes
+            .get(self.offset)
+            .ok_or_else(|| invalid_wkb("truncated byte-order marker"))?;
+        self.offset += 1;
+        Ok(byte)
+    }
+
+    fn read_u32(&mut self) -> error::Result<u32> {
+        Ok(u32::from_le_bytes(self.read_array()?))
+    }
+
+    fn read_f64(&mut self) -> error::Result<f64> {
+        Ok(f64::from_le_bytes(self.read_array()?))
+    }
+
+    fn read_array<const N: usize>(&mut self) -> error::Result<[u8; N]> {
+        let end = self
+            .offset
+            .checked_add(N)
+            .ok_or_else(|| invalid_wkb("byte offset overflows usize"))?;
+        let slice = self
+            .bytes
+            .get(self.offset..end)
+            .ok_or_else(|| invalid_wkb("truncated WKB payload"))?;
+
+        let mut array = [0; N];
+        array.copy_from_slice(slice);
+        self.offset = end;
+        Ok(array)
+    }
+}
+
 fn child_range<VR: VertexRef>(
     offsets: &[VertexIndex<VR>],
     child_len: usize,
@@ -264,6 +533,34 @@ fn count_to_u32(count: usize) -> error::Result<u32> {
     })
 }
 
+fn u32_to_usize(count: u32) -> error::Result<usize> {
+    usize::try_from(count).map_err(|_| error::Error::IndexConversion {
+        source_type: "u32".to_owned(),
+        target_type: "usize".to_owned(),
+        value: count.to_string(),
+    })
+}
+
+fn push_offset<VR: VertexRef>(
+    offsets: &mut Vec<VertexIndex<VR>>,
+    offset: usize,
+) -> error::Result<()> {
+    offsets.push(VertexIndex::try_from(offset)?);
+    Ok(())
+}
+
+fn has_ewkb_flags(geometry_type: u32) -> bool {
+    geometry_type & 0xE000_0000 != 0
+}
+
+fn unsupported_wkb_type(geometry_type: u32) -> error::Error {
+    invalid_wkb(format!("unsupported ISO WKB geometry type {geometry_type}"))
+}
+
+fn invalid_wkb(message: impl Into<String>) -> error::Error {
+    error::Error::InvalidGeometry(format!("invalid WKB: {}", message.into()))
+}
+
 fn estimated_wkb_size<VR: VertexRef>(boundary: &Boundary<VR>) -> usize {
     match boundary.check_type() {
         BoundaryType::MultiPoint => {
@@ -284,7 +581,7 @@ fn estimated_wkb_size<VR: VertexRef>(boundary: &Boundary<VR>) -> usize {
                 + WKB_COUNT_BYTES
                 + boundary.surfaces.len() * (WKB_HEADER_BYTES + WKB_COUNT_BYTES)
                 + boundary.rings.len() * WKB_COUNT_BYTES
-                + boundary.vertices.len() * COORDINATE_Z_BYTES
+                + (boundary.vertices.len() + boundary.rings.len()) * COORDINATE_Z_BYTES
         }
         BoundaryType::None => 0,
     }
@@ -340,6 +637,50 @@ mod tests {
         assert_eq!(read_f64(bytes, offset).to_bits(), expected[2].to_bits());
     }
 
+    fn push_header(bytes: &mut Vec<u8>, geometry_type: u32) {
+        bytes.push(LITTLE_ENDIAN);
+        bytes.extend_from_slice(&geometry_type.to_le_bytes());
+    }
+
+    fn push_count(bytes: &mut Vec<u8>, count: u32) {
+        bytes.extend_from_slice(&count.to_le_bytes());
+    }
+
+    fn push_coordinate(bytes: &mut Vec<u8>, coordinate: [f64; 3]) {
+        for value in coordinate {
+            bytes.extend_from_slice(&value.to_le_bytes());
+        }
+    }
+
+    fn raw_values(indices: &[VertexIndex<u32>]) -> Vec<u32> {
+        indices.iter().map(VertexIndex::value).collect()
+    }
+
+    fn assert_invalid_geometry(bytes: &[u8]) {
+        let error = Boundary::<u32>::from_wkb(bytes).unwrap_err();
+        assert!(matches!(error, error::Error::InvalidGeometry(_)));
+    }
+
+    fn assert_invalid_ring(bytes: &[u8]) {
+        let error = Boundary::<u32>::from_wkb(bytes).unwrap_err();
+        assert!(matches!(error, error::Error::InvalidRing { .. }));
+    }
+
+    fn closed_square_wkb() -> Vec<u8> {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_POLYGON_Z);
+        push_count(&mut wkb, 1);
+        push_header(&mut wkb, POLYGON_Z);
+        push_count(&mut wkb, 1);
+        push_count(&mut wkb, 5);
+        push_coordinate(&mut wkb, [0.0, 0.0, 0.0]);
+        push_coordinate(&mut wkb, [1.0, 0.0, 0.0]);
+        push_coordinate(&mut wkb, [1.0, 1.0, 0.0]);
+        push_coordinate(&mut wkb, [0.0, 1.0, 0.0]);
+        push_coordinate(&mut wkb, [0.0, 0.0, 0.0]);
+        wkb
+    }
+
     #[test]
     fn writes_multi_point_z() {
         let nested: BoundaryNestedMultiPoint32 = vec![0, 2];
@@ -378,9 +719,9 @@ mod tests {
     }
 
     #[test]
-    fn writes_multi_polygon_z_with_hole() {
+    fn writes_multi_polygon_z_with_closed_wkb_rings() {
         let nested: BoundaryNestedMultiOrCompositeSurface32 =
-            vec![vec![vec![0, 1, 2, 3, 0], vec![4, 5, 6, 7, 4]]];
+            vec![vec![vec![0, 1, 2, 3], vec![4, 5, 6, 7]]];
         let boundary: Boundary<u32> = nested.try_into().unwrap();
         let wkb = boundary.to_wkb(&vertices()).unwrap();
         let mut offset = 0;
@@ -389,30 +730,58 @@ mod tests {
         assert_eq!(read_u32(&wkb, &mut offset), 1);
         assert_header(&wkb, &mut offset, POLYGON_Z);
         assert_eq!(read_u32(&wkb, &mut offset), 2);
+
         assert_eq!(read_u32(&wkb, &mut offset), 5);
         assert_coordinate(&wkb, &mut offset, [0.0, 0.0, 0.0]);
-        offset += 4 * COORDINATE_Z_BYTES;
+        assert_coordinate(&wkb, &mut offset, [1.0, 0.0, 0.0]);
+        assert_coordinate(&wkb, &mut offset, [1.0, 1.0, 0.0]);
+        assert_coordinate(&wkb, &mut offset, [0.0, 1.0, 0.0]);
+        assert_coordinate(&wkb, &mut offset, [0.0, 0.0, 0.0]);
+
         assert_eq!(read_u32(&wkb, &mut offset), 5);
         assert_coordinate(&wkb, &mut offset, [0.25, 0.25, 1.0]);
+        assert_coordinate(&wkb, &mut offset, [0.75, 0.25, 1.0]);
+        assert_coordinate(&wkb, &mut offset, [0.75, 0.75, 1.0]);
+        assert_coordinate(&wkb, &mut offset, [0.25, 0.75, 1.0]);
+        assert_coordinate(&wkb, &mut offset, [0.25, 0.25, 1.0]);
+        assert_eq!(offset, wkb.len());
+    }
+
+    #[test]
+    fn does_not_double_close_legacy_closed_internal_ring() {
+        let nested: BoundaryNestedMultiOrCompositeSurface32 = vec![vec![vec![0, 1, 2, 3, 0]]];
+        let boundary: Boundary<u32> = nested.try_into().unwrap();
+        let wkb = boundary.to_wkb(&vertices()).unwrap();
+        let mut offset = 0;
+
+        assert_header(&wkb, &mut offset, MULTI_POLYGON_Z);
+        assert_eq!(read_u32(&wkb, &mut offset), 1);
+        assert_header(&wkb, &mut offset, POLYGON_Z);
+        assert_eq!(read_u32(&wkb, &mut offset), 1);
+        assert_eq!(read_u32(&wkb, &mut offset), 5);
     }
 
     #[test]
     fn flattens_solids_to_multi_polygon_z() {
         let solid: BoundaryNestedSolid32 =
-            vec![vec![vec![vec![0, 1, 2, 3, 0]], vec![vec![4, 5, 6, 7, 4]]]];
+            vec![vec![vec![vec![0, 1, 2, 3]], vec![vec![4, 5, 6, 7]]]];
         let boundary: Boundary<u32> = solid.try_into().unwrap();
         let wkb = boundary.to_wkb(&vertices()).unwrap();
         let mut offset = 0;
 
         assert_header(&wkb, &mut offset, MULTI_POLYGON_Z);
         assert_eq!(read_u32(&wkb, &mut offset), 2);
+        assert_header(&wkb, &mut offset, POLYGON_Z);
+        offset += WKB_COUNT_BYTES;
+        offset += WKB_COUNT_BYTES + 5 * COORDINATE_Z_BYTES;
+        assert_header(&wkb, &mut offset, POLYGON_Z);
     }
 
     #[test]
     fn flattens_multi_solids_to_multi_polygon_z() {
         let multi_solid: BoundaryNestedMultiOrCompositeSolid32 = vec![
-            vec![vec![vec![vec![0, 1, 2, 3, 0]]]],
-            vec![vec![vec![vec![4, 5, 6, 7, 4]]]],
+            vec![vec![vec![vec![0, 1, 2, 3]]]],
+            vec![vec![vec![vec![4, 5, 6, 7]]]],
         ];
         let boundary: Boundary<u32> = multi_solid.try_into().unwrap();
         let wkb = boundary.to_wkb(&vertices()).unwrap();
@@ -450,5 +819,213 @@ mod tests {
             error,
             error::Error::InvalidReference { index: 8, .. }
         ));
+    }
+
+    #[test]
+    fn rejects_polygon_ring_with_too_few_internal_vertices() {
+        let boundary = Boundary::from_parts(
+            vec![VertexIndex::new(0), VertexIndex::new(1)],
+            vec![VertexIndex::new(0)],
+            vec![VertexIndex::new(0)],
+            Vec::new(),
+            Vec::new(),
+        )
+        .unwrap();
+        let error = boundary.to_wkb(&vertices()).unwrap_err();
+
+        assert!(matches!(error, error::Error::InvalidRing { .. }));
+    }
+
+    #[test]
+    fn parses_multi_point_z() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_POINT_Z);
+        push_count(&mut wkb, 2);
+        push_header(&mut wkb, POINT_Z);
+        push_coordinate(&mut wkb, [0.0, 1.0, 2.0]);
+        push_header(&mut wkb, POINT_Z);
+        push_coordinate(&mut wkb, [3.0, 4.0, 5.0]);
+
+        let (boundary, parsed_vertices) = Boundary::<u32>::from_wkb(&wkb).unwrap();
+
+        assert_eq!(boundary.check_type(), BoundaryType::MultiPoint);
+        assert_eq!(raw_values(&boundary.vertices), vec![0, 1]);
+        assert_eq!(
+            parsed_vertices.as_slice()[0],
+            RealWorldCoordinate::new(0.0, 1.0, 2.0)
+        );
+        assert_eq!(
+            parsed_vertices.as_slice()[1],
+            RealWorldCoordinate::new(3.0, 4.0, 5.0)
+        );
+    }
+
+    #[test]
+    fn parses_multi_line_string_z() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_LINE_STRING_Z);
+        push_count(&mut wkb, 2);
+        push_header(&mut wkb, LINE_STRING_Z);
+        push_count(&mut wkb, 2);
+        push_coordinate(&mut wkb, [0.0, 0.0, 0.0]);
+        push_coordinate(&mut wkb, [1.0, 0.0, 0.0]);
+        push_header(&mut wkb, LINE_STRING_Z);
+        push_count(&mut wkb, 3);
+        push_coordinate(&mut wkb, [1.0, 1.0, 0.0]);
+        push_coordinate(&mut wkb, [0.0, 1.0, 0.0]);
+        push_coordinate(&mut wkb, [0.0, 0.0, 0.0]);
+
+        let (boundary, parsed_vertices) = Boundary::<u32>::from_wkb(&wkb).unwrap();
+
+        assert_eq!(boundary.check_type(), BoundaryType::MultiLineString);
+        assert_eq!(raw_values(&boundary.rings), vec![0, 2]);
+        assert_eq!(raw_values(&boundary.vertices), vec![0, 1, 2, 3, 4]);
+        assert_eq!(parsed_vertices.len(), 5);
+    }
+
+    #[test]
+    fn parses_multi_polygon_z_and_stores_open_rings() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_POLYGON_Z);
+        push_count(&mut wkb, 1);
+        push_header(&mut wkb, POLYGON_Z);
+        push_count(&mut wkb, 2);
+        push_count(&mut wkb, 5);
+        push_coordinate(&mut wkb, [0.0, 0.0, 0.0]);
+        push_coordinate(&mut wkb, [1.0, 0.0, 0.0]);
+        push_coordinate(&mut wkb, [1.0, 1.0, 0.0]);
+        push_coordinate(&mut wkb, [0.0, 1.0, 0.0]);
+        push_coordinate(&mut wkb, [0.0, 0.0, 0.0]);
+        push_count(&mut wkb, 5);
+        push_coordinate(&mut wkb, [0.25, 0.25, 1.0]);
+        push_coordinate(&mut wkb, [0.75, 0.25, 1.0]);
+        push_coordinate(&mut wkb, [0.75, 0.75, 1.0]);
+        push_coordinate(&mut wkb, [0.25, 0.75, 1.0]);
+        push_coordinate(&mut wkb, [0.25, 0.25, 1.0]);
+
+        let (boundary, parsed_vertices) = Boundary::<u32>::from_wkb(&wkb).unwrap();
+
+        assert_eq!(boundary.check_type(), BoundaryType::MultiOrCompositeSurface);
+        assert_eq!(raw_values(&boundary.surfaces), vec![0]);
+        assert_eq!(raw_values(&boundary.rings), vec![0, 4]);
+        assert_eq!(raw_values(&boundary.vertices), vec![0, 1, 2, 3, 4, 5, 6, 7]);
+        assert_eq!(parsed_vertices.len(), 8);
+        assert_eq!(
+            parsed_vertices.as_slice()[0],
+            RealWorldCoordinate::new(0.0, 0.0, 0.0)
+        );
+        assert_eq!(
+            parsed_vertices.as_slice()[3],
+            RealWorldCoordinate::new(0.0, 1.0, 0.0)
+        );
+    }
+
+    #[test]
+    fn rejects_big_endian_wkb() {
+        let mut wkb = Vec::new();
+        wkb.push(0);
+        wkb.extend_from_slice(&MULTI_POINT_Z.to_be_bytes());
+
+        assert_invalid_geometry(&wkb);
+    }
+
+    #[test]
+    fn rejects_ewkb_type_flags() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, 0x8000_0000 | MULTI_POINT_Z);
+
+        assert_invalid_geometry(&wkb);
+    }
+
+    #[test]
+    fn rejects_top_level_singular_geometry() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, POINT_Z);
+
+        assert_invalid_geometry(&wkb);
+    }
+
+    #[test]
+    fn rejects_non_z_iso_type_codes() {
+        for geometry_type in [4, 2_004, 3_004] {
+            let mut wkb = Vec::new();
+            push_header(&mut wkb, geometry_type);
+
+            assert_invalid_geometry(&wkb);
+        }
+    }
+
+    #[test]
+    fn rejects_wrong_child_type() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_LINE_STRING_Z);
+        push_count(&mut wkb, 1);
+        push_header(&mut wkb, POINT_Z);
+
+        assert_invalid_geometry(&wkb);
+    }
+
+    #[test]
+    fn rejects_unclosed_polygon_ring() {
+        let mut wkb = closed_square_wkb();
+        let len = wkb.len();
+        wkb.truncate(len - COORDINATE_Z_BYTES);
+        push_coordinate(&mut wkb, [2.0, 2.0, 0.0]);
+
+        assert_invalid_ring(&wkb);
+    }
+
+    #[test]
+    fn rejects_too_short_polygon_ring() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_POLYGON_Z);
+        push_count(&mut wkb, 1);
+        push_header(&mut wkb, POLYGON_Z);
+        push_count(&mut wkb, 1);
+        push_count(&mut wkb, 3);
+        push_coordinate(&mut wkb, [0.0, 0.0, 0.0]);
+        push_coordinate(&mut wkb, [1.0, 0.0, 0.0]);
+        push_coordinate(&mut wkb, [0.0, 0.0, 0.0]);
+
+        assert_invalid_ring(&wkb);
+    }
+
+    #[test]
+    fn rejects_truncated_wkb() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_POINT_Z);
+        push_count(&mut wkb, 1);
+        push_header(&mut wkb, POINT_Z);
+
+        assert_invalid_geometry(&wkb);
+    }
+
+    #[test]
+    fn rejects_trailing_bytes() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_POINT_Z);
+        push_count(&mut wkb, 1);
+        push_header(&mut wkb, POINT_Z);
+        push_coordinate(&mut wkb, [0.0, 0.0, 0.0]);
+        wkb.push(0);
+
+        assert_invalid_geometry(&wkb);
+    }
+
+    #[test]
+    fn rejects_unsupported_type_code() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, 9_999);
+
+        assert_invalid_geometry(&wkb);
+    }
+
+    #[test]
+    fn rejects_empty_top_level_multi_geometry() {
+        let mut wkb = Vec::new();
+        push_header(&mut wkb, MULTI_POINT_Z);
+        push_count(&mut wkb, 0);
+
+        assert_invalid_geometry(&wkb);
     }
 }
