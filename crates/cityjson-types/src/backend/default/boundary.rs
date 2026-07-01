@@ -55,6 +55,8 @@
 //! ```
 
 pub mod nested;
+#[cfg(test)]
+mod test_cases;
 mod wkb;
 
 use super::vertices::Vertices;
