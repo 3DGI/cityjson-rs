@@ -166,78 +166,61 @@ mod semantic_material_map {
     type Map = SemanticOrMaterialMap<u32, ResourceId32>;
 
     fn make_surface_map() -> Map {
-        let mut m = Map::new();
-        m.add_surface(Some(ResourceId32::new(0, 0)));
-        m.add_surface(Some(ResourceId32::new(1, 0)));
-        m.add_surface(None);
-        m
+        let mut map = Map::new();
+        map.add_surface(Some(ResourceId32::new(0, 0)));
+        map.add_surface(Some(ResourceId32::new(1, 0)));
+        map.add_surface(None);
+        map
     }
 
-    // -----------------------------------------------------------------------
-    // Family 5: map has correct bucket counts
-    // -----------------------------------------------------------------------
-
+    /// Inputs: point, linestring, and surface semantic/material maps with one
+    /// populated bucket. Assertions: only the selected bucket is populated,
+    /// bucket length is dense, and `None` assignments are preserved. Purpose:
+    /// compact positive coverage for map bucket population.
     #[test]
-    fn surface_map_surfaces_bucket_has_correct_length() {
-        let m = make_surface_map();
-        assert_eq!(m.surfaces().len(), 3, "one entry per surface");
-        assert!(m.points().is_empty());
-        assert!(m.linestrings().is_empty());
+    fn semantic_material_map_populates_only_selected_bucket() {
+        let mut point_map = Map::new();
+        point_map.add_point(Some(ResourceId32::new(0, 0)));
+        point_map.add_point(None);
+        assert_eq!(point_map.points().len(), 2);
+        assert!(point_map.linestrings().is_empty());
+        assert!(point_map.surfaces().is_empty());
+        assert!(point_map.points()[1].is_none());
+
+        let mut line_map = Map::new();
+        line_map.add_linestring(None);
+        line_map.add_linestring(Some(ResourceId32::new(7, 0)));
+        assert!(line_map.points().is_empty());
+        assert_eq!(line_map.linestrings().len(), 2);
+        assert!(line_map.surfaces().is_empty());
+        assert!(line_map.linestrings()[0].is_none());
+
+        let surface_map = make_surface_map();
+        assert!(surface_map.points().is_empty());
+        assert!(surface_map.linestrings().is_empty());
+        assert_eq!(surface_map.surfaces().len(), 3);
+        assert!(surface_map.surfaces()[2].is_none());
     }
 
+    /// Inputs: empty, point-only, linestring-only, and surface-only maps.
+    /// Assertions: `check_type()` follows the highest non-empty bucket. Purpose:
+    /// define map type detection independently from geometry validation.
     #[test]
-    fn point_map_points_bucket_has_correct_length() {
-        let mut m = Map::new();
-        m.add_point(Some(ResourceId32::new(0, 0)));
-        m.add_point(None);
-        assert_eq!(m.points().len(), 2);
-        assert!(m.linestrings().is_empty());
-        assert!(m.surfaces().is_empty());
-    }
+    fn semantic_material_map_check_type_follows_highest_non_empty_bucket() {
+        assert_eq!(Map::new().check_type(), BoundaryType::None);
 
-    #[test]
-    fn linestring_map_linestrings_bucket_has_correct_length() {
-        let mut m = Map::new();
-        m.add_linestring(None);
-        m.add_linestring(Some(ResourceId32::new(7, 0)));
-        assert_eq!(m.linestrings().len(), 2);
-        assert!(m.points().is_empty());
-        assert!(m.surfaces().is_empty());
-    }
+        let mut point_map = Map::new();
+        point_map.add_point(None);
+        assert_eq!(point_map.check_type(), BoundaryType::MultiPoint);
 
-    #[test]
-    fn none_entries_are_preserved() {
-        let m = make_surface_map();
-        assert!(m.surfaces()[2].is_none(), "None entry must be preserved");
-    }
+        let mut line_map = Map::new();
+        line_map.add_linestring(None);
+        assert_eq!(line_map.check_type(), BoundaryType::MultiLineString);
 
-    // -----------------------------------------------------------------------
-    // Family 6: check_type() correctness
-    // -----------------------------------------------------------------------
-
-    #[test]
-    fn empty_map_check_type_is_none() {
-        let m = Map::new();
-        assert_eq!(m.check_type(), BoundaryType::None);
-    }
-
-    #[test]
-    fn surface_only_map_check_type_is_multi_or_composite_surface() {
-        let m = make_surface_map();
-        assert_eq!(m.check_type(), BoundaryType::MultiOrCompositeSurface);
-    }
-
-    #[test]
-    fn point_only_map_check_type_is_multi_point() {
-        let mut m = Map::new();
-        m.add_point(None);
-        assert_eq!(m.check_type(), BoundaryType::MultiPoint);
-    }
-
-    #[test]
-    fn linestring_only_map_check_type_is_multi_linestring() {
-        let mut m = Map::new();
-        m.add_linestring(None);
-        assert_eq!(m.check_type(), BoundaryType::MultiLineString);
+        let surface_map = make_surface_map();
+        assert_eq!(
+            surface_map.check_type(),
+            BoundaryType::MultiOrCompositeSurface
+        );
     }
 }

@@ -915,12 +915,10 @@ impl std::fmt::Display for BoundaryType {
 /// representations to keep track of the current position in each level of the hierarchy.
 #[derive(Default)]
 pub(crate) struct BoundaryCounter<VR: VertexRef> {
-    #[cfg(test)]
-    pub(crate) vertex: VertexIndex<VR>, // Current position in vertex list
-    pub(crate) ring: VertexIndex<VR>, // Current position in ring list
+    pub(crate) ring: VertexIndex<VR>,    // Current position in ring list
     pub(crate) surface: VertexIndex<VR>, // Current position in surface list
-    pub(crate) shell: VertexIndex<VR>, // Current position in shell list
-    pub(crate) solid: VertexIndex<VR>, // Current position in solid list
+    pub(crate) shell: VertexIndex<VR>,   // Current position in shell list
+    pub(crate) solid: VertexIndex<VR>,   // Current position in solid list
 }
 
 impl<VR: VertexRef> BoundaryCounter<VR> {
@@ -931,36 +929,6 @@ impl<VR: VertexRef> BoundaryCounter<VR> {
             value: offset.value().to_string(),
         })?;
         Ok(*offset)
-    }
-
-    #[cfg(test)]
-    pub(crate) fn increment_vertex_idx(&mut self) -> VertexIndex<VR> {
-        self.vertex += VertexIndex::new(VR::one());
-        self.vertex
-    }
-
-    #[cfg(test)]
-    pub(crate) fn increment_ring_idx(&mut self) -> VertexIndex<VR> {
-        self.ring += VertexIndex::new(VR::one());
-        self.ring
-    }
-
-    #[cfg(test)]
-    pub(crate) fn increment_surface_idx(&mut self) -> VertexIndex<VR> {
-        self.surface += VertexIndex::new(VR::one());
-        self.surface
-    }
-
-    #[cfg(test)]
-    pub(crate) fn increment_shell_idx(&mut self) -> VertexIndex<VR> {
-        self.shell += VertexIndex::new(VR::one());
-        self.shell
-    }
-
-    #[cfg(test)]
-    pub(crate) fn increment_solid_idx(&mut self) -> VertexIndex<VR> {
-        self.solid += VertexIndex::new(VR::one());
-        self.solid
     }
 
     pub(crate) fn try_increment_ring_idx(&mut self) -> error::Result<VertexIndex<VR>> {
@@ -977,31 +945,6 @@ impl<VR: VertexRef> BoundaryCounter<VR> {
 
     pub(crate) fn try_increment_solid_idx(&mut self) -> error::Result<VertexIndex<VR>> {
         Self::increment_checked(&mut self.solid)
-    }
-
-    #[cfg(test)]
-    pub(crate) fn vertex_offset(&self) -> VertexIndex<VR> {
-        self.vertex
-    }
-
-    #[cfg(test)]
-    pub(crate) fn ring_offset(&self) -> VertexIndex<VR> {
-        self.ring
-    }
-
-    #[cfg(test)]
-    pub(crate) fn surface_offset(&self) -> VertexIndex<VR> {
-        self.surface
-    }
-
-    #[cfg(test)]
-    pub(crate) fn shell_offset(&self) -> VertexIndex<VR> {
-        self.shell
-    }
-
-    #[cfg(test)]
-    pub(crate) fn solid_offset(&self) -> VertexIndex<VR> {
-        self.solid
     }
 }
 

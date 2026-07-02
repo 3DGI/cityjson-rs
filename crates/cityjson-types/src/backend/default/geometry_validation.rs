@@ -805,6 +805,9 @@ mod tests {
         }
     }
 
+    /// Inputs: valid S1-like stored geometry with semantic, material, texture,
+    /// and UV maps. Assertions: the shared validator accepts the full payload.
+    /// Purpose: positive baseline for the negative mutation families below.
     #[test]
     fn valid_regular_geometry_passes_full_shared_validator() {
         let boundary = s1_boundary();
@@ -823,8 +826,12 @@ mod tests {
         assert!(validate_stored_geometry(&geometry, &context).is_ok());
     }
 
+    /// Inputs: regular and template validation of the same `MultiPoint` boundary
+    /// with too few vertices in the selected source pool. Assertions: each mode
+    /// reports the corresponding missing vertex source. Purpose: coverage for
+    /// boundary vertex source separation.
     #[test]
-    fn missing_regular_boundary_vertex_is_rejected() {
+    fn missing_boundary_vertices_are_rejected_by_source() {
         let geometry = geometry_of_type(
             GeometryType::MultiPoint,
             multipoint_boundary(),
@@ -832,6 +839,7 @@ mod tests {
             None,
             None,
         );
+
         let err = validate_stored_geometry(
             &geometry,
             &TestContext {
@@ -840,19 +848,8 @@ mod tests {
             },
         )
         .unwrap_err();
-
         assert!(format!("{err}").contains("missing regular vertex"));
-    }
 
-    #[test]
-    fn missing_template_boundary_vertex_is_rejected_for_template_validation() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiPoint,
-            multipoint_boundary(),
-            None,
-            None,
-            None,
-        );
         let err = validate_stored_geometry_for_boundary_source(
             &geometry,
             &TestContext {
@@ -862,10 +859,12 @@ mod tests {
             BoundaryVertexSource::Template,
         )
         .unwrap_err();
-
         assert!(format!("{err}").contains("missing template vertex"));
     }
 
+    /// Inputs: regular `MultiSurface` geometry without boundaries. Assertions:
+    /// stored validation rejects the incomplete payload. Purpose: direct coverage
+    /// for missing required stored geometry parts.
     #[test]
     fn regular_geometry_without_boundary_fails() {
         let geometry: G = GeometryCore::new(
@@ -881,215 +880,129 @@ mod tests {
         assert!(validate_stored_geometry(&geometry, &TestContext::default()).is_err());
     }
 
+    /// Inputs: semantic/material map mutations over an S1-like boundary.
+    /// Assertions: wrong bucket, wrong dense length, and missing semantic or
+    /// material handles are rejected with the expected error class. Purpose:
+    /// table-driven negative coverage for resource map shape and references.
     #[test]
-    fn semantic_map_with_wrong_bucket_is_rejected() {
-        let mut semantics = SemanticOrMaterialMap::new();
-        semantics.add_linestring(Some(rid(0)));
-        semantics.add_linestring(Some(rid(1)));
+    fn resource_maps_reject_wrong_bucket_length_and_missing_refs() {
+        let mut wrong_bucket = SemanticOrMaterialMap::new();
+        wrong_bucket.add_linestring(Some(rid(0)));
+        wrong_bucket.add_linestring(Some(rid(1)));
 
-        let geometry = regular_geometry(s1_boundary(), Some(semantics), None, None);
-        let err = validate_stored_geometry(
-            &geometry,
-            &TestContext {
-                semantics: 2,
-                ..TestContext::default()
-            },
-        )
-        .unwrap_err();
+        let cases = [
+            (
+                regular_geometry(s1_boundary(), Some(wrong_bucket), None, None),
+                TestContext {
+                    semantics: 2,
+                    ..TestContext::default()
+                },
+                "surfaces",
+            ),
+            (
+                regular_geometry(
+                    s1_boundary(),
+                    Some(surface_map(&[Some(rid(0))])),
+                    None,
+                    None,
+                ),
+                TestContext {
+                    semantics: 1,
+                    ..TestContext::default()
+                },
+                "primitive count",
+            ),
+            (
+                regular_geometry(
+                    s1_boundary(),
+                    Some(surface_map(&[Some(rid(9)), Some(rid(0))])),
+                    None,
+                    None,
+                ),
+                TestContext {
+                    semantics: 1,
+                    ..TestContext::default()
+                },
+                "missing resource",
+            ),
+            (
+                regular_geometry(
+                    s1_boundary(),
+                    None,
+                    Some(vec![(theme("theme-a"), surface_map(&[Some(rid(2)), None]))]),
+                    None,
+                ),
+                TestContext {
+                    materials: 1,
+                    ..TestContext::default()
+                },
+                "missing resource",
+            ),
+        ];
 
-        assert!(format!("{err}").contains("surfaces"));
+        for (geometry, context, expected) in cases {
+            let err = validate_stored_geometry(&geometry, &context).unwrap_err();
+            assert!(format!("{err}").contains(expected));
+        }
     }
 
+    /// Inputs: S1-like texture maps with one topology or reference mutation at a
+    /// time. Assertions: missing texture/UV handles, ring-start mismatch, UVs on
+    /// untextured rings, and null UVs on textured rings are rejected. Purpose:
+    /// compact negative coverage for dense texture topology rules.
     #[test]
-    fn shortened_dense_surface_map_is_rejected() {
-        let geometry = regular_geometry(
-            s1_boundary(),
-            Some(surface_map(&[Some(rid(0))])),
-            None,
-            None,
+    fn texture_maps_reject_bad_refs_and_topology() {
+        fn texture_case(
+            mutate: impl FnOnce(&B, &mut TextureMapCore<u32, ResourceId32>),
+            expected: &str,
+        ) {
+            let boundary = s1_boundary();
+            let mut textures = dense_texture_map(&boundary);
+            mutate(&boundary, &mut textures);
+            let geometry = regular_geometry(
+                boundary,
+                None,
+                None,
+                Some(vec![(theme("theme-a"), textures)]),
+            );
+            let err = validate_stored_geometry(
+                &geometry,
+                &TestContext {
+                    textures: 1,
+                    uvs: 7,
+                    ..TestContext::default()
+                },
+            )
+            .unwrap_err();
+            assert!(format!("{err}").contains(expected));
+        }
+
+        texture_case(
+            |_, textures| textures.ring_textures_mut()[0] = Some(rid(9)),
+            "missing texture",
         );
-        let err = validate_stored_geometry(
-            &geometry,
-            &TestContext {
-                semantics: 1,
-                ..TestContext::default()
-            },
-        )
-        .unwrap_err();
-
-        assert!(format!("{err}").contains("primitive count"));
-    }
-
-    #[test]
-    fn invalid_semantic_reference_is_rejected() {
-        let geometry = regular_geometry(
-            s1_boundary(),
-            Some(surface_map(&[Some(rid(9)), Some(rid(0))])),
-            None,
-            None,
+        texture_case(
+            |_, textures| textures.vertices_mut()[0] = Some(vi(99)),
+            "missing UV",
         );
-
-        let err = validate_stored_geometry(
-            &geometry,
-            &TestContext {
-                semantics: 1,
-                ..TestContext::default()
-            },
-        )
-        .unwrap_err();
-
-        assert!(format!("{err}").contains("missing resource"));
-    }
-
-    #[test]
-    fn invalid_material_reference_is_rejected() {
-        let geometry = regular_geometry(
-            s1_boundary(),
-            None,
-            Some(vec![(theme("theme-a"), surface_map(&[Some(rid(2)), None]))]),
-            None,
+        texture_case(
+            |boundary, textures| textures.rings_mut()[1] = boundary.rings()[0],
+            "does not match boundary ring start",
         );
-
-        let err = validate_stored_geometry(
-            &geometry,
-            &TestContext {
-                materials: 1,
-                ..TestContext::default()
-            },
-        )
-        .unwrap_err();
-
-        assert!(format!("{err}").contains("missing resource"));
-    }
-
-    #[test]
-    fn invalid_texture_reference_is_rejected() {
-        let boundary = s1_boundary();
-        let mut textures = dense_texture_map(&boundary);
-        textures.ring_textures_mut()[0] = Some(rid(9));
-        let geometry = regular_geometry(
-            boundary,
-            None,
-            None,
-            Some(vec![(theme("theme-a"), textures)]),
+        texture_case(
+            |_, textures| textures.vertices_mut()[3] = Some(vi(3)),
+            "untextured",
         );
-
-        let err = validate_stored_geometry(
-            &geometry,
-            &TestContext {
-                textures: 1,
-                uvs: 7,
-                ..TestContext::default()
-            },
-        )
-        .unwrap_err();
-
-        assert!(format!("{err}").contains("missing texture"));
+        texture_case(|_, textures| textures.vertices_mut()[0] = None, "null UV");
     }
 
+    /// Inputs: `GeometryInstance` payloads with either a missing template or a
+    /// missing regular reference point. Assertions: each missing dependency is
+    /// reported precisely. Purpose: split the old ambiguous instance resolution
+    /// test into two targeted cases.
     #[test]
-    fn invalid_uv_reference_is_rejected() {
-        let boundary = s1_boundary();
-        let mut textures = dense_texture_map(&boundary);
-        textures.vertices_mut()[0] = Some(vi(99));
-        let geometry = regular_geometry(
-            boundary,
-            None,
-            None,
-            Some(vec![(theme("theme-a"), textures)]),
-        );
-
-        let err = validate_stored_geometry(
-            &geometry,
-            &TestContext {
-                textures: 1,
-                uvs: 7,
-                ..TestContext::default()
-            },
-        )
-        .unwrap_err();
-
-        assert!(format!("{err}").contains("missing UV"));
-    }
-
-    #[test]
-    fn texture_map_requires_dense_ring_alignment() {
-        let boundary = s1_boundary();
-        let mut textures = dense_texture_map(&boundary);
-        textures.rings_mut()[1] = boundary.rings()[0];
-        let geometry = regular_geometry(
-            boundary,
-            None,
-            None,
-            Some(vec![(theme("theme-a"), textures)]),
-        );
-
-        let err = validate_stored_geometry(
-            &geometry,
-            &TestContext {
-                textures: 1,
-                uvs: 7,
-                ..TestContext::default()
-            },
-        )
-        .unwrap_err();
-
-        assert!(format!("{err}").contains("does not match boundary ring start"));
-    }
-
-    #[test]
-    fn untextured_ring_must_not_carry_uv_payload() {
-        let boundary = s1_boundary();
-        let mut textures = dense_texture_map(&boundary);
-        textures.vertices_mut()[3] = Some(vi(3));
-        let geometry = regular_geometry(
-            boundary,
-            None,
-            None,
-            Some(vec![(theme("theme-a"), textures)]),
-        );
-
-        let err = validate_stored_geometry(
-            &geometry,
-            &TestContext {
-                textures: 1,
-                uvs: 7,
-                ..TestContext::default()
-            },
-        )
-        .unwrap_err();
-
-        assert!(format!("{err}").contains("untextured"));
-    }
-
-    #[test]
-    fn textured_ring_must_have_uv_for_every_boundary_occurrence() {
-        let boundary = s1_boundary();
-        let mut textures = dense_texture_map(&boundary);
-        textures.vertices_mut()[0] = None;
-        let geometry = regular_geometry(
-            boundary,
-            None,
-            None,
-            Some(vec![(theme("theme-a"), textures)]),
-        );
-
-        let err = validate_stored_geometry(
-            &geometry,
-            &TestContext {
-                textures: 1,
-                uvs: 7,
-                ..TestContext::default()
-            },
-        )
-        .unwrap_err();
-
-        assert!(format!("{err}").contains("null UV"));
-    }
-
-    #[test]
-    fn instance_template_and_reference_must_resolve() {
-        let geometry: G = GeometryCore::new(
+    fn instance_template_and_reference_are_rejected_independently() {
+        let missing_template: G = GeometryCore::new(
             GeometryType::GeometryInstance,
             None,
             None,
@@ -1098,13 +1011,36 @@ mod tests {
             None::<ThemedTextures<u32, ResourceId32, OwnedStringStorage>>,
             Some(GeometryInstanceData::new(
                 rid(1),
+                vi(0),
+                AffineTransform3D::identity(),
+            )),
+        );
+        let err = validate_stored_geometry(
+            &missing_template,
+            &TestContext {
+                templates: 1,
+                vertices: 1,
+                ..TestContext::default()
+            },
+        )
+        .unwrap_err();
+        assert!(format!("{err}").contains("missing template"));
+
+        let missing_reference: G = GeometryCore::new(
+            GeometryType::GeometryInstance,
+            None,
+            None,
+            None,
+            None::<ThemedMaterials<u32, ResourceId32, OwnedStringStorage>>,
+            None::<ThemedTextures<u32, ResourceId32, OwnedStringStorage>>,
+            Some(GeometryInstanceData::new(
+                rid(0),
                 vi(2),
                 AffineTransform3D::identity(),
             )),
         );
-
         let err = validate_stored_geometry(
-            &geometry,
+            &missing_reference,
             &TestContext {
                 templates: 1,
                 vertices: 2,
@@ -1112,153 +1048,146 @@ mod tests {
             },
         )
         .unwrap_err();
-
-        assert!(
-            format!("{err}").contains("missing template")
-                || format!("{err}").contains("missing reference point")
-        );
+        assert!(format!("{err}").contains("missing reference point"));
     }
 
+    /// Inputs: boundaries whose populated hierarchy does not match the declared
+    /// geometry kind. Assertions: `MultiPoint`-as-`MultiSurface`, `MultiSurface` with
+    /// shells/solids, and Solid with solids are rejected. Purpose: negative
+    /// coverage for boundary kind mismatch.
     #[test]
-    fn multipoint_boundary_is_rejected_for_multisurface() {
-        let geometry = regular_geometry(multipoint_boundary(), None, None, None);
-        assert!(validate_stored_geometry(&geometry, &TestContext::default()).is_err());
+    fn boundary_shape_mismatches_are_rejected() {
+        let cases = [
+            (
+                regular_geometry(multipoint_boundary(), None, None, None),
+                "",
+            ),
+            (
+                geometry_of_type(
+                    GeometryType::MultiSurface,
+                    multisurface_with_shells(),
+                    None,
+                    None,
+                    None,
+                ),
+                "must not carry shells",
+            ),
+            (
+                geometry_of_type(
+                    GeometryType::MultiSurface,
+                    multisurface_with_solids(),
+                    None,
+                    None,
+                    None,
+                ),
+                "must not carry",
+            ),
+            (
+                geometry_of_type(GeometryType::Solid, solid_with_solids(), None, None, None),
+                "must not carry solids",
+            ),
+        ];
+
+        for (geometry, expected) in cases {
+            let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
+            if !expected.is_empty() {
+                assert!(format!("{err}").contains(expected));
+            }
+        }
     }
 
+    /// Inputs: boundaries missing required child levels or containing empty
+    /// parent segments for `MultiSurface`, `Solid`, `MultiSolid`, and template-style
+    /// validation. Assertions: every required level is rejected. Purpose:
+    /// compact coverage for empty required boundary levels.
     #[test]
-    fn surface_with_no_ring_is_rejected() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiSurface,
-            boundary_with_empty_surface(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("surface 1"));
-    }
+    fn empty_required_boundary_levels_are_rejected() {
+        let cases = [
+            (
+                geometry_of_type(
+                    GeometryType::MultiSurface,
+                    boundary_with_empty_surface(),
+                    None,
+                    None,
+                    None,
+                ),
+                "surface 1",
+            ),
+            (
+                geometry_of_type(
+                    GeometryType::Solid,
+                    boundary_with_empty_shell(),
+                    None,
+                    None,
+                    None,
+                ),
+                "shell 1",
+            ),
+            (
+                geometry_of_type(
+                    GeometryType::MultiSolid,
+                    multisolid_missing_solids(),
+                    None,
+                    None,
+                    None,
+                ),
+                "requires non-empty solids",
+            ),
+            (
+                geometry_of_type(
+                    GeometryType::MultiSolid,
+                    multisolid_missing_shells(),
+                    None,
+                    None,
+                    None,
+                ),
+                "requires non-empty shells",
+            ),
+            (
+                geometry_of_type(
+                    GeometryType::MultiSolid,
+                    multisolid_missing_surfaces(),
+                    None,
+                    None,
+                    None,
+                ),
+                "requires non-empty surfaces",
+            ),
+            (
+                geometry_of_type(
+                    GeometryType::MultiSolid,
+                    multisolid_missing_rings(),
+                    None,
+                    None,
+                    None,
+                ),
+                "requires non-empty rings",
+            ),
+            (
+                geometry_of_type(
+                    GeometryType::MultiSolid,
+                    multisolid_missing_vertices(),
+                    None,
+                    None,
+                    None,
+                ),
+                "requires non-empty vertices",
+            ),
+            (
+                geometry_of_type(
+                    GeometryType::MultiSurface,
+                    boundary_with_empty_surface(),
+                    None,
+                    None,
+                    None,
+                ),
+                "surface 1",
+            ),
+        ];
 
-    #[test]
-    fn shell_with_no_surface_is_rejected() {
-        let geometry = geometry_of_type(
-            GeometryType::Solid,
-            boundary_with_empty_shell(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("shell 1"));
-    }
-
-    #[test]
-    fn multisurface_with_shells_is_rejected() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiSurface,
-            multisurface_with_shells(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("must not carry shells"));
-    }
-
-    #[test]
-    fn multisurface_with_solids_is_rejected() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiSurface,
-            multisurface_with_solids(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("must not carry"));
-    }
-
-    #[test]
-    fn solid_with_solids_is_rejected() {
-        let geometry = geometry_of_type(GeometryType::Solid, solid_with_solids(), None, None, None);
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("must not carry solids"));
-    }
-
-    #[test]
-    fn multisolid_missing_solids_is_rejected() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiSolid,
-            multisolid_missing_solids(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("requires non-empty solids"));
-    }
-
-    #[test]
-    fn multisolid_missing_shells_is_rejected() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiSolid,
-            multisolid_missing_shells(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("requires non-empty shells"));
-    }
-
-    #[test]
-    fn multisolid_missing_surfaces_is_rejected() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiSolid,
-            multisolid_missing_surfaces(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("requires non-empty surfaces"));
-    }
-
-    #[test]
-    fn multisolid_missing_rings_is_rejected() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiSolid,
-            multisolid_missing_rings(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("requires non-empty rings"));
-    }
-
-    #[test]
-    fn multisolid_missing_vertices_is_rejected() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiSolid,
-            multisolid_missing_vertices(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("requires non-empty vertices"));
-    }
-
-    #[test]
-    fn template_geometry_uses_the_same_shape_rules() {
-        let geometry = geometry_of_type(
-            GeometryType::MultiSurface,
-            boundary_with_empty_surface(),
-            None,
-            None,
-            None,
-        );
-        let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
-        assert!(format!("{err}").contains("surface 1"));
+        for (geometry, expected) in cases {
+            let err = validate_stored_geometry(&geometry, &TestContext::default()).unwrap_err();
+            assert!(format!("{err}").contains(expected));
+        }
     }
 }

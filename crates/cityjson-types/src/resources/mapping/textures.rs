@@ -156,13 +156,12 @@ mod texture_map {
         VertexIndex::new(n)
     }
 
-    // -----------------------------------------------------------------------
-    // Family 8: core topology
-    // -----------------------------------------------------------------------
-
+    /// Inputs: texture maps with one untextured ring and two textured rings.
+    /// Assertions: ring offsets, ring texture handles, null texture entries, and
+    /// UV vertex slots are preserved. Purpose: positive unit coverage for dense
+    /// texture-map topology.
     #[test]
-    fn ring_count_matches_uv_vertex_count() {
-        // A ring with 3 vertices: ring starts at uv-vertex index 0
+    fn texture_map_preserves_ring_offsets_textures_and_nulls() {
         let mut core = Core::default();
         core.add_vertex(Some(vi(0)));
         core.add_vertex(Some(vi(1)));
@@ -170,75 +169,44 @@ mod texture_map {
         core.add_ring(vi(0));
         core.add_ring_texture(Some(make_tex_id(0)));
 
-        assert_eq!(core.vertices().len(), 3);
-        assert_eq!(core.rings().len(), 1);
-        assert_eq!(core.ring_textures().len(), 1);
-    }
-
-    #[test]
-    fn ring_texture_can_be_none() {
-        let mut core = Core::default();
-        core.add_vertex(Some(vi(0)));
-        core.add_ring(vi(0));
+        core.add_vertex(None);
+        core.add_vertex(None);
+        core.add_ring(vi(3));
         core.add_ring_texture(None);
 
-        assert!(core.ring_textures()[0].is_none());
-    }
-
-    #[test]
-    fn multi_ring_multi_texture() {
-        // Two rings in the same surface, each with a different texture
-        let mut core = Core::default();
-        // Ring 0: vertices 0,1,2
-        core.add_vertex(Some(vi(0)));
-        core.add_vertex(Some(vi(1)));
-        core.add_vertex(Some(vi(2)));
-        core.add_ring(vi(0));
-        core.add_ring_texture(Some(make_tex_id(0)));
-        // Ring 1: vertices 0,2,3
         core.add_vertex(Some(vi(0)));
         core.add_vertex(Some(vi(2)));
         core.add_vertex(Some(vi(3)));
-        core.add_ring(vi(3));
+        core.add_ring(vi(5));
         core.add_ring_texture(Some(make_tex_id(1)));
 
-        assert_eq!(core.vertices().len(), 6);
-        assert_eq!(core.rings().len(), 2);
-        assert_eq!(core.ring_textures().len(), 2);
+        assert_eq!(core.vertices().len(), 8);
+        assert_eq!(core.rings(), &[vi(0), vi(3), vi(5)]);
+        assert_eq!(core.ring_textures().len(), 3);
         assert_eq!(core.ring_textures()[0], Some(make_tex_id(0)));
-        assert_eq!(core.ring_textures()[1], Some(make_tex_id(1)));
+        assert!(core.ring_textures()[1].is_none());
+        assert_eq!(core.ring_textures()[2], Some(make_tex_id(1)));
+        assert!(core.vertices()[3..5].iter().all(Option::is_none));
     }
 
-    // -----------------------------------------------------------------------
-    // Family 9: vertex-reuse — a geometric vertex can appear in multiple rings
-    // with different UV coordinates per occurrence
-    // -----------------------------------------------------------------------
-
+    /// Inputs: two texture-map rings that reuse the same geometric vertex refs
+    /// in distinct UV slots. Assertions: repeated geometric refs remain separate
+    /// occurrences with different ring starts. Purpose: protect occurrence-level
+    /// UV mapping for reused geometry vertices.
     #[test]
     fn vertex_reuse_different_uvs_per_ring() {
-        // Geometric vertices 0 and 1 appear in two rings.
-        // Ring 0 maps vertex 0 → uv-vertex 0, vertex 1 → uv-vertex 1.
-        // Ring 1 maps vertex 0 → uv-vertex 2 (different UV!), vertex 1 → uv-vertex 3.
         let mut core = Core::default();
-        // Ring 0 uv-vertices
-        core.add_vertex(Some(vi(0))); // uv index 0 → geom vertex 0
-        core.add_vertex(Some(vi(1))); // uv index 1 → geom vertex 1
+        core.add_vertex(Some(vi(0)));
+        core.add_vertex(Some(vi(1)));
         core.add_ring(vi(0));
         core.add_ring_texture(Some(make_tex_id(0)));
-        // Ring 1 uv-vertices — same geom vertices, different UV positions in the pool
-        core.add_vertex(Some(vi(0))); // uv index 2 → geom vertex 0 (reused)
-        core.add_vertex(Some(vi(1))); // uv index 3 → geom vertex 1 (reused)
+        core.add_vertex(Some(vi(0)));
+        core.add_vertex(Some(vi(1)));
         core.add_ring(vi(2));
         core.add_ring_texture(Some(make_tex_id(0)));
 
-        assert_eq!(core.vertices().len(), 4, "4 uv-vertex slots (2 per ring)");
-        // uv-vertex 0 and uv-vertex 2 both reference the same geometric vertex 0
+        assert_eq!(core.vertices().len(), 4);
         assert_eq!(core.vertices()[0], core.vertices()[2]);
-        // but they are distinct slots — allowing different UV coords in the UV pool
-        assert_ne!(
-            core.rings()[0],
-            core.rings()[1],
-            "rings start at different uv-vertex offsets"
-        );
+        assert_ne!(core.rings()[0], core.rings()[1]);
     }
 }

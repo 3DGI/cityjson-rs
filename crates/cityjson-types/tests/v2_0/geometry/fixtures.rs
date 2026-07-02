@@ -67,7 +67,6 @@ pub fn build_l1() -> L1Result {
 pub struct S1Result {
     pub model: OwnedModel,
     pub handle: GeometryHandle,
-    pub theme: String,
 }
 
 pub fn build_s1(type_geom: GeometryType) -> S1Result {
@@ -126,11 +125,7 @@ pub fn build_s1(type_geom: GeometryType) -> S1Result {
     };
     let handle = draft.insert_into(&mut model).unwrap();
 
-    S1Result {
-        model,
-        handle,
-        theme,
-    }
+    S1Result { model, handle }
 }
 
 pub struct D1Result {

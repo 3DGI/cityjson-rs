@@ -1385,3 +1385,228 @@ fn flatten_ring<VR: VertexRef, SS: StringStorage>(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::CityModelType;
+    use crate::resources::handles::{MaterialHandle, SemanticHandle, TextureHandle};
+    use crate::resources::storage::OwnedStringStorage;
+    use crate::v2_0::appearance::ImageType;
+    use crate::v2_0::{OwnedCityModel, OwnedMaterial, OwnedSemantic, OwnedTexture, SemanticType};
+
+    fn new_model() -> OwnedCityModel {
+        OwnedCityModel::new(CityModelType::CityJSON)
+    }
+
+    fn missing_semantic() -> SemanticHandle {
+        unsafe { SemanticHandle::from_raw_parts_unchecked(99, 0) }
+    }
+
+    fn missing_material() -> MaterialHandle {
+        unsafe { MaterialHandle::from_raw_parts_unchecked(99, 0) }
+    }
+
+    fn missing_texture() -> TextureHandle {
+        unsafe { TextureHandle::from_raw_parts_unchecked(99, 0) }
+    }
+
+    fn triangle() -> RingDraft<u32, OwnedStringStorage> {
+        RingDraft::new([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    }
+
+    /// Inputs: drafts with missing required point, line, surface, shell, or
+    /// solid children. Assertions: insertion rejects each incomplete authoring
+    /// shape. Purpose: authoring-level coverage for empty required geometry
+    /// parts before storage validation.
+    #[test]
+    fn draft_authoring_rejects_empty_required_parts() {
+        let cases = [
+            GeometryDraft::multi_point(None, []),
+            GeometryDraft::multi_line_string(None, []),
+            GeometryDraft::multi_line_string(None, [LineStringDraft::new(Vec::<[f64; 3]>::new())]),
+            GeometryDraft::multi_surface(None, []),
+            GeometryDraft::solid(None, ShellDraft::new([]), []),
+            GeometryDraft::multi_solid(None, []),
+        ];
+
+        for draft in cases {
+            assert!(draft.insert_into(&mut new_model()).is_err());
+        }
+    }
+
+    /// Inputs: one surface with duplicate material themes and one ring with
+    /// duplicate texture themes. Assertions: insertion rejects both duplicates.
+    /// Purpose: protect one-assignment-per-theme authoring invariants.
+    #[test]
+    fn draft_authoring_rejects_duplicate_material_and_texture_themes() {
+        let mut model = new_model();
+        let material = model
+            .add_material(OwnedMaterial::new("mat-a".to_string()))
+            .unwrap();
+        let surface = SurfaceDraft::new(triangle(), [])
+            .with_material("theme-a".to_string(), material)
+            .with_material("theme-a".to_string(), material);
+        assert!(
+            GeometryDraft::multi_surface(None, [surface])
+                .insert_into(&mut model)
+                .is_err()
+        );
+
+        let mut model = new_model();
+        let texture = model
+            .add_texture(OwnedTexture::new("tex-a.png".to_string(), ImageType::Png))
+            .unwrap();
+        let ring = triangle()
+            .with_texture(
+                "theme-a".to_string(),
+                texture,
+                [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]],
+            )
+            .with_texture(
+                "theme-a".to_string(),
+                texture,
+                [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]],
+            );
+        let surface = SurfaceDraft::new(ring, []);
+        assert!(
+            GeometryDraft::multi_surface(None, [surface])
+                .insert_into(&mut model)
+                .is_err()
+        );
+    }
+
+    /// Inputs: drafts referencing missing regular/template vertices and missing
+    /// semantic, material, texture, and UV handles. Assertions: every missing
+    /// handle is rejected before insertion mutates the model. Purpose: direct
+    /// authoring coverage for resource and vertex reference preflight.
+    #[test]
+    fn draft_authoring_rejects_missing_handles() {
+        let existing_vertex = VertexIndex::new(0_u32);
+        assert!(
+            GeometryDraft::multi_point(None, [PointDraft::new(existing_vertex)])
+                .insert_into(&mut new_model())
+                .is_err()
+        );
+        assert!(
+            GeometryDraft::multi_point(None, [PointDraft::new(existing_vertex)])
+                .insert_template_into(&mut new_model())
+                .is_err()
+        );
+
+        assert!(
+            GeometryDraft::multi_point(
+                None,
+                [PointDraft::new([0.0, 0.0, 0.0]).with_semantic(missing_semantic())],
+            )
+            .insert_into(&mut new_model())
+            .is_err()
+        );
+
+        let surface = SurfaceDraft::new(triangle(), [])
+            .with_material("theme-a".to_string(), missing_material());
+        assert!(
+            GeometryDraft::multi_surface(None, [surface])
+                .insert_into(&mut new_model())
+                .is_err()
+        );
+
+        let ring = triangle().with_texture(
+            "theme-a".to_string(),
+            missing_texture(),
+            [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]],
+        );
+        assert!(
+            GeometryDraft::multi_surface(None, [SurfaceDraft::new(ring, [])])
+                .insert_into(&mut new_model())
+                .is_err()
+        );
+
+        let mut model = new_model();
+        let texture = model
+            .add_texture(OwnedTexture::new("tex-a.png".to_string(), ImageType::Png))
+            .unwrap();
+        let ring = triangle().with_texture(
+            "theme-a".to_string(),
+            texture,
+            [
+                VertexIndex::new(0_u32),
+                VertexIndex::new(1),
+                VertexIndex::new(2),
+            ],
+        );
+        assert!(
+            GeometryDraft::multi_surface(None, [SurfaceDraft::new(ring, [])])
+                .insert_into(&mut model)
+                .is_err()
+        );
+    }
+
+    /// Inputs: drafts that repeat identical coordinates and identical UVs in one
+    /// insertion. Assertions: the stored boundary preserves all occurrences but
+    /// model vertex and UV pools receive only unique values. Purpose: authoring
+    /// coverage for insertion-time vertex and UV deduplication.
+    #[test]
+    fn draft_authoring_deduplicates_vertices_and_uvs() {
+        let mut model = new_model();
+        let handle = GeometryDraft::multi_point(
+            None,
+            [
+                PointDraft::new([0.0, 0.0, 0.0]),
+                PointDraft::new([0.0, 0.0, 0.0]),
+                PointDraft::new([1.0, 0.0, 0.0]),
+            ],
+        )
+        .insert_into(&mut model)
+        .unwrap();
+        let boundary = model.get_geometry(handle).unwrap().boundaries().unwrap();
+        assert_eq!(model.vertices().len(), 2);
+        assert_eq!(boundary.vertices()[0], boundary.vertices()[1]);
+        assert_ne!(boundary.vertices()[1], boundary.vertices()[2]);
+
+        let mut model = new_model();
+        let texture = model
+            .add_texture(OwnedTexture::new("tex-a.png".to_string(), ImageType::Png))
+            .unwrap();
+        let ring = triangle().with_texture(
+            "theme-a".to_string(),
+            texture,
+            [[0.0, 0.0], [0.0, 0.0], [1.0, 0.0]],
+        );
+        let handle = GeometryDraft::multi_surface(None, [SurfaceDraft::new(ring, [])])
+            .insert_into(&mut model)
+            .unwrap();
+        let texture_map = model
+            .get_geometry(handle)
+            .unwrap()
+            .textures()
+            .unwrap()
+            .first()
+            .unwrap()
+            .1;
+        assert!(model.get_uv_coordinate(VertexIndex::new(0)).is_some());
+        assert!(model.get_uv_coordinate(VertexIndex::new(1)).is_some());
+        assert!(model.get_uv_coordinate(VertexIndex::new(2)).is_none());
+        assert_eq!(texture_map.vertices()[0], texture_map.vertices()[1]);
+        assert_ne!(texture_map.vertices()[1], texture_map.vertices()[2]);
+    }
+
+    /// Inputs: one valid semantic handle attached to a point draft. Assertions:
+    /// insertion succeeds and creates a semantic map. Purpose: sanity-check the
+    /// positive authoring path alongside the missing-handle cases.
+    #[test]
+    fn draft_authoring_accepts_existing_resource_handles() {
+        let mut model = new_model();
+        let semantic = model
+            .add_semantic(OwnedSemantic::new(SemanticType::RoofSurface))
+            .unwrap();
+        let handle = GeometryDraft::multi_point(
+            None,
+            [PointDraft::new([0.0, 0.0, 0.0]).with_semantic(semantic)],
+        )
+        .insert_into(&mut model)
+        .unwrap();
+
+        assert!(model.get_geometry(handle).unwrap().semantics().is_some());
+    }
+}

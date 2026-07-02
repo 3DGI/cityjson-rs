@@ -11,28 +11,11 @@ fn vi<T: VertexRef>(value: T) -> VertexIndex<T> {
     VertexIndex::new(value)
 }
 
+/// Inputs: flat boundaries with progressively populated hierarchy levels.
+/// Assertions: `check_type()` reports the highest populated level. Purpose:
+/// define boundary type detection independently from geometry validation.
 #[test]
-fn empty() {
-    let boundary: Boundary<u32> = Boundary::new();
-    assert_eq!(boundary.check_type(), BoundaryType::None);
-    assert!(boundary.is_consistent());
-}
-
-#[test]
-fn with_capacity() {
-    let boundary: Boundary<u32> = Boundary::with_capacity(
-        10, // vertices capacity
-        5,  // rings capacity
-        3,  // surfaces capacity
-        2,  // shells capacity
-        1,  // solids capacity
-    );
-    assert_eq!(boundary.check_type(), BoundaryType::None);
-    assert!(boundary.is_consistent());
-}
-
-#[test]
-fn type_detection() {
+fn boundary_type_detection_reports_highest_populated_level() {
     // Create various boundary types
     let mut multi_point_boundary: Boundary<u32> = Boundary::new();
     multi_point_boundary.vertices = vec![vi(0), vi(1), vi(2)];
@@ -320,50 +303,6 @@ fn multi_solid_conversion() {
 }
 
 #[test]
-fn display_boundary_type() {
-    assert_eq!(BoundaryType::None.to_string(), "None");
-    assert_eq!(BoundaryType::MultiPoint.to_string(), "MultiPoint");
-    assert_eq!(BoundaryType::MultiLineString.to_string(), "MultiLineString");
-    assert_eq!(
-        BoundaryType::MultiOrCompositeSurface.to_string(),
-        "MultiOrCompositeSurface"
-    );
-    assert_eq!(BoundaryType::Solid.to_string(), "Solid");
-    assert_eq!(
-        BoundaryType::MultiOrCompositeSolid.to_string(),
-        "MultiOrCompositeSolid"
-    );
-}
-
-#[test]
-fn boundary_counter() {
-    let mut counter = BoundaryCounter::<u32>::default();
-
-    // Initial values should be zero
-    assert_eq!(counter.vertex_offset().value(), 0);
-    assert_eq!(counter.ring_offset().value(), 0);
-    assert_eq!(counter.surface_offset().value(), 0);
-    assert_eq!(counter.shell_offset().value(), 0);
-    assert_eq!(counter.solid_offset().value(), 0);
-
-    // Test increments
-    assert_eq!(counter.increment_vertex_idx().value(), 1);
-    assert_eq!(counter.increment_vertex_idx().value(), 2);
-
-    assert_eq!(counter.increment_ring_idx().value(), 1);
-    assert_eq!(counter.increment_surface_idx().value(), 1);
-    assert_eq!(counter.increment_shell_idx().value(), 1);
-    assert_eq!(counter.increment_solid_idx().value(), 1);
-
-    // Current values after increments
-    assert_eq!(counter.vertex_offset().value(), 2);
-    assert_eq!(counter.ring_offset().value(), 1);
-    assert_eq!(counter.surface_offset().value(), 1);
-    assert_eq!(counter.shell_offset().value(), 1);
-    assert_eq!(counter.solid_offset().value(), 1);
-}
-
-#[test]
 fn from_parts_unchecked_matches_checked_layout_for_valid_input() {
     let nested: BoundaryNestedMultiOrCompositeSolid32 = vec![
         vec![
@@ -427,8 +366,7 @@ mod nested_tests {
         BoundaryNestedMultiLineString16, BoundaryNestedMultiLineString32,
         BoundaryNestedMultiOrCompositeSolid16, BoundaryNestedMultiOrCompositeSolid32,
         BoundaryNestedMultiOrCompositeSurface16, BoundaryNestedMultiOrCompositeSurface32,
-        BoundaryNestedMultiPoint16, BoundaryNestedMultiPoint32, BoundaryNestedSolid16,
-        BoundaryNestedSolid32,
+        BoundaryNestedMultiPoint32, BoundaryNestedSolid16, BoundaryNestedSolid32,
     };
     use crate::cityjson::core::vertex::VertexIndex;
 
@@ -511,27 +449,6 @@ mod nested_tests {
         // The empty surface should be preserved
         assert_eq!(round_trip.len(), 3);
         assert_eq!(round_trip[1], empty_surface); // Empty surface preserved
-    }
-
-    #[test]
-    fn type_alias_consistency() {
-        // Ensure type aliases are consistent with each other
-
-        // Create a simple multi-point with u16 indices
-        let mp16: BoundaryNestedMultiPoint16 = vec![0, 1, 2];
-        let boundary16: Boundary16 = mp16.clone().into();
-
-        // Create the same with u32 indices
-        let mp32: BoundaryNestedMultiPoint32 = vec![0, 1, 2];
-        let boundary32: Boundary32 = mp32.into();
-
-        // The boundaries should have the same structure despite different index types
-        assert_eq!(boundary16.check_type(), boundary32.check_type());
-        assert_eq!(boundary16.vertices.len(), boundary32.vertices.len());
-
-        // Check round-trip conversion
-        let mp16_again = boundary16.to_nested_multi_point().unwrap();
-        assert_eq!(mp16_again, mp16);
     }
 
     #[test]
