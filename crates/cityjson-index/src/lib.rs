@@ -113,13 +113,15 @@ pub enum LodSelection {
     #[default]
     All,
     Highest,
-    Exact(String),
+    /// Retain geometry matching any of these exact `LoDs`. The vector must be nonempty.
+    Exact(Vec<String>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MissingLodSelection {
     pub cityobject_type: String,
-    pub requested_lod: String,
+    /// Requested `LoDs` absent from the available geometry.
+    pub requested_lods: BTreeSet<String>,
     pub available_lods: BTreeSet<String>,
 }
 
@@ -146,6 +148,8 @@ pub struct PackageFilterReport {
     pub available_types: BTreeSet<String>,
     pub retained_types: BTreeSet<String>,
     pub ignored_types: BTreeSet<String>,
+    /// Observed `LoDs` for retained geometry owners. An absent key means no geometry
+    /// was observed for that type; an empty set means geometry had no `LoD` metadata.
     pub available_lods: BTreeMap<String, BTreeSet<String>>,
     pub retained_lods: BTreeMap<String, BTreeSet<String>>,
     pub missing_lods: BTreeMap<String, MissingLodSelection>,
@@ -183,6 +187,17 @@ impl PackageType {
 }
 
 impl PackageFilter {
+    fn validate(&self) -> Result<()> {
+        for selection in std::iter::once(&self.default_lod).chain(self.lods_by_type.values()) {
+            if let LodSelection::Exact(lods) = selection
+                && lods.is_empty()
+            {
+                return Err(import_error("exact LoD selection must not be empty"));
+            }
+        }
+        Ok(())
+    }
+
     #[must_use]
     pub fn is_active(&self) -> bool {
         self.cityobject_types.is_some()
@@ -201,8 +216,10 @@ impl PackageFilter {
     ///
     /// # Errors
     ///
-    /// Returns an error if the underlying `CityObject` or `LoD` selection fails.
+    /// Returns an error if an exact `LoD` selection is empty or the underlying
+    /// `CityObject` or `LoD` selection fails.
     pub fn apply(&self, model: &CityModel) -> Result<PackageFilterResult> {
+        self.validate()?;
         let retained_handles = retained_cityobject_handles(model, self)?;
         let diagnostics = filter_diagnostics(model, &retained_handles, self);
         let filtered_model = if self.is_active() {
@@ -228,25 +245,7 @@ impl PackageFilter {
             model.clone()
         };
 
-        let mut report = PackageFilterReport::from_diagnostics(&diagnostics);
-        if let LodSelection::Exact(requested_lod) = &self.default_lod
-            && diagnostics.retained_geometry_count == 0
-        {
-            for cityobject_type in &diagnostics.available_types {
-                report
-                    .missing_lods
-                    .entry(cityobject_type.clone())
-                    .or_insert_with(|| MissingLodSelection {
-                        cityobject_type: cityobject_type.clone(),
-                        requested_lod: requested_lod.clone(),
-                        available_lods: diagnostics
-                            .available_lods
-                            .get(cityobject_type)
-                            .cloned()
-                            .unwrap_or_default(),
-                    });
-            }
-        }
+        let report = PackageFilterReport::from_diagnostics(&diagnostics);
         let model = if diagnostics.retained_geometry_count == 0 {
             None
         } else {
@@ -289,8 +288,24 @@ impl PackageFilterReport {
         for (cityobject_type, missing) in &other.missing_lods {
             self.missing_lods
                 .entry(cityobject_type.clone())
+                .and_modify(|existing| {
+                    existing
+                        .requested_lods
+                        .extend(missing.requested_lods.iter().cloned());
+                })
                 .or_insert_with(|| missing.clone());
         }
+        self.missing_lods.retain(|cityobject_type, missing| {
+            missing.available_lods = self
+                .available_lods
+                .get(cityobject_type)
+                .cloned()
+                .unwrap_or_default();
+            missing
+                .requested_lods
+                .retain(|lod| !missing.available_lods.contains(lod));
+            !missing.requested_lods.is_empty()
+        });
         self.retained_geometry_count += other.retained_geometry_count;
         self.retained_package_count += other.retained_package_count;
         self.ignored_package_count += other.ignored_package_count;
@@ -298,12 +313,27 @@ impl PackageFilterReport {
 
     /// Ensures every exact `LoD` requested by `filter` was available in the merged report.
     ///
+    /// Defaults apply to types owning retained input geometry, including geometry
+    /// without `LoD` metadata. Structural ancestors create no default requirement.
+    /// Explicit type overrides are always checked against that type's own geometry.
+    ///
     /// # Errors
     ///
     /// Returns an error when a requested exact `LoD` is absent for a requested `CityObject` type.
     pub fn ensure_requested_lods_available(&self, filter: &PackageFilter) -> Result<()> {
-        for (cityobject_type, selection) in &filter.lods_by_type {
-            let LodSelection::Exact(requested_lod) = selection else {
+        filter.validate()?;
+        let types: BTreeSet<_> = self
+            .available_lods
+            .keys()
+            .chain(filter.lods_by_type.keys())
+            .collect();
+        let mut failures = Vec::new();
+        for cityobject_type in types {
+            let selection = filter
+                .lods_by_type
+                .get(cityobject_type)
+                .unwrap_or(&filter.default_lod);
+            let LodSelection::Exact(requested_lods) = selection else {
                 continue;
             };
             let available_lods = self
@@ -311,11 +341,16 @@ impl PackageFilterReport {
                 .get(cityobject_type)
                 .cloned()
                 .unwrap_or_default();
-            if !available_lods.contains(requested_lod) {
-                return Err(import_error(format!(
-                    "requested LoD {requested_lod} is not available for {cityobject_type}"
-                )));
+            let missing: BTreeSet<_> = requested_lods
+                .iter()
+                .filter(|lod| !available_lods.contains(*lod))
+                .collect();
+            if !missing.is_empty() {
+                failures.push(format!("requested LoDs {missing:?} are not available for {cityobject_type}; available LoDs: {available_lods:?}"));
             }
+        }
+        if !failures.is_empty() {
+            return Err(import_error(failures.join("; ")));
         }
         Ok(())
     }
@@ -408,6 +443,8 @@ fn lod_selection(
             selection,
         )
     })
+    // Preserve structural relatives without restoring geometry rejected by the LoD selection.
+    .and_then(|selection| selection.include_relatives(model))
     .map(Some)
 }
 
@@ -421,7 +458,7 @@ fn geometry_matches_lod_selection(
         LodSelection::Highest => geometry_lod
             .is_some_and(|lod| highest_lod.is_some_and(|highest| lod.to_string() == *highest)),
         LodSelection::Exact(selected_lod) => {
-            geometry_lod.is_some_and(|lod| lod.to_string() == *selected_lod)
+            geometry_lod.is_some_and(|lod| selected_lod.contains(&lod.to_string()))
         }
     }
 }
@@ -490,18 +527,19 @@ fn filter_diagnostics(
             .get(&cityobject_type)
             .unwrap_or(&filter.default_lod);
         for geometry_handle in geometry_handles {
-            let Some(geometry_lod) = model
-                .get_geometry(*geometry_handle)
-                .and_then(|geometry| geometry.lod())
-            else {
+            let Some(geometry) = model.get_geometry(*geometry_handle) else {
+                continue;
+            };
+            // An empty entry distinguishes geometry without LoD metadata from structural objects.
+            let available_lods = diagnostics
+                .available_lods
+                .entry(cityobject_type.clone())
+                .or_default();
+            let Some(geometry_lod) = geometry.lod() else {
                 continue;
             };
             let lod = geometry_lod.to_string();
-            diagnostics
-                .available_lods
-                .entry(cityobject_type.clone())
-                .or_default()
-                .insert(lod.clone());
+            available_lods.insert(lod.clone());
             if geometry_matches_lod_selection(
                 Some(geometry_lod),
                 highest_lods.get(&handle),
@@ -517,22 +555,33 @@ fn filter_diagnostics(
         }
     }
 
-    for (cityobject_type, selection) in &filter.lods_by_type {
-        let LodSelection::Exact(requested_lod) = selection else {
-            continue;
-        };
-        if !diagnostics.retained_types.contains(cityobject_type) {
+    for cityobject_type in &diagnostics.retained_types {
+        if !diagnostics.available_lods.contains_key(cityobject_type)
+            && !filter.lods_by_type.contains_key(cityobject_type)
+        {
             continue;
         }
+        let selection = filter
+            .lods_by_type
+            .get(cityobject_type)
+            .unwrap_or(&filter.default_lod);
+        let LodSelection::Exact(requested_lods) = selection else {
+            continue;
+        };
         let available_lods = diagnostics
             .available_lods
             .get(cityobject_type)
             .cloned()
             .unwrap_or_default();
-        if !available_lods.contains(requested_lod) {
+        let requested_lods: BTreeSet<_> = requested_lods
+            .iter()
+            .filter(|lod| !available_lods.contains(*lod))
+            .cloned()
+            .collect();
+        if !requested_lods.is_empty() {
             diagnostics.missing_lods.push(MissingLodSelection {
                 cityobject_type: cityobject_type.clone(),
-                requested_lod: requested_lod.clone(),
+                requested_lods,
                 available_lods,
             });
         }
@@ -1766,6 +1815,7 @@ impl CityIndex {
         packages: &[IndexedPackageRef],
         filter: &PackageFilter,
     ) -> Result<Vec<PackageFilterResult>> {
+        filter.validate()?;
         self.read_packages(packages)?
             .into_iter()
             .map(|package| filter.apply(&package.model))

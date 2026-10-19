@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, Self
@@ -22,7 +22,7 @@ class _LodSelectionKind(Enum):
 @dataclass(frozen=True, slots=True)
 class LodSelection:
     kind: _LodSelectionKind
-    exact_lod: str | None = None
+    exact_lods: tuple[str, ...] = ()
 
     ALL: ClassVar["LodSelection"]
     HIGHEST: ClassVar["LodSelection"]
@@ -35,15 +35,25 @@ class LodSelection:
     def highest(cls) -> Self:
         return cls(_LodSelectionKind.HIGHEST)
 
-    @classmethod
-    def exact(cls, lod: str) -> Self:
-        if not lod:
-            raise ValueError("lod must not be empty")
-        return cls(_LodSelectionKind.EXACT, lod)
+    def __post_init__(self) -> None:
+        if isinstance(self.exact_lods, str):
+            raise TypeError("exact_lods must be a sequence of LoD strings")
+        if self.kind is _LodSelectionKind.EXACT and not self.exact_lods:
+            raise ValueError("exact LoD selection must not be empty")
+        if any(not isinstance(lod, str) or not lod for lod in self.exact_lods):
+            raise ValueError("LoD values must be nonempty strings")
+        object.__setattr__(self, "exact_lods", tuple(self.exact_lods))
 
     @classmethod
-    def Exact(cls, lod: str) -> Self:
-        return cls.exact(lod)
+    def exact(cls, lods: Sequence[str]) -> Self:
+        """Retain any of the supplied exact LoDs; the sequence must be nonempty."""
+        if isinstance(lods, str):
+            raise TypeError("lods must be a sequence of LoD strings")
+        return cls(_LodSelectionKind.EXACT, tuple(lods))
+
+    @classmethod
+    def Exact(cls, lods: Sequence[str]) -> Self:
+        return cls.exact(lods)
 
     @property
     def _native_kind(self) -> int:
@@ -73,11 +83,12 @@ class PackageFilter:
 @dataclass(frozen=True, slots=True)
 class MissingLodSelection:
     cityobject_type: str
-    requested_lod: str
+    requested_lods: frozenset[str]
     available_lods: frozenset[str] = field(default_factory=frozenset)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "available_lods", frozenset(self.available_lods))
+        object.__setattr__(self, "requested_lods", frozenset(self.requested_lods))
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,33 +143,47 @@ class PackageFilterSummary:
         _merge_lod_sets(self.available_lods, diagnostics.available_lods)
         _merge_lod_sets(self.retained_lods, diagnostics.retained_lods)
         for missing in diagnostics.missing_lods:
-            if missing.cityobject_type not in self.missing_lods:
-                self.missing_lods[missing.cityobject_type] = missing
+            previous = self.missing_lods.get(missing.cityobject_type)
+            requested = missing.requested_lods | (
+                previous.requested_lods if previous else frozenset()
+            )
+            self.missing_lods[missing.cityobject_type] = MissingLodSelection(
+                missing.cityobject_type, requested, missing.available_lods
+            )
+        for cityobject_type, missing in list(self.missing_lods.items()):
+            available = frozenset(self.available_lods.get(cityobject_type, set()))
+            requested = missing.requested_lods - available
+            if requested:
+                self.missing_lods[cityobject_type] = MissingLodSelection(
+                    cityobject_type, requested, available
+                )
+            else:
+                del self.missing_lods[cityobject_type]
         if diagnostics.retained_geometry_count == 0:
             self.ignored_package_count += 1
         else:
             self.retained_package_count += 1
 
     def requested_lod_failures(self, filter: PackageFilter) -> list[MissingLodSelection]:
+        """Check defaults for geometry owners and all explicit type overrides.
+
+        Availability includes an empty set for geometry lacking LoD metadata;
+        structural types without geometry have no availability entry.
+        """
         failures: list[MissingLodSelection] = []
-        for cityobject_type, selection in filter.lods_by_type.items():
+        types = self.available_lods.keys() | filter.lods_by_type.keys()
+        for cityobject_type in sorted(types):
+            selection = filter.lods_by_type.get(cityobject_type, filter.default_lod)
             if selection.kind is not _LodSelectionKind.EXACT:
                 continue
-            eligible = (
-                cityobject_type in self.available_lods
-                or cityobject_type in self.retained_types
-                or filter.cityobject_types is None
-                or cityobject_type in filter.cityobject_types
-            )
-            if not eligible:
-                continue
             available_lods = self.available_lods.get(cityobject_type, set())
-            if selection.exact_lod in available_lods:
+            requested_lods = frozenset(selection.exact_lods) - available_lods
+            if not requested_lods:
                 continue
             failures.append(
                 MissingLodSelection(
                     cityobject_type=cityobject_type,
-                    requested_lod=selection.exact_lod or "",
+                    requested_lods=requested_lods,
                     available_lods=frozenset(available_lods),
                 )
             )
@@ -171,7 +196,7 @@ class PackageFilterSummary:
 
         details = "; ".join(
             (
-                f"{missing.cityobject_type} requested LoD '{missing.requested_lod}' "
+                f"{missing.cityobject_type} requested LoDs {sorted(missing.requested_lods)} "
                 f"but available LoDs are: {_format_available_lods(missing.available_lods)}"
             )
             for missing in failures

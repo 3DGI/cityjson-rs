@@ -74,6 +74,43 @@ for (package, source_path) in refs.iter().zip(source_paths) {
 # Ok::<(), cityjson_lib::Error>(())
 ```
 
+### Filter packages by exact LoDs
+
+`LodSelection::Exact` accepts a nonempty `Vec<String>`. Geometry is retained
+when its LoD matches any supplied value. Type overrides take precedence over
+`default_lod`, which defaults to `All`; `Highest` selects each object's highest LoD.
+
+```rust
+use cityjson_index::{LodSelection, PackageFilter, PackageFilterReport};
+
+let filter = PackageFilter {
+    lods_by_type: [(
+        "Building".to_owned(),
+        LodSelection::Exact(vec!["2.0".to_owned(), "2.2".to_owned()]),
+    )].into(),
+    ..Default::default()
+};
+let mut report = PackageFilterReport::default();
+for result in index.read_filtered_packages(&refs, &filter)? {
+    report.merge(&result.report);
+    // result.model is None when no geometry is retained.
+}
+report.ensure_requested_lods_available(&filter)?;
+```
+
+Reports expose `MissingLodSelection.requested_lods`, a set of all unavailable
+requested values per CityObject type, alongside `available_lods`. Merging reports
+combines availability across packages. Validation fails if any exact value is
+still unavailable, including exact values supplied through `default_lod`.
+
+Exact default LoDs are validated for retained types that own input geometry.
+Geometry-less structural ancestors remain in the output hierarchy without
+requiring their own geometry. Explicit type overrides always require LoDs on
+that type's own geometry; descendant geometry does not satisfy them.
+In `available_lods`, an absent type means no owned geometry was observed; an
+empty set means geometry was observed without LoD metadata and still requires
+validation. These entries are preserved when reports are merged.
+
 ### As a CLI
 
 The CLI is dataset-oriented:

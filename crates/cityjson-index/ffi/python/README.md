@@ -58,7 +58,7 @@ with OpenedIndex.open("dataset") as index:
     filter = PackageFilter(
         cityobject_types={"Building"},
         default_lod=LodSelection.HIGHEST,
-        lods_by_type={"Building": LodSelection.Exact("2.0")},
+        lods_by_type={"Building": LodSelection.Exact(["2.0", "2.2"])},
     )
 
     summary = PackageFilterSummary()
@@ -68,6 +68,22 @@ with OpenedIndex.open("dataset") as index:
 
     summary.ensure_requested_lods_available(filter)
 ```
+
+`LodSelection.Exact(["2.0", "2.2"])` (or `.exact(...)`) accepts a nonempty
+sequence of strings and retains geometry at either exact LoD. A single value
+must also be wrapped in a sequence, for example `LodSelection.Exact(["2.0"])`.
+Empty sequences raise `ValueError`. Diagnostics expose `requested_lods` as a
+set of unavailable values alongside `available_lods`. Summaries combine
+availability across packages; `ensure_requested_lods_available` raises if any
+requested value remains unavailable, even if other values matched.
+
+Exact default LoDs are validated for retained types that own input geometry.
+Geometry-less structural ancestors remain in the output hierarchy without
+requiring their own geometry. Explicit type overrides always require LoDs on
+that type's own geometry; descendant geometry does not satisfy them.
+In `available_lods`, an absent type means no owned geometry was observed; an
+empty set means geometry was observed without LoD metadata and still requires
+validation. These entries are preserved when reports are merged.
 
 ## Links
 

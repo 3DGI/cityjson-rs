@@ -7,7 +7,16 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from cityjson_index import Bounds2D, LodSelection, OpenedIndex, PackageFilter, PackageFilterSummary
+from cityjson_index import (
+    Bounds2D,
+    FilteredPackageOutcome,
+    LodSelection,
+    MissingLodSelection,
+    OpenedIndex,
+    PackageFilter,
+    PackageFilterReport,
+    PackageFilterSummary,
+)
 from cityjson_lib import ModelType
 
 
@@ -120,6 +129,73 @@ class OpenedIndexApiTests(unittest.TestCase):
                 self.assertIn("Building", filtered[0].report.retained_types)
                 self.assertEqual(filtered[0].report.retained_lods["Building"], {"1.0"})
 
+    def test_multiple_exact_lods_retain_geometry_and_report_partial_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            document = json.loads((CITYJSON_DATASET / "a" / "fixtures.city.json").read_text(encoding="utf-8"))
+            for cityobject in document["CityObjects"].values():
+                geometry = cityobject["geometry"][0]
+                cityobject["geometry"] = [dict(geometry, lod=lod) for lod in ["1.0", "2.0", "2.2"]]
+            (root / "fixture.city.json").write_text(json.dumps(document), encoding="utf-8")
+            with OpenedIndex.open(root, root / "index.sqlite") as index:
+                index.reindex()
+                refs = index.package_refs_for_cityobject(index.lookup_cityobject_refs("fixture-a")[0])
+                for values in [["2.0"], ["1.0", "2.2"], ["1.0", "2.2", "8.8", "9.9"]]:
+                    filter = PackageFilter(lods_by_type={"Building": LodSelection.Exact(values)})
+                    result = index.read_filtered_packages(refs, filter)[0]
+                    expected = set(values) & {"1.0", "2.0", "2.2"}
+                    self.assertEqual(result.report.retained_lods["Building"], expected)
+                    self.assertEqual(result.report.retained_geometry_count, len(expected))
+                    self.assertIsNotNone(result.model)
+                    summary = PackageFilterSummary()
+                    summary.add(result.report)
+                    if "8.8" in values:
+                        self.assertEqual(summary.missing_lods["Building"].requested_lods, {"8.8", "9.9"})
+                        with self.assertRaisesRegex(RuntimeError, "8.8.*9.9.*1.0.*2.0.*2.2"):
+                            summary.ensure_requested_lods_available(filter)
+                    else:
+                        summary.ensure_requested_lods_available(filter)
+
+    def test_exact_selection_requires_nonempty_sequence(self) -> None:
+        for factory in [LodSelection.Exact, LodSelection.exact]:
+            with self.assertRaisesRegex(ValueError, "must not be empty"):
+                factory([])
+            with self.assertRaisesRegex(TypeError, "sequence"):
+                factory("2.0")
+            self.assertEqual(factory(("1.0", "2.2")).exact_lods, ("1.0", "2.2"))
+
+    def test_summary_merges_missing_lods_against_combined_availability(self) -> None:
+        reports = [
+            PackageFilterReport(
+                retained_types={"Building"}, available_lods={"Building": {available}},
+                missing_lods=[MissingLodSelection("Building", frozenset(missing), frozenset({available}))],
+            )
+            for available, missing in [("1.0", {"2.2", "8.8"}), ("2.2", {"1.0", "9.9"})]
+        ]
+        for ordered in [reports, list(reversed(reports))]:
+            summary = PackageFilterSummary()
+            for report in ordered:
+                summary.add(report)
+            self.assertEqual(summary.missing_lods["Building"].requested_lods, {"8.8", "9.9"})
+            self.assertEqual(summary.missing_lods["Building"].available_lods, {"1.0", "2.2"})
+            summary.ensure_requested_lods_available(PackageFilter(default_lod=LodSelection.Exact(["1.0", "2.2"])))
+
+    def test_summary_validates_missing_type_overrides_and_clears_found_values(self) -> None:
+        filter = PackageFilter(
+            cityobject_types={"Building"},
+            lods_by_type={"Road": LodSelection.Exact(["8.8", "9.9"])},
+        )
+        failures = PackageFilterSummary().requested_lod_failures(filter)
+        self.assertEqual(failures[0].requested_lods, {"8.8", "9.9"})
+        self.assertEqual(failures[0].available_lods, set())
+        summary = PackageFilterSummary()
+        summary.add(PackageFilterReport(
+            available_lods={"Building": {"1.0"}},
+            missing_lods=[MissingLodSelection("Building", frozenset({"2.2"}), frozenset({"1.0"}))],
+        ))
+        summary.add(PackageFilterReport(available_lods={"Building": {"2.2"}}))
+        self.assertFalse(summary.missing_lods)
+
     def test_package_filter_summary_reports_missing_requested_lods(self) -> None:
         """Input: package refs filtered for a Building LoD that is unavailable in the dataset.
         Assertions: the summary reports no retained packages, all packages ignored, and the missing LoD failure can be raised.
@@ -134,7 +210,7 @@ class OpenedIndexApiTests(unittest.TestCase):
                 filter = PackageFilter(
                     cityobject_types={"Building"},
                     default_lod=LodSelection.HIGHEST,
-                    lods_by_type={"Building": LodSelection.Exact("2.0")},
+                    lods_by_type={"Building": LodSelection.Exact(["2.0", "2.2"])},
                 )
                 filtered = index.read_filtered_packages(refs, filter)
                 summary = PackageFilterSummary()
@@ -148,7 +224,7 @@ class OpenedIndexApiTests(unittest.TestCase):
                 failures = summary.requested_lod_failures(filter)
                 self.assertEqual(len(failures), 1)
                 self.assertEqual(failures[0].cityobject_type, "Building")
-                self.assertEqual(failures[0].requested_lod, "2.0")
+                self.assertEqual(failures[0].requested_lods, {"2.0", "2.2"})
                 self.assertEqual(failures[0].available_lods, {"1.0"})
                 self.assertEqual(filtered[0].report.missing_lods, failures)
 
@@ -177,7 +253,106 @@ def _write_shared_child_cityjson(root: Path) -> None:
     (root / "shared-child.city.json").write_text(json.dumps(document), encoding="utf-8")
 
 
+def _filter_hierarchy(
+    lod: str | None, filter: PackageFilter, parent_lod: str | None = None
+) -> list[FilteredPackageOutcome]:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        _write_shared_child_cityjson(root)
+        path = root / "shared-child.city.json"
+        document = json.loads(path.read_text(encoding="utf-8"))
+        geometry = document["CityObjects"]["shared-part"]["geometry"][0]
+        if lod is None:
+            del geometry["lod"]
+        else:
+            geometry["lod"] = lod
+        for parent_id in ["building-a", "building-b"]:
+            document["CityObjects"][parent_id]["geometry"] = (
+                [dict(geometry, lod=parent_lod)] if parent_lod is not None else []
+            )
+        path.write_text(json.dumps(document), encoding="utf-8")
+        with OpenedIndex.open(root, root / "index.sqlite") as index:
+            index.reindex()
+            child = index.lookup_cityobject_refs("shared-part")[0]
+            refs = index.package_refs_for_cityobject(child)
+            return index.read_filtered_packages(refs, filter)
+
+
 class OpenedIndexPluralPackageApiTests(unittest.TestCase):
+    def test_default_exact_lod_preserves_structural_ancestors(self) -> None:
+        for cityobject_types in [None, {"Building"}]:
+            filter = PackageFilter(
+                cityobject_types=cityobject_types, default_lod=LodSelection.Exact(["1.0"])
+            )
+            summary = PackageFilterSummary()
+            for result in _filter_hierarchy("1.0", filter):
+                self.assertIn("Building", result.report.retained_types)
+                self.assertNotIn("Building", result.report.available_lods)
+                self.assertFalse(result.report.missing_lods)
+                summary.add(result.report)
+                self.assertIsNotNone(result.model)
+                objects = json.loads(result.model.to_json_bytes())["CityObjects"]
+                parent_id = next(key for key, value in objects.items() if value["type"] == "Building")
+                self.assertEqual(objects[parent_id]["children"], ["shared-part"])
+                self.assertEqual(objects["shared-part"]["parents"], [parent_id])
+                self.assertEqual(objects["shared-part"]["geometry"][0]["lod"], "1.0")
+            summary.ensure_requested_lods_available(filter)
+
+    def test_default_exact_lod_validates_geometry_owners_and_overrides(self) -> None:
+        filter = PackageFilter(default_lod=LodSelection.Exact(["1.0", "8.8", "9.9"]))
+        result = _filter_hierarchy("1.0", filter)[0]
+        self.assertEqual(len(result.report.missing_lods), 1)
+        missing = result.report.missing_lods[0]
+        self.assertEqual(missing.cityobject_type, "BuildingPart")
+        self.assertEqual(missing.requested_lods, {"8.8", "9.9"})
+        self.assertEqual(missing.available_lods, {"1.0"})
+        summary = PackageFilterSummary()
+        summary.add(result.report)
+        with self.assertRaisesRegex(RuntimeError, "BuildingPart.*8.8.*9.9.*1.0"):
+            summary.ensure_requested_lods_available(filter)
+        for requested_type in ["Building", "Road"]:
+            explicit = PackageFilter(lods_by_type={requested_type: LodSelection.Exact(["1.0"])})
+            result = _filter_hierarchy("1.0", explicit)[0]
+            summary = PackageFilterSummary()
+            summary.add(result.report)
+            with self.assertRaisesRegex(RuntimeError, requested_type):
+                summary.ensure_requested_lods_available(explicit)
+            if requested_type == "Building":
+                self.assertEqual(result.report.missing_lods[0].cityobject_type, "Building")
+        single = PackageFilter(default_lod=LodSelection.Exact(["1.0"]))
+        parent_report = _filter_hierarchy("1.0", single, parent_lod="2.0")[0].report
+        summary = PackageFilterSummary()
+        summary.add(parent_report)
+        with self.assertRaisesRegex(RuntimeError, "Building requested"):
+            summary.ensure_requested_lods_available(single)
+        no_lod = _filter_hierarchy(None, single)[0]
+        self.assertIsNone(no_lod.model)
+        self.assertEqual(no_lod.report.available_lods, {"BuildingPart": frozenset()})
+        self.assertEqual(no_lod.report.missing_lods[0].requested_lods, {"1.0"})
+        summary = PackageFilterSummary()
+        summary.add(no_lod.report)
+        self.assertEqual(summary.available_lods, {"BuildingPart": set()})
+        with self.assertRaisesRegex(RuntimeError, "BuildingPart"):
+            summary.ensure_requested_lods_available(single)
+
+    def test_default_exact_lod_merges_hierarchy_availability(self) -> None:
+        for values in [["1.0", "2.0"], ["1.0", "2.0", "8.8", "9.9"]]:
+            filter = PackageFilter(default_lod=LodSelection.Exact(values))
+            reports = [_filter_hierarchy(lod, filter)[0].report for lod in ["1.0", "2.0"]]
+            for ordered in [reports, list(reversed(reports))]:
+                summary = PackageFilterSummary()
+                for report in ordered:
+                    summary.add(report)
+                self.assertNotIn("Building", summary.missing_lods)
+                self.assertEqual(summary.available_lods["BuildingPart"], {"1.0", "2.0"})
+                if len(values) == 2:
+                    self.assertFalse(summary.missing_lods)
+                    summary.ensure_requested_lods_available(filter)
+                else:
+                    self.assertEqual(summary.missing_lods["BuildingPart"].requested_lods, {"8.8", "9.9"})
+                    with self.assertRaisesRegex(RuntimeError, "8.8.*9.9"):
+                        summary.ensure_requested_lods_available(filter)
+
     def test_python_get_packages_returns_all_distinct_packages(self) -> None:
         """Input: a temporary CityJSON dataset with two root Buildings sharing one BuildingPart child.
         Assertions: get_packages returns both containing packages and obsolete singular conveniences are absent.

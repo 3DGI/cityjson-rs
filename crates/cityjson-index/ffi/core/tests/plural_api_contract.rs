@@ -43,3 +43,13 @@ fn ffi_cityobject_relationships_and_associations_match_rust() {
     assert!(source.contains("cjx_package_ref_t"));
     assert!(source.contains("cjx_index_package_refs_for_cityobject"));
 }
+
+/// Input: the generated C header for `LoD` selection and diagnostics.
+/// Assertions: both exact and missing values are string lists and shared ABI types are included.
+#[test]
+fn ffi_lod_header_carries_lists() {
+    let header = include_str!("../include/cityjson_index/cityjson_index.h");
+    assert!(header.contains("cjx_string_list_t exact_lods;"));
+    assert!(header.contains("cjx_string_list_t requested_lods;"));
+    assert!(header.contains("#include \"cityjson_lib/cityjson_lib.h\""));
+}
