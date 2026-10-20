@@ -15,6 +15,9 @@ nav:
       - Public API: public-api.md
       - JSON Boundary: json-api.md
       - Operations: operations-api.md
+  - Architecture Decisions:
+      - CityObject Selection and Geometry Filters: adr/001-cityobject-selection-geometry-filters.md
+      - Selection Algebra Reading Guide: adr/001-selection-algebra-reading-guide.md
   - FFI & Bindings:
       - Overview: ffi/index.md
       - Binding API: ffi/api.md
