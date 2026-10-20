@@ -284,13 +284,18 @@ fn serialize_geometry_instance_keeps_float_sections() {
     let written = write_value(&model);
     let root_vertices = written["vertices"].as_array().unwrap();
     assert_eq!(root_vertices.len(), 1);
+    // -- uncompressed document: vertices keep their real-world fractional
+    //    values instead of being rounded to integers
     assert!(
         root_vertices[0]
             .as_array()
             .unwrap()
             .iter()
-            .all(|coordinate| coordinate.is_i64() || coordinate.is_u64())
+            .all(Value::is_f64)
     );
+    assert_eq!(root_vertices[0][0].as_f64().unwrap(), 1.25);
+    assert_eq!(root_vertices[0][1].as_f64().unwrap(), 2.5);
+    assert_eq!(root_vertices[0][2].as_f64().unwrap(), 3.75);
 
     let geometry = &written["CityObjects"]["instance-1"]["geometry"][0];
     let boundaries = geometry["boundaries"].as_array().unwrap();

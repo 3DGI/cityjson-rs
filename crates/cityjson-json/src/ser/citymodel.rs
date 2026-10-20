@@ -538,9 +538,12 @@ impl Serialize for VertexSerializer<'_> {
             seq.serialize_element(&QuantizedNumber((self.y - translate[1]) / scale[1]))?;
             seq.serialize_element(&QuantizedNumber((self.z - translate[2]) / scale[2]))?;
         } else {
-            seq.serialize_element(&QuantizedNumber(self.x))?;
-            seq.serialize_element(&QuantizedNumber(self.y))?;
-            seq.serialize_element(&QuantizedNumber(self.z))?;
+            // -- uncompressed document: vertices are real-world values and
+            //    must keep their fractional part (CityJSON specs: "vertices"
+            //    without a transform are float coordinates)
+            seq.serialize_element(&self.x)?;
+            seq.serialize_element(&self.y)?;
+            seq.serialize_element(&self.z)?;
         }
         seq.end()
     }
