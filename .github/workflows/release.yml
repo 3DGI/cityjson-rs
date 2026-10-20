@@ -16,7 +16,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Verify tag is on main
@@ -50,11 +50,11 @@ jobs:
         os: [ubuntu-latest, macos-14, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.93.0
-      - uses: pypa/cibuildwheel@v3.4.1
+          toolchain: 1.97.1
+      - uses: pypa/cibuildwheel@v4.3.1
         with:
           package-dir: crates/cityjson-lib/ffi/python
         env:
@@ -79,16 +79,16 @@ jobs:
         os: [ubuntu-latest, macos-14, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.93.0
+          toolchain: 1.97.1
       - uses: actions/download-artifact@v8
         with:
           pattern: wheels-lib-*
           path: dist-lib
           merge-multiple: true
-      - uses: pypa/cibuildwheel@v3.4.1
+      - uses: pypa/cibuildwheel@v4.3.1
         with:
           package-dir: crates/cityjson-index/ffi/python
         env:
@@ -148,7 +148,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
