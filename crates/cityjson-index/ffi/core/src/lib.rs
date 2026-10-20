@@ -120,7 +120,7 @@ pub enum cjx_lod_selection_kind_t {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct cjx_lod_selection_t {
     pub kind: cjx_lod_selection_kind_t,
-    pub exact_lod: cj_bytes_t,
+    pub exact_lods: cjx_string_list_t,
 }
 
 #[allow(non_camel_case_types)]
@@ -163,7 +163,7 @@ pub struct cjx_lod_map_t {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct cjx_missing_lod_selection_t {
     pub cityobject_type: cj_bytes_t,
-    pub requested_lod: cj_bytes_t,
+    pub requested_lods: cjx_string_list_t,
     pub available_lods: cjx_string_list_t,
 }
 
@@ -528,13 +528,13 @@ fn lod_selection_from_abi(
         cjx_lod_selection_kind_t::CJX_LOD_SELECTION_ALL => Ok(LodSelection::All),
         cjx_lod_selection_kind_t::CJX_LOD_SELECTION_HIGHEST => Ok(LodSelection::Highest),
         cjx_lod_selection_kind_t::CJX_LOD_SELECTION_EXACT => {
-            let exact_lod = bytes_to_string(selection.exact_lod, name)?;
-            if exact_lod.is_empty() {
+            let exact_lods = string_list_to_set(selection.exact_lods, name)?;
+            if exact_lods.is_empty() {
                 return Err(AbiError::invalid_argument(format!(
                     "{name} must not be empty for exact LoD selections"
                 )));
             }
-            Ok(LodSelection::Exact(exact_lod))
+            Ok(LodSelection::Exact(exact_lods.into_iter().collect()))
         }
     }
 }
@@ -549,7 +549,7 @@ fn package_filter_from_abi(filter: &cjx_package_filter_t) -> Result<PackageFilte
         None
     };
 
-    let default_lod = lod_selection_from_abi(filter.default_lod, "filter.default_lod.exact_lod")?;
+    let default_lod = lod_selection_from_abi(filter.default_lod, "filter.default_lod.exact_lods")?;
     let lods_by_type = if filter.lods_by_type_len == 0 {
         BTreeMap::new()
     } else {
@@ -573,7 +573,7 @@ fn package_filter_from_abi(filter: &cjx_package_filter_t) -> Result<PackageFilte
                 }
                 let selection = lod_selection_from_abi(
                     entry.selection,
-                    "filter.lods_by_type.selection.exact_lod",
+                    "filter.lods_by_type.selection.exact_lods",
                 )?;
                 Ok((cityobject_type, selection))
             })
@@ -628,7 +628,7 @@ fn lod_map_from_abi(map: &BTreeMap<String, BTreeSet<String>>) -> cjx_lod_map_t {
 fn missing_lod_from_abi(missing: &MissingLodSelection) -> cjx_missing_lod_selection_t {
     cjx_missing_lod_selection_t {
         cityobject_type: bytes_from_string(missing.cityobject_type.clone()),
-        requested_lod: bytes_from_string(missing.requested_lod.clone()),
+        requested_lods: string_list_from_set(&missing.requested_lods),
         available_lods: string_list_from_set(&missing.available_lods),
     }
 }
@@ -832,7 +832,7 @@ fn free_missing_lod_selection(missing: cjx_missing_lod_selection_t) {
     // SAFETY: each field is an owned buffer/list allocated by this ABI.
     unsafe {
         bytes_free(missing.cityobject_type);
-        bytes_free(missing.requested_lod);
+        free_string_list(missing.requested_lods);
     }
     free_string_list(missing.available_lods);
 }
@@ -1373,5 +1373,125 @@ pub unsafe extern "C" fn cjx_filtered_packages_free(
     }) {
         Ok(()) => cj_status_t::CJ_STATUS_SUCCESS,
         Err(status) => status,
+    }
+}
+
+#[cfg(test)]
+mod lod_tests {
+    use super::*;
+
+    #[test]
+    fn exact_lod_abi_converts_lists_and_rejects_empty_or_null_lists() {
+        let mut entries = [
+            cj_bytes_t {
+                data: b"1.0".as_ptr().cast_mut(),
+                len: 3,
+            },
+            cj_bytes_t {
+                data: b"2.2".as_ptr().cast_mut(),
+                len: 3,
+            },
+        ];
+        let selection = cjx_lod_selection_t {
+            kind: cjx_lod_selection_kind_t::CJX_LOD_SELECTION_EXACT,
+            exact_lods: cjx_string_list_t {
+                data: entries.as_mut_ptr(),
+                len: entries.len(),
+            },
+        };
+        assert_eq!(
+            lod_selection_from_abi(selection, "exact_lods").expect("list"),
+            LodSelection::Exact(vec!["1.0".into(), "2.2".into()])
+        );
+        assert!(
+            lod_selection_from_abi(
+                cjx_lod_selection_t {
+                    exact_lods: cjx_string_list_t::default(),
+                    ..selection
+                },
+                "exact_lods"
+            )
+            .is_err()
+        );
+        assert!(
+            lod_selection_from_abi(
+                cjx_lod_selection_t {
+                    exact_lods: cjx_string_list_t {
+                        data: ptr::null_mut(),
+                        len: 2
+                    },
+                    ..selection
+                },
+                "exact_lods"
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn missing_lod_abi_preserves_all_values_and_frees_nested_lists() {
+        let missing = MissingLodSelection {
+            cityobject_type: "Building".into(),
+            requested_lods: BTreeSet::from(["8.8".into(), "9.9".into()]),
+            available_lods: BTreeSet::from(["1.0".into(), "2.2".into()]),
+        };
+        let native = missing_lod_from_abi(&missing);
+        assert_eq!(
+            string_list_to_set(native.requested_lods, "requested").expect("requested"),
+            missing.requested_lods
+        );
+        assert_eq!(
+            string_list_to_set(native.available_lods, "available").expect("available"),
+            missing.available_lods
+        );
+        free_missing_lod_selection(native);
+    }
+
+    #[test]
+    fn hierarchy_report_abi_preserves_geometry_owner_eligibility() {
+        for lod in [Some("1.0"), None] {
+            let mut geometry =
+                serde_json::json!({"type": "MultiSurface", "boundaries": [[[0, 1, 2]]]});
+            if let Some(lod) = lod {
+                geometry["lod"] = serde_json::json!(lod);
+            }
+            let model = json::from_slice(&serde_json::to_vec(&serde_json::json!({
+                "type": "CityJSON", "version": "2.0",
+                "transform": {"scale": [1, 1, 1], "translate": [0, 0, 0]},
+                "CityObjects": {
+                    "parent": {"type": "Building", "children": ["part"]},
+                    "part": {"type": "BuildingPart", "parents": ["parent"], "geometry": [geometry]}
+                },
+                "vertices": [[0, 0, 0], [1, 0, 0], [0, 1, 0]]
+            })).expect("JSON bytes")).expect("hierarchy");
+            let filter = PackageFilter {
+                default_lod: LodSelection::Exact(vec!["1.0".into()]),
+                ..Default::default()
+            };
+            let report = filter.apply(&model).expect("filter").report;
+            let native = package_report_from_abi(&report);
+            assert_eq!(native.available_lods.len, 1);
+            // SAFETY: report conversion allocated `len` readable entries, released below.
+            let entries = unsafe {
+                slice::from_raw_parts(native.available_lods.data, native.available_lods.len)
+            };
+            assert_eq!(
+                bytes_to_string(entries[0].cityobject_type, "type").expect("type"),
+                "BuildingPart"
+            );
+            let available = string_list_to_set(entries[0].lods, "lods").expect("available");
+            if lod.is_some() {
+                assert_eq!(available, BTreeSet::from(["1.0".into()]));
+                assert_eq!(native.missing_lods.len, 0);
+                report
+                    .ensure_requested_lods_available(&filter)
+                    .expect("structural parent");
+            } else {
+                assert!(available.is_empty());
+                assert_eq!(native.missing_lods.len, 1);
+                assert!(report.ensure_requested_lods_available(&filter).is_err());
+            }
+            free_diagnostics(native);
+        }
     }
 }

@@ -455,7 +455,7 @@ The crate handles schema migrations automatically:
 | Type | Purpose |
 |------|---------|
 | `FeatureFilter` | Type selection + LoD selection |
-| `LodSelection` | All, Highest, Exact("2") |
+| `LodSelection` | All, Highest, Exact(vec!["2".into()]) |
 | `FilteredFeature` | Model + `FeatureFilterDiagnostics` |
 | `read_filtered_features(refs, filter)` | Batch filter with diagnostics |
 

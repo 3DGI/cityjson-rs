@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Fixed
+
+- Fixed exact default-LoD validation rejecting structural ancestors whose
+  geometry lives on descendants. Rust reports and Python summaries now check
+  defaults for geometry owners, preserve empty availability for geometry
+  without LoD metadata, and continue checking every explicit type override.
+
+### Changed
+
+- `cityjson-index` exact LoD selection now accepts multiple values: Rust
+  `LodSelection::Exact(Vec<String>)`, Python `LodSelection.Exact(Sequence[str])`,
+  and C `cjx_lod_selection_t.exact_lods` string lists. Empty selections are
+  rejected. Missing diagnostics use `requested_lods` sets/lists and aggregate
+  every unavailable value with available LoDs across packages. Recompile C
+  callers for the changed ABI layout.
+
 ### Added
 
 - Added ordered, batched `package_source_paths()` APIs for Rust, C, and Python callers that need storage-layout-aware package provenance.

@@ -57,6 +57,7 @@ miri:
     MIRIFLAGS="-Zmiri-strict-provenance" cargo +nightly miri test -p cityjson-types handles
     MIRIFLAGS="-Zmiri-strict-provenance" cargo +nightly miri test -p cityjson-types raw_access
     MIRIFLAGS="-Zmiri-strict-provenance" cargo +nightly miri test -p cityjson-types geometry
+    MIRIFLAGS="-Zmiri-strict-provenance" cargo +nightly miri test -p cityjson-index-ffi-core lod_tests
 
 # Run the Python binding test suites (tox smoke) for both crates
 test-python: build-python

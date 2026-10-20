@@ -126,7 +126,7 @@ class _StringList(Structure):
 
 
 class _LodSelection(Structure):
-    _fields_ = [("kind", c_int), ("exact_lod", _Bytes)]
+    _fields_ = [("kind", c_int), ("exact_lods", _StringList)]
 
 
 class _LodByType(Structure):
@@ -154,7 +154,7 @@ class _LodMap(Structure):
 class _MissingLodSelection(Structure):
     _fields_ = [
         ("cityobject_type", _Bytes),
-        ("requested_lod", _Bytes),
+        ("requested_lods", _StringList),
         ("available_lods", _StringList),
     ]
 
@@ -742,12 +742,10 @@ def _string_list_to_native(values: object, keepalive: list[Any]) -> _StringList:
 
 
 def _lod_selection_to_native(selection: object, keepalive: list[Any]) -> _LodSelection:
-    exact_lod = getattr(selection, "exact_lod")
-    if exact_lod is None:
-        exact_lod_bytes = _Bytes()
-    else:
-        exact_lod_bytes = _bytes_from_str(exact_lod, keepalive)
-    return _LodSelection(int(getattr(selection, "_native_kind")), exact_lod_bytes)
+    return _LodSelection(
+        int(getattr(selection, "_native_kind")),
+        _string_list_to_native(getattr(selection, "exact_lods"), keepalive),
+    )
 
 
 def _package_filter_to_native(filter: object, keepalive: list[Any]) -> _PackageFilter:
@@ -816,7 +814,7 @@ def _missing_lods_to_list(value: _MissingLodSelectionList) -> list[object]:
         result.append(
             MissingLodSelection(
                 cityobject_type=_bytes_to_py(missing.cityobject_type).decode("utf-8"),
-                requested_lod=_bytes_to_py(missing.requested_lod).decode("utf-8"),
+                requested_lods=_string_list_to_frozenset(missing.requested_lods),
                 available_lods=_string_list_to_frozenset(missing.available_lods),
             )
         )

@@ -406,7 +406,7 @@ fn package_filter_reports_merge_for_batch_lod_validation() {
         .expect("packages")
         .remove(0);
     let filter = PackageFilter {
-        default_lod: LodSelection::Exact("9.9".to_owned()),
+        default_lod: LodSelection::Exact(vec!["9.9".to_owned()]),
         ..PackageFilter::default()
     };
     let outcome = index
@@ -546,4 +546,383 @@ fn model_contains_id(model: &cityjson_lib::CityModel, id: &str) -> bool {
 fn model_json(model: &cityjson_lib::CityModel) -> Value {
     serde_json::from_str(&cityjson_lib::json::to_string(model).expect("model should serialize"))
         .expect("serialized model should parse")
+}
+
+fn lod_model(lods: &[&str]) -> cityjson_lib::CityModel {
+    let geometries: Vec<_> = lods
+        .iter()
+        .map(|lod| {
+            json!({
+                "type": "MultiSurface", "lod": lod, "boundaries": [[[0, 1, 2]]]
+            })
+        })
+        .collect();
+    cityjson_lib::json::from_slice(
+        &serde_json::to_vec(&json!({
+            "type": "CityJSON", "version": "2.0",
+            "transform": {"scale": [1, 1, 1], "translate": [0, 0, 0]},
+            "CityObjects": {"building": {"type": "Building", "geometry": geometries}},
+            "vertices": [[0, 0, 0], [1, 0, 0], [0, 1, 0]]
+        }))
+        .expect("JSON bytes"),
+    )
+    .expect("LoD model")
+}
+
+/// Input: geometry at three LoDs with default and exact selections.
+/// Assertions: exact selection retains any requested value and All/Highest retain their defaults.
+#[test]
+fn package_filter_selects_multiple_exact_lods() {
+    let model = lod_model(&["1.0", "2.0", "2.2"]);
+    for (selection, expected) in [
+        (LodSelection::All, vec!["1.0", "2.0", "2.2"]),
+        (LodSelection::Highest, vec!["2.2"]),
+        (LodSelection::Exact(vec!["2.0".into()]), vec!["2.0"]),
+        (
+            LodSelection::Exact(vec!["1.0".into(), "2.2".into()]),
+            vec!["1.0", "2.2"],
+        ),
+        (
+            LodSelection::Exact(vec!["2.0".into(), "9.9".into()]),
+            vec!["2.0"],
+        ),
+    ] {
+        let filter = PackageFilter {
+            default_lod: selection,
+            ..Default::default()
+        };
+        let result = filter.apply(&model).expect("filter");
+        let expected: BTreeSet<_> = expected.into_iter().map(str::to_owned).collect();
+        assert_eq!(result.report.retained_lods["Building"], expected);
+        assert_eq!(result.report.retained_geometry_count, expected.len());
+        let output = result.model.expect("retained model");
+        let output_lods: BTreeSet<_> = output
+            .cityobjects()
+            .iter()
+            .flat_map(|(_, object)| {
+                object.geometry().unwrap_or_default().iter().map(|handle| {
+                    output
+                        .get_geometry(*handle)
+                        .expect("geometry")
+                        .lod()
+                        .expect("LoD")
+                        .to_string()
+                })
+            })
+            .collect();
+        assert_eq!(output_lods, expected);
+    }
+    let filter = PackageFilter {
+        default_lod: LodSelection::Exact(vec!["2.0".into(), "8.8".into(), "9.9".into()]),
+        ..Default::default()
+    };
+    let report = filter.apply(&model).expect("partial default match").report;
+    assert_eq!(
+        report.missing_lods["Building"].requested_lods,
+        BTreeSet::from(["8.8".into(), "9.9".into()])
+    );
+    assert!(report.ensure_requested_lods_available(&filter).is_err());
+    assert_eq!(PackageFilter::default().default_lod, LodSelection::All);
+}
+
+/// Input: partial availability in two packages and two unavailable requested values.
+/// Assertions: reports merge every missing value, clear values found in another package, and errors show available LoDs.
+#[test]
+fn package_filter_aggregates_missing_lods_across_packages() {
+    let filter = PackageFilter {
+        lods_by_type: [(
+            "Building".into(),
+            LodSelection::Exact(vec!["1.0".into(), "2.0".into(), "8.8".into(), "9.9".into()]),
+        )]
+        .into(),
+        ..Default::default()
+    };
+    let first = filter.apply(&lod_model(&["1.0"])).expect("first");
+    let second = filter.apply(&lod_model(&["2.0"])).expect("second");
+    for reports in [
+        [&first.report, &second.report],
+        [&second.report, &first.report],
+    ] {
+        let mut report = PackageFilterReport::default();
+        for item in reports {
+            report.merge(item);
+        }
+        let missing = &report.missing_lods["Building"];
+        assert_eq!(
+            missing.requested_lods,
+            BTreeSet::from(["8.8".into(), "9.9".into()])
+        );
+        assert_eq!(
+            missing.available_lods,
+            BTreeSet::from(["1.0".into(), "2.0".into()])
+        );
+        let error = report
+            .ensure_requested_lods_available(&filter)
+            .expect_err("unavailable")
+            .to_string();
+        for value in ["8.8", "9.9", "1.0", "2.0", "Building"] {
+            assert!(error.contains(value), "{error}");
+        }
+        let available_filter = PackageFilter {
+            default_lod: LodSelection::Exact(vec!["1.0".into(), "2.0".into()]),
+            ..Default::default()
+        };
+        report
+            .ensure_requested_lods_available(&available_filter)
+            .expect("available across packages");
+    }
+}
+
+/// Input: complementary package LoDs that jointly cover the requested selection.
+/// Assertions: merged reports remove missing entries when all requested values are found.
+#[test]
+fn package_filter_merge_clears_lods_found_in_other_packages() {
+    let filter = PackageFilter {
+        default_lod: LodSelection::Exact(vec!["1.0".into(), "2.2".into()]),
+        ..Default::default()
+    };
+    let mut report = filter.apply(&lod_model(&["1.0"])).expect("first").report;
+    assert_eq!(
+        report.missing_lods["Building"].requested_lods,
+        BTreeSet::from(["2.2".into()])
+    );
+    report.merge(&filter.apply(&lod_model(&["2.2"])).expect("second").report);
+    assert!(report.missing_lods.is_empty());
+    report
+        .ensure_requested_lods_available(&filter)
+        .expect("all found");
+}
+
+/// Input: empty exact selections on the default or an unused type override.
+/// Assertions: filtering and report validation reject both even when no matching type occurs.
+#[test]
+fn package_filter_rejects_empty_exact_selections() {
+    let model = lod_model(&["1.0"]);
+    for filter in [
+        PackageFilter {
+            default_lod: LodSelection::Exact(vec![]),
+            ..Default::default()
+        },
+        PackageFilter {
+            lods_by_type: [("Road".into(), LodSelection::Exact(vec![]))].into(),
+            ..Default::default()
+        },
+    ] {
+        assert!(
+            filter
+                .apply(&model)
+                .err()
+                .expect("empty selection")
+                .to_string()
+                .contains("must not be empty")
+        );
+        assert!(
+            PackageFilterReport::default()
+                .ensure_requested_lods_available(&filter)
+                .is_err()
+        );
+    }
+}
+
+/// Input: shared-child packages with a structural Building and BuildingPart geometry at LoD 2.0.
+/// Assertions: exact default validation passes and filtering preserves the hierarchy and geometry.
+#[test]
+fn default_exact_lod_preserves_structural_ancestors() {
+    let index = shared_child_index();
+    let child = index
+        .lookup_cityobject_refs("shared-part")
+        .expect("child")
+        .remove(0);
+    let refs = index.package_refs_for_cityobject(&child).expect("packages");
+    for cityobject_types in [None, Some(BTreeSet::from(["Building".into()]))] {
+        let filter = PackageFilter {
+            cityobject_types,
+            default_lod: LodSelection::Exact(vec!["2.0".into()]),
+            ..Default::default()
+        };
+        let results = index
+            .read_filtered_packages(&refs, &filter)
+            .expect("filter");
+        let mut merged = PackageFilterReport::default();
+        for result in results {
+            assert!(result.report.retained_types.contains("Building"));
+            assert!(!result.report.available_lods.contains_key("Building"));
+            assert!(result.report.missing_lods.is_empty());
+            result
+                .report
+                .ensure_requested_lods_available(&filter)
+                .expect("structural parent is valid");
+            merged.merge(&result.report);
+            let output = model_json(&result.model.expect("matching geometry"));
+            let objects = output["CityObjects"].as_object().expect("objects");
+            let (parent_id, parent) = objects
+                .iter()
+                .find(|(_, object)| object["type"] == "Building")
+                .expect("parent");
+            assert_eq!(parent["children"], json!(["shared-part"]));
+            assert_eq!(objects["shared-part"]["parents"], json!([parent_id]));
+            assert_eq!(objects["shared-part"]["geometry"][0]["lod"], "2.0");
+        }
+        merged
+            .ensure_requested_lods_available(&filter)
+            .expect("merged hierarchy");
+    }
+}
+
+fn hierarchy_lod_model(lod: Option<&str>, parent_lod: Option<&str>) -> cityjson_lib::CityModel {
+    let mut objects = hierarchy_cityobjects();
+    if let Some(lod) = lod {
+        objects["part"]["geometry"][0]["lod"] = json!(lod);
+    } else {
+        objects["part"]["geometry"][0]
+            .as_object_mut()
+            .expect("geometry")
+            .remove("lod");
+    }
+    if let Some(lod) = parent_lod {
+        let mut geometry = objects["part"]["geometry"][0].clone();
+        geometry["lod"] = json!(lod);
+        objects["building"]["geometry"] = json!([geometry]);
+    } else {
+        objects["building"]["geometry"] = json!([]);
+    }
+    cityjson_lib::json::from_slice(
+        &serde_json::to_vec(&json!({
+            "type": "CityJSON", "version": "2.0",
+            "transform": {"scale": [1, 1, 1], "translate": [0, 0, 0]},
+            "CityObjects": objects, "vertices": hierarchy_vertices()
+        }))
+        .expect("JSON bytes"),
+    )
+    .expect("hierarchical model")
+}
+
+/// Input: structural parents, geometry-owning parents, absent overrides, and geometry without LoD metadata.
+/// Assertions: defaults target geometry owners, explicit overrides remain strict, and empty availability survives merging.
+#[test]
+fn default_exact_lod_validates_geometry_owners_and_explicit_overrides() {
+    let filter = PackageFilter {
+        default_lod: LodSelection::Exact(vec!["2.0".into(), "8.8".into(), "9.9".into()]),
+        ..Default::default()
+    };
+    let report = filter
+        .apply(&hierarchy_lod_model(Some("2.0"), None))
+        .expect("partial match")
+        .report;
+    assert_eq!(report.missing_lods.len(), 1);
+    assert_eq!(
+        report.missing_lods["BuildingPart"].requested_lods,
+        BTreeSet::from(["8.8".into(), "9.9".into()])
+    );
+    assert_eq!(
+        report.missing_lods["BuildingPart"].available_lods,
+        BTreeSet::from(["2.0".into()])
+    );
+    assert!(report.ensure_requested_lods_available(&filter).is_err());
+
+    for requested_type in ["Building", "Road"] {
+        let explicit = PackageFilter {
+            lods_by_type: [(
+                requested_type.into(),
+                LodSelection::Exact(vec!["2.0".into()]),
+            )]
+            .into(),
+            ..Default::default()
+        };
+        let result = explicit
+            .apply(&hierarchy_lod_model(Some("2.0"), None))
+            .expect("override");
+        assert!(
+            result
+                .report
+                .ensure_requested_lods_available(&explicit)
+                .is_err()
+        );
+        if requested_type == "Building" {
+            assert!(result.report.missing_lods.contains_key("Building"));
+        }
+    }
+    let single = PackageFilter {
+        default_lod: LodSelection::Exact(vec!["2.0".into()]),
+        ..Default::default()
+    };
+    let parent_result = single
+        .apply(&hierarchy_lod_model(Some("2.0"), Some("1.0")))
+        .expect("parent geometry");
+    let parent_output = model_json(&parent_result.model.expect("matching child"));
+    assert!(
+        parent_output["CityObjects"]["building"]
+            .get("geometry")
+            .is_none_or(|geometries| geometries.as_array().is_some_and(Vec::is_empty))
+    );
+    assert_eq!(
+        parent_output["CityObjects"]["part"]["geometry"]
+            .as_array()
+            .expect("child geometry")
+            .len(),
+        1
+    );
+    let parent_report = parent_result.report;
+    assert!(parent_report.missing_lods.contains_key("Building"));
+    assert!(
+        parent_report
+            .ensure_requested_lods_available(&single)
+            .is_err()
+    );
+    let no_lod = single
+        .apply(&hierarchy_lod_model(None, None))
+        .expect("missing metadata")
+        .report;
+    assert_eq!(
+        no_lod.available_lods.get("BuildingPart"),
+        Some(&BTreeSet::new())
+    );
+    assert!(!no_lod.available_lods.contains_key("Building"));
+    let mut merged = PackageFilterReport::default();
+    merged.merge(&no_lod);
+    assert_eq!(
+        merged.available_lods.get("BuildingPart"),
+        Some(&BTreeSet::new())
+    );
+    assert!(merged.ensure_requested_lods_available(&single).is_err());
+}
+
+/// Input: hierarchical packages whose child geometries have complementary LoDs.
+/// Assertions: both merge orders satisfy available values and retain only genuinely unavailable diagnostics.
+#[test]
+fn default_exact_lod_merges_hierarchy_availability() {
+    for requested in [vec!["1.0", "2.0"], vec!["1.0", "2.0", "8.8", "9.9"]] {
+        let filter = PackageFilter {
+            default_lod: LodSelection::Exact(requested.iter().map(|lod| (*lod).into()).collect()),
+            ..Default::default()
+        };
+        let reports: Vec<_> = ["1.0", "2.0"]
+            .iter()
+            .map(|lod| {
+                filter
+                    .apply(&hierarchy_lod_model(Some(lod), None))
+                    .expect("package")
+                    .report
+            })
+            .collect();
+        for order in [[0, 1], [1, 0]] {
+            let mut merged = PackageFilterReport::default();
+            for index in order {
+                merged.merge(&reports[index]);
+            }
+            assert!(!merged.missing_lods.contains_key("Building"));
+            if requested.len() == 2 {
+                assert!(merged.missing_lods.is_empty());
+                merged
+                    .ensure_requested_lods_available(&filter)
+                    .expect("complementary values");
+            } else {
+                assert_eq!(
+                    merged.missing_lods["BuildingPart"].requested_lods,
+                    BTreeSet::from(["8.8".into(), "9.9".into()])
+                );
+                assert!(merged.ensure_requested_lods_available(&filter).is_err());
+            }
+        }
+    }
 }

@@ -27,7 +27,7 @@ jobs:
       run_python: ${{ steps.detect.outputs.run_python }}
       python_matrix: ${{ steps.detect.outputs.python_matrix }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - id: detect
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
@@ -92,8 +92,8 @@ jobs:
     env:
       CITYJSON_SHARED_CORPUS_ROOT: ${{ github.workspace }}/cityjson-corpus
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
           repository: 3DGI/cityjson-corpus
           path: cityjson-corpus
@@ -104,7 +104,7 @@ jobs:
             schemas
             scripts
           sparse-checkout-cone-mode: true
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
       - name: Render corpus correctness index
@@ -137,10 +137,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [1.93.0]
+        rust: [1.97.1]
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{matrix.rust}}
@@ -160,7 +160,7 @@ jobs:
     env:
       RUSTDOCFLAGS: --cfg docsrs -Dwarnings
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
       - uses: ./.github/actions/setup-proj
       - uses: Swatinem/rust-cache@v2
@@ -178,14 +178,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, macos, windows]
-        python: ["3.11", "3.12", "3.13"]
+        python: ["3.11", "3.12", "3.14"]
         crate: ${{ fromJson(needs.affected.outputs.python_matrix) }}
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.93.0
+          toolchain: 1.97.1
       - uses: Swatinem/rust-cache@v2
         with:
           key: pywheel-${{ matrix.crate }}
@@ -210,7 +210,7 @@ jobs:
       MIRIFLAGS: -Zmiri-strict-provenance
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@miri
       - uses: Swatinem/rust-cache@v2
         with:
